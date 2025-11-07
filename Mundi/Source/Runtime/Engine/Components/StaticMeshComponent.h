@@ -1,6 +1,5 @@
 #pragma once
 #include "MeshComponent.h"
-#include "Enums.h"
 #include "AABB.h"
 
 class UStaticMesh;
@@ -20,7 +19,6 @@ public:
 
 protected:
 	~UStaticMeshComponent() override;
-	void ClearDynamicMaterials();
 
 public:
 	void OnStaticMeshReleased(UStaticMesh* ReleasedMesh);
@@ -33,17 +31,6 @@ public:
 
 	UStaticMesh* GetStaticMesh() const { return StaticMesh; }
 	
-	UMaterialInterface* GetMaterial(uint32 InSectionIndex) const override;
-	void SetMaterial(uint32 InElementIndex, UMaterialInterface* InNewMaterial) override;
-
-	UMaterialInstanceDynamic* CreateAndSetMaterialInstanceDynamic(uint32 ElementIndex);
-
-	const TArray<UMaterialInterface*> GetMaterialSlots() const { return MaterialSlots; }
-
-	void SetMaterialTextureByUser(const uint32 InMaterialSlotIndex, EMaterialTextureSlot Slot, UTexture* Texture);
-	void SetMaterialColorByUser(const uint32 InMaterialSlotIndex, const FString& ParameterName, const FLinearColor& Value);
-	void SetMaterialScalarByUser(const uint32 InMaterialSlotIndex, const FString& ParameterName, float Value);
-
 	FAABB GetWorldAABB() const override;
 
 	void DuplicateSubObjects() override;
@@ -55,6 +42,4 @@ protected:
 
 protected:
 	UStaticMesh* StaticMesh = nullptr;
-	TArray<UMaterialInterface*> MaterialSlots;
-	TArray<UMaterialInstanceDynamic*> DynamicMaterialInstances;
 };

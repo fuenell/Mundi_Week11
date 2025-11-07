@@ -142,6 +142,7 @@ enum class EEngineShowFlags : uint64
     // Primitive rendering
     SF_Primitives = 1ull << 0,    // Show/hide all primitive geometry
     SF_StaticMeshes = 1ull << 1,  // Show/hide static mesh actors
+    SF_SkeletalMeshes = 1ull << 2,  // Show/hide skeletal mesh actors
 
     // Debug features
     SF_BillboardText = 1ull << 3, // Show/hide UUID text above objects
@@ -169,7 +170,7 @@ enum class EEngineShowFlags : uint64
     SF_ShadowAntiAliasing = 1ull << 17,
 
     // Default enabled flags
-    SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_Grid | SF_Lighting | SF_Decals | SF_Fog | SF_FXAA |SF_Billboard | SF_Shadows | SF_ShadowAntiAliasing,
+    SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_SkeletalMeshes | SF_Grid | SF_Lighting | SF_Decals | SF_Fog | SF_FXAA |SF_Billboard | SF_Shadows | SF_ShadowAntiAliasing,
 
     // All flags (for initialization/reset)
     SF_All = 0xFFFFFFFFFFFFFFFFull

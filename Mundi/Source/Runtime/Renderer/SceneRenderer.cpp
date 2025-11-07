@@ -585,6 +585,7 @@ void FSceneRenderer::GatherVisibleProxies()
 	//PerformFrustumCulling();
 
 	const bool bDrawStaticMeshes = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_StaticMeshes);
+	const bool bDrowSkeletalMeshes = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_SkeletalMeshes);
 	const bool bDrawDecals = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Decals);
 	const bool bDrawFog = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Fog);
 	const bool bDrawLight = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Lighting);
@@ -636,11 +637,11 @@ void FSceneRenderer::GatherVisibleProxies()
 						bool bShouldAdd = true;
 
 						// 메시 타입이 '스태틱 메시'인 경우에만 ShowFlag를 검사하여 추가 여부를 결정
-						if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(MeshComponent))
+						if (MeshComponent->IsA(UStaticMeshComponent::StaticClass()))
 						{
 							bShouldAdd = bDrawStaticMeshes;
 						}
-						// else if (USkeletalMeshComponent* SkeletalMeshComponent = ...)
+						// else if (MeshComponent->IsA(USkeletalMeshComponent::StaticClass()))
 						// {
 						//     bShouldAdd = bDrawSkeletalMeshes;
 						// }

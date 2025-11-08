@@ -456,5 +456,6 @@ GEMINI.md
 /Mundi/Tools/Python/**/__pycache__/
 /Mundi/Tools/Python/**/*.pyc
 /Mundi/Tools/Python/**/*.pyo
+!/Mundi/Tools/Python/python.exe
 # pip 다운로드 파일 제외
 /Mundi/Tools/Python/get-pip.py

@@ -10,6 +10,7 @@ class SSceneIOWindow; // 새로 추가할 UI
 class SDetailsWindow;
 class UMainToolbarWidget;
 class UConsoleWindow; // 오버레이 콘솔 윈도우
+class UContentBrowserWindow;
 
 // 중앙 레이아웃/입력 라우팅/뷰포트 관리 매니저 (위젯 아님)
 class USlateManager : public UObject
@@ -66,7 +67,11 @@ public:
     void ToggleConsole();
     bool IsConsoleVisible() const { return bIsConsoleVisible; }
     void ForceOpenConsole();
-    
+
+    // Content Browser 관리
+    void ToggleContentBrowser();
+    bool IsContentBrowserVisible() const;
+
     // Temp: open/close Skeletal Mesh Viewer (detached window)
     void OpenSkeletalMeshViewer();
     void CloseSkeletalMeshViewer();
@@ -116,4 +121,13 @@ private:
 
     // Detached skeletal mesh viewer window
     SSkeletalMeshViewerWindow* SkeletalViewerWindow = nullptr;
+
+    // Content Browser (Bottom panel overlay with animation)
+    UContentBrowserWindow* ContentBrowserWindow = nullptr;
+    bool bIsContentBrowserVisible = false;
+    bool bIsContentBrowserAnimating = false;
+    float ContentBrowserAnimationProgress = 0.0f; // 0.0 = 숨김, 1.0 = 완전히 표시
+    const float ContentBrowserAnimationDuration = 0.25f; // 초 단위
+    const float ContentBrowserHeightRatio = 0.35f; // 화면 높이의 35%
+    const float ContentBrowserHorizontalMargin = 10.0f; // 좌/우 여백
 };

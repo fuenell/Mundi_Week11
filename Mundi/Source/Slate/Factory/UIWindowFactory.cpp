@@ -6,6 +6,7 @@
 #include "Windows/PropertyWindow.h"
 #include "Windows/ExperimentalFeatureWindow.h"
 #include "Windows/SceneWindow.h"
+#include "Windows/ContentBrowserWindow.h"
 #include "GlobalConsole.h"
 
 IMPLEMENT_CLASS(UUIWindowFactory)
@@ -41,6 +42,13 @@ USceneWindow* UUIWindowFactory::CreateSceneWindow(EUIDockDirection InDockDirecti
 UExperimentalFeatureWindow* UUIWindowFactory::CreateExperimentalFeatureWindow(EUIDockDirection InDockDirection)
 {
 	auto* Window = new UExperimentalFeatureWindow();
+	Window->GetMutableConfig().DockDirection = InDockDirection;
+	return Window;
+}
+
+UContentBrowserWindow* UUIWindowFactory::CreateContentBrowserWindow(EUIDockDirection InDockDirection)
+{
+	auto* Window = new UContentBrowserWindow();
 	Window->GetMutableConfig().DockDirection = InDockDirection;
 	return Window;
 }

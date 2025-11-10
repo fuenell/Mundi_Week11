@@ -10,6 +10,7 @@ class USceneWindow;
 class UCameraPanelWindow;
 class USceneManagerWidget;
 class UDetailsPanelWidget;
+class UContentBrowserWindow;
 
 /**
  * @brief UI 윈도우 도킹 방향
@@ -39,7 +40,8 @@ public:
 	static USceneWindow* CreateSceneWindow(EUIDockDirection InDockDirection = EUIDockDirection::Center);
 	static UExperimentalFeatureWindow*
 		CreateExperimentalFeatureWindow(EUIDockDirection InDockDirection = EUIDockDirection::Right);
-	
+	static UContentBrowserWindow* CreateContentBrowserWindow(EUIDockDirection InDockDirection = EUIDockDirection::Bottom);
+
 	// Object Management Widgets (Unreal Engine style)
 	//static USceneManagerWidget* CreateSceneManagerWidget(EUIDockDirection InDockDirection = EUIDockDirection::Left);
 	//static UDetailsPanelWidget* CreateDetailsPanelWidget(EUIDockDirection InDockDirection = EUIDockDirection::Right);

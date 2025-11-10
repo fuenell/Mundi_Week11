@@ -10,6 +10,7 @@
 #include "Windows/SViewportWindow.h"
 #include "Windows/SSkeletalMeshViewerWindow.h"
 #include "Windows/ConsoleWindow.h"
+#include "Windows/ContentBrowserWindow.h"
 #include "Widgets/MainToolbarWidget.h"
 #include "Widgets/ConsoleWidget.h"
 #include "FViewportClient.h"
@@ -155,6 +156,18 @@ void USlateManager::Initialize(ID3D11Device* InDevice, UWorld* InWorld, const FR
     {
         UE_LOG("ERROR: Failed to create ConsoleWindow");
     }
+
+    // === Content Browser 생성 ===
+    ContentBrowserWindow = new UContentBrowserWindow();
+    if (ContentBrowserWindow)
+    {
+        ContentBrowserWindow->Initialize();
+        UE_LOG("USlateManager: ContentBrowserWindow created successfully");
+    }
+    else
+    {
+        UE_LOG("ERROR: Failed to create ContentBrowserWindow");
+    }
 }
 
 void USlateManager::OpenSkeletalMeshViewer()
@@ -222,6 +235,78 @@ void USlateManager::Render()
     if (SkeletalViewerWindow)
     {
         SkeletalViewerWindow->OnRender();
+    }
+
+    // Content Browser 오버레이 렌더링 (하단에서 슬라이드 업)
+    if (ContentBrowserWindow && ContentBrowserAnimationProgress > 0.0f)
+    {
+        extern float CLIENTWIDTH;
+        extern float CLIENTHEIGHT;
+
+        // 부드러운 감속을 위한 ease-out 곡선 적용
+        float EasedProgress = 1.0f - (1.0f - ContentBrowserAnimationProgress) * (1.0f - ContentBrowserAnimationProgress);
+
+        // 좌우 여백을 포함한 Content Browser 크기 계산
+        float ContentBrowserHeight = CLIENTHEIGHT * ContentBrowserHeightRatio;
+        float ContentBrowserWidth = CLIENTWIDTH - (ContentBrowserHorizontalMargin * 2.0f);
+        float ContentBrowserXPos = ContentBrowserHorizontalMargin;
+
+        // Y 위치 계산 (하단에서 슬라이드 업)
+        float YPosWhenHidden = CLIENTHEIGHT; // 화면 밖 (하단)
+        float YPosWhenVisible = CLIENTHEIGHT - ContentBrowserHeight; // 화면 내 (하단)
+        float CurrentYPos = YPosWhenHidden + (YPosWhenVisible - YPosWhenHidden) * EasedProgress;
+
+        // 둥근 모서리 스타일 적용
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 10.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.4f, 0.6f, 0.8f, 0.8f));
+
+        // 윈도우 위치 및 크기 설정
+        ImGui::SetNextWindowPos(ImVec2(ContentBrowserXPos, CurrentYPos));
+        ImGui::SetNextWindowSize(ImVec2(ContentBrowserWidth, ContentBrowserHeight));
+
+        // 윈도우 플래그
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoMove
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_NoCollapse
+            | ImGuiWindowFlags_NoTitleBar;
+
+        // Content Browser 렌더링
+        bool isWindowOpen = true;
+        if (ImGui::Begin("ContentBrowserOverlay", &isWindowOpen, flags))
+        {
+            // 포커스를 잃으면 닫기
+            if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
+                bIsContentBrowserVisible &&
+                !bIsContentBrowserAnimating)
+            {
+                ToggleContentBrowser(); // Content Browser 닫기
+            }
+
+            // 둥근 모서리가 있는 반투명 배경 추가
+            ImDrawList* DrawList = ImGui::GetWindowDrawList();
+            ImVec2 WindowPos = ImGui::GetWindowPos();
+            ImVec2 WindowSize = ImGui::GetWindowSize();
+            DrawList->AddRectFilled(
+                WindowPos,
+                ImVec2(WindowPos.x + WindowSize.x, WindowPos.y + WindowSize.y),
+                IM_COL32(25, 25, 30, 240), // 높은 불투명도의 어두운 배경
+                12.0f // 둥근 정도
+            );
+
+            // Content Browser 내용 렌더링
+            if (ContentBrowserWindow)
+            {
+                ContentBrowserWindow->RenderPathBar();
+                ContentBrowserWindow->RenderContentGrid();
+            }
+        }
+        ImGui::End();
+
+        // 스타일 변수 및 색상 복원
+        ImGui::PopStyleColor(1);
+        ImGui::PopStyleVar(3);
     }
 
     // 콘솔 오버레이 렌더링 (모든 것 위에 표시)
@@ -354,6 +439,31 @@ void USlateManager::Update(float DeltaSeconds)
         }
     }
 
+    // Content Browser 애니메이션 업데이트
+    if (bIsContentBrowserAnimating)
+    {
+        if (bIsContentBrowserVisible)
+        {
+            // 애니메이션 인 (나타남)
+            ContentBrowserAnimationProgress += DeltaSeconds / ContentBrowserAnimationDuration;
+            if (ContentBrowserAnimationProgress >= 1.0f)
+            {
+                ContentBrowserAnimationProgress = 1.0f;
+                bIsContentBrowserAnimating = false;
+            }
+        }
+        else
+        {
+            // 애니메이션 아웃 (사라짐)
+            ContentBrowserAnimationProgress -= DeltaSeconds / ContentBrowserAnimationDuration;
+            if (ContentBrowserAnimationProgress <= 0.0f)
+            {
+                ContentBrowserAnimationProgress = 0.0f;
+                bIsContentBrowserAnimating = false;
+            }
+        }
+    }
+
     // ConsoleWindow 업데이트
     if (ConsoleWindow && ConsoleAnimationProgress > 0.0f)
     {
@@ -419,6 +529,12 @@ void USlateManager::ProcessInput()
     if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent) && ImGui::GetIO().KeyAlt)
     {
         ToggleConsole();
+    }
+
+    // Ctrl + Space로 Content Browser 토글
+    if (ImGui::IsKeyPressed(ImGuiKey_Space) && ImGui::GetIO().KeyCtrl)
+    {
+        ToggleContentBrowser();
     }
 
     // 단축키로 기즈모 모드 변경
@@ -574,4 +690,15 @@ void USlateManager::ForceOpenConsole()
         // 2. 토글 함수를 호출하여 열기 상태(true)로 전환하고 애니메이션 시작
         ToggleConsole();
     }
+}
+
+void USlateManager::ToggleContentBrowser()
+{
+    bIsContentBrowserVisible = !bIsContentBrowserVisible;
+    bIsContentBrowserAnimating = true;
+}
+
+bool USlateManager::IsContentBrowserVisible() const
+{
+    return bIsContentBrowserVisible;
 }

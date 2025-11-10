@@ -549,6 +549,12 @@ void USlateManager::ProcessInput()
         ToggleContentBrowser();
     }
 
+    // ESC closes the Skeletal Mesh Viewer if open
+    if (ImGui::IsKeyPressed(ImGuiKey_Escape) && SkeletalViewerWindow)
+    {
+        CloseSkeletalMeshViewer();
+    }
+
     // 단축키로 기즈모 모드 변경
     if (World->GetGizmoActor())
         World->GetGizmoActor()->ProcessGizmoModeSwitch();

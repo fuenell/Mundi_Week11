@@ -58,8 +58,10 @@ void SSkeletalMeshViewerWindow::OnRender()
     {
         ImGui::SetNextWindowFocus();
     }
+    bool bViewerVisible = false;
     if (ImGui::Begin("Skeletal Mesh Viewer", nullptr, flags))
     {
+        bViewerVisible = true;
         // Render tab bar and switch active state
         if (ImGui::BeginTabBar("SkeletalViewerTabs", ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_Reorderable))
         {
@@ -272,9 +274,16 @@ void SSkeletalMeshViewerWindow::OnRender()
     }
     ImGui::End();
 
+    // If collapsed or not visible, clear the center rect so we don't render a floating viewport
+    if (!bViewerVisible)
+    {
+        CenterRect = FRect(0, 0, 0, 0);
+        CenterRect.UpdateMinMax();
+    }
+
     bRequestFocus = false;
 
-    if (ActiveState && ActiveState->Viewport)
+    if (bViewerVisible && ActiveState && ActiveState->Viewport)
     {
         // Ensure viewport matches current center rect before rendering
         const uint32 NewStartX = static_cast<uint32>(CenterRect.Left);
@@ -296,6 +305,11 @@ void SSkeletalMeshViewerWindow::OnRender()
         }
 
         ActiveState->Viewport->Render();
+    }
+    else if (ActiveState && ActiveState->Viewport)
+    {
+        // When not visible, ensure the viewport doesn't keep stale content
+        ActiveState->Viewport->Resize(0, 0, 0, 0);
     }
 }
 

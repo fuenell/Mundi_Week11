@@ -14,6 +14,7 @@ public:
     const FSkeletalMeshData* GetSkeletalMeshData() const { return &Data; }
     const FSkeleton* GetSkeleton() const { return &Data.Skeleton; }
     const TArray<FGroupInfo>& GetGroupInfos() const { return Data.GroupInfos; }
+    uint32 GetBoneCount() const { return Data.Skeleton.Bones.Num(); }
     
     ID3D11Buffer* GetVertexBuffer() const { return VertexBuffer; }
     ID3D11Buffer* GetIndexBuffer() const { return IndexBuffer; }
@@ -30,6 +31,8 @@ public:
     bool HasMaterial() const { return Data.bHasMaterial; }
 
     uint64 GetMeshGroupCount() const { return Data.GroupInfos.size(); }
+
+    void UpdateVertexBuffer(const TArray<FNormalVertex>& SkinnedVertices);
     
 private:
     void CreateVertexBuffer(FSkeletalMeshData* InSkeletalMesh, ID3D11Device* InDevice);

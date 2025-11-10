@@ -40,6 +40,13 @@ void USkeletalMesh::ReleaseResources()
     }
 }
 
+void USkeletalMesh::UpdateVertexBuffer(const TArray<FNormalVertex>& SkinnedVertices)
+{
+    if (!VertexBuffer) { return; }
+
+    GEngine.GetRHIDevice()->VertexBufferUpdate(VertexBuffer, SkinnedVertices);
+}
+
 void USkeletalMesh::CreateVertexBuffer(FSkeletalMeshData* InSkeletalMesh, ID3D11Device* InDevice)
 {
     HRESULT hr = D3D11RHI::CreateVertexBuffer<FVertexDynamic>(InDevice, InSkeletalMesh->Vertices, &VertexBuffer);

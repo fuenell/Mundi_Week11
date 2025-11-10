@@ -248,6 +248,7 @@
     <ClCompile Include="Generated\USpotLightComponent.generated.cpp" />
     <ClCompile Include="Generated\UStaticMeshComponent.generated.cpp" />
     <ClCompile Include="Generated\USkinnedMeshComponent.generated.cpp" />
+    <ClCompile Include="Generated\USkeletalMeshComponent.generated.cpp" />
     <ClCompile Include="Generated\UTestAutoBindComponent.generated.cpp" />
     <ClCompile Include="Generated\UTextRenderComponent.generated.cpp" />
     <ClCompile Include="pch.cpp">
@@ -260,6 +261,7 @@
     <ClCompile Include="Source\Editor\FBXLoader.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\SkeletalMesh.cpp" />
     <ClCompile Include="Source\Runtime\Core\Misc\VertexData.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Components\SkeletalMeshComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\SkinnedMeshComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Fade.cpp" />
     <FxCompile Include="Shaders\Materials\Fireball.hlsl">
@@ -635,6 +637,7 @@
     <ClInclude Include="Generated\USpotLightComponent.generated.h" />
     <ClInclude Include="Generated\UStaticMeshComponent.generated.h" />
     <ClInclude Include="Generated\USkinnedMeshComponent.generated.h" />
+    <ClInclude Include="Generated\USkeletalMeshComponent.generated.h" />
     <ClInclude Include="Generated\UTestAutoBindComponent.generated.h" />
     <ClInclude Include="Generated\UTextRenderComponent.generated.h" />
     <ClInclude Include="pch.h" />
@@ -656,6 +659,7 @@
     <ClInclude Include="Source\Runtime\Engine\Components\RotatingMovementComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\BoxComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\ShapeComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\Components\SkeletalMeshComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\SkinnedMeshComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\SphereComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\AmbientLightActor.h" />

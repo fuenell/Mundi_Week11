@@ -147,11 +147,6 @@ void SSkeletalMeshViewerWindow::OnUpdate(float DeltaSeconds)
     if (!ActiveState || !ActiveState->Viewport)
         return;
 
-    // Resize the internal viewport to match the center region
-    const uint32 NewStartX = static_cast<uint32>(CenterRect.Left);
-    const uint32 NewStartY = static_cast<uint32>(CenterRect.Top);
-    const uint32 NewWidth  = static_cast<uint32>(CenterRect.Right - CenterRect.Left);
-    const uint32 NewHeight = static_cast<uint32>(CenterRect.Bottom - CenterRect.Top);
     if (ActiveState && ActiveState->Client)
     {
         ActiveState->Client->Tick(DeltaSeconds);

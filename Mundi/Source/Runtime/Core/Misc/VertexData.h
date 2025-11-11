@@ -65,6 +65,27 @@ struct FSkinnedVertex
     FVector4 Color{}; // 정점 컬러
     uint32 BoneIndices[4]{}; // 영향을 주는 본 인덱스 (최대 4개)
     float BoneWeights[4]{}; // 각 본의 가중치 (합이 1.0)
+
+    friend FArchive& operator<<(FArchive& Ar, FSkinnedVertex& Vertex)
+    {
+        Ar << Vertex.Position;
+        Ar << Vertex.Normal;
+        Ar << Vertex.UV;
+        Ar << Vertex.Tangent;
+        Ar << Vertex.Color;
+
+        for (int i = 0; i < 4; ++i)
+        {
+            Ar << Vertex.BoneIndices[i];
+        }
+
+        for (int i = 0; i < 4; ++i)
+        {
+            Ar << Vertex.BoneWeights[i];
+        }
+
+        return Ar;
+    }
 };
 
 // 같은 Position인데 Normal이나 UV가 다른 vertex가 존재할 수 있음, 그래서 SkinnedVertex를 키로 구별해야해서 hash함수 정의함
@@ -219,6 +240,25 @@ struct FBone
     int32 ParentIndex; // 부모 본 인덱스 (-1이면 루트)
     FMatrix BindPose; // Bind Pose 변환 행렬
     FMatrix InverseBindPose; // Inverse Bind Pose (스키닝용)
+
+    friend FArchive& operator<<(FArchive& Ar, FBone& Bone)
+    {
+        if (Ar.IsSaving())
+        {
+            Serialization::WriteString(Ar, Bone.Name);
+            Ar << Bone.ParentIndex;
+            Ar << Bone.BindPose;
+            Ar << Bone.InverseBindPose;
+        }
+        else if (Ar.IsLoading())
+        {
+            Serialization::ReadString(Ar, Bone.Name);
+            Ar << Bone.ParentIndex;
+            Ar << Bone.BindPose;
+            Ar << Bone.InverseBindPose;
+        }
+        return Ar;
+    }
 };
 
 struct FSkeleton
@@ -226,6 +266,42 @@ struct FSkeleton
     FString Name; // 스켈레톤 이름
     TArray<FBone> Bones; // 본 배열
     TMap <FString, int32> BoneNameToIndex; // 이름으로 본 검색
+
+    friend FArchive& operator<<(FArchive& Ar, FSkeleton& Skeleton)
+    {
+        if (Ar.IsSaving())
+        {
+            Serialization::WriteString(Ar, Skeleton.Name);
+
+            uint32 boneCount = static_cast<uint32>(Skeleton.Bones.size());
+            Ar << boneCount;
+            for (auto& bone : Skeleton.Bones)
+            {
+                Ar << bone;
+            }
+            // BoneNameToIndex는 로드 시 재구축 가능하므로 저장 안 함
+        }
+        else if (Ar.IsLoading())
+        {
+            Serialization::ReadString(Ar, Skeleton.Name);
+
+            uint32 boneCount;
+            Ar << boneCount;
+            Skeleton.Bones.resize(boneCount);
+            for (auto& bone : Skeleton.Bones)
+            {
+                Ar << bone;
+            }
+
+            // BoneNameToIndex 재구축
+            Skeleton.BoneNameToIndex.clear();
+            for (int32 i = 0; i < static_cast<int32>(Skeleton.Bones.size()); ++i)
+            {
+                Skeleton.BoneNameToIndex[Skeleton.Bones[i].Name] = i;
+            }
+        }
+        return Ar;
+    }
 };
 
 struct FVertexWeight
@@ -242,4 +318,60 @@ struct FSkeletalMeshData
     TArray<FGroupInfo> GroupInfos; // 머티리얼 그룹 (기존 시스템 재사용)
     bool bHasMaterial = false;
     FString CacheFilePath;
+
+    friend FArchive& operator<<(FArchive& Ar, FSkeletalMeshData& Data)
+    {
+        if (Ar.IsSaving())
+        {
+            // 1. Vertices 저장
+            Serialization::WriteArray(Ar, Data.Vertices);
+
+            // 2. Indices 저장
+            Serialization::WriteArray(Ar, Data.Indices);
+
+            // 3. Skeleton 저장
+            Ar << Data.Skeleton;
+
+            // 4. GroupInfos 저장
+            uint32 gCount = static_cast<uint32>(Data.GroupInfos.size());
+            Ar << gCount;
+            for (auto& g : Data.GroupInfos)
+            {
+                Ar << g;
+            }
+
+            // 5. Material 플래그 저장
+            Ar << Data.bHasMaterial;
+
+            // 6. CacheFilePath 저장
+            Serialization::WriteString(Ar, Data.CacheFilePath);
+        }
+        else if (Ar.IsLoading())
+        {
+            // 1. Vertices 로드
+            Serialization::ReadArray(Ar, Data.Vertices);
+
+            // 2. Indices 로드
+            Serialization::ReadArray(Ar, Data.Indices);
+
+            // 3. Skeleton 로드
+            Ar << Data.Skeleton;
+
+            // 4. GroupInfos 로드
+            uint32 gCount;
+            Ar << gCount;
+            Data.GroupInfos.resize(gCount);
+            for (auto& g : Data.GroupInfos)
+            {
+                Ar << g;
+            }
+
+            // 5. Material 플래그 로드
+            Ar << Data.bHasMaterial;
+
+            // 6. CacheFilePath 로드
+            Serialization::ReadString(Ar, Data.CacheFilePath);
+        }
+        return Ar;
+    }
 };

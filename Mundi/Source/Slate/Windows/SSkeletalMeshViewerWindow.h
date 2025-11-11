@@ -53,4 +53,8 @@ private:
 
     // Request focus on first open
     bool bRequestFocus = false;
+
+private:
+    void UpdateBoneTransformFromSkeleton(ViewerState* State);
+    void ApplyBoneTransform(ViewerState* State);
 };

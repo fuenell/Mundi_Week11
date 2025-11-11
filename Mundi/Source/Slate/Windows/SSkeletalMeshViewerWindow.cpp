@@ -202,6 +202,93 @@ void SSkeletalMeshViewerWindow::OnRender()
 
         ImGui::Separator();
         
+        // === 선택된 본의 트랜스폼 편집 UI ===
+        if (ActiveState->SelectedBoneIndex >= 0 && ActiveState->CurrentMesh)
+        {
+            const FSkeleton* Skeleton = ActiveState->CurrentMesh->GetSkeleton();
+            if (Skeleton && ActiveState->SelectedBoneIndex < Skeleton->Bones.size())
+            {
+                const FBone& SelectedBone = Skeleton->Bones[ActiveState->SelectedBoneIndex];
+                
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.85f, 0.3f, 1.0f));
+                ImGui::Text("Selected Bone: %s", SelectedBone.Name.c_str());
+                ImGui::PopStyleColor();
+                
+                ImGui::Separator();
+                
+                // 본의 현재 트랜스폼 가져오기 (편집 중이 아닐 때만)
+                if (!ActiveState->bBoneRotationEditing)
+                {
+                    UpdateBoneTransformFromSkeleton(ActiveState);
+                }
+                
+                // Location 편집
+                ImGui::Text("Location");
+                ImGui::PushItemWidth(-1);
+                bool bLocationChanged = false;
+                bLocationChanged |= ImGui::DragFloat("##BoneLocX", &ActiveState->EditBoneLocation.X, 0.1f, 0.0f, 0.0f, "X: %.3f");
+                bLocationChanged |= ImGui::DragFloat("##BoneLocY", &ActiveState->EditBoneLocation.Y, 0.1f, 0.0f, 0.0f, "Y: %.3f");
+                bLocationChanged |= ImGui::DragFloat("##BoneLocZ", &ActiveState->EditBoneLocation.Z, 0.1f, 0.0f, 0.0f, "Z: %.3f");
+                ImGui::PopItemWidth();
+                
+                if (bLocationChanged)
+                {
+                    ApplyBoneTransform(ActiveState);
+                    ActiveState->bBoneLinesDirty = true;
+                }
+                
+                ImGui::Spacing();
+                
+                // Rotation 편집
+                ImGui::Text("Rotation");
+                ImGui::PushItemWidth(-1);
+                bool bRotationChanged = false;
+                
+                if (ImGui::IsAnyItemActive())
+                {
+                    ActiveState->bBoneRotationEditing = true;
+                }
+                
+                bRotationChanged |= ImGui::DragFloat("##BoneRotX", &ActiveState->EditBoneRotation.X, 0.5f, -180.0f, 180.0f, "X: %.2f°");
+                bRotationChanged |= ImGui::DragFloat("##BoneRotY", &ActiveState->EditBoneRotation.Y, 0.5f, -180.0f, 180.0f, "Y: %.2f°");
+                bRotationChanged |= ImGui::DragFloat("##BoneRotZ", &ActiveState->EditBoneRotation.Z, 0.5f, -180.0f, 180.0f, "Z: %.2f°");
+                ImGui::PopItemWidth();
+                
+                if (!ImGui::IsAnyItemActive())
+                {
+                    ActiveState->bBoneRotationEditing = false;
+                }
+                
+                if (bRotationChanged)
+                {
+                    ApplyBoneTransform(ActiveState);
+                    ActiveState->bBoneLinesDirty = true;
+                }
+                
+                ImGui::Spacing();
+                
+                // Scale 편집
+                ImGui::Text("Scale");
+                ImGui::PushItemWidth(-1);
+                bool bScaleChanged = false;
+                bScaleChanged |= ImGui::DragFloat("##BoneScaleX", &ActiveState->EditBoneScale.X, 0.01f, 0.001f, 100.0f, "X: %.3f");
+                bScaleChanged |= ImGui::DragFloat("##BoneScaleY", &ActiveState->EditBoneScale.Y, 0.01f, 0.001f, 100.0f, "Y: %.3f");
+                bScaleChanged |= ImGui::DragFloat("##BoneScaleZ", &ActiveState->EditBoneScale.Z, 0.01f, 0.001f, 100.0f, "Z: %.3f");
+                ImGui::PopItemWidth();
+                
+                if (bScaleChanged)
+                {
+                    ApplyBoneTransform(ActiveState);
+                    ActiveState->bBoneLinesDirty = true;
+                }
+                
+                ImGui::Spacing();
+                ImGui::Separator();
+            }
+        }
+
+        ImGui::Separator();
+        
         if (!ActiveState->CurrentMesh)
         {
             ImGui::TextDisabled("No skeletal mesh loaded");
@@ -400,4 +487,25 @@ void SSkeletalMeshViewerWindow::CloseTab(int Index)
     Tabs.RemoveAt(Index);
     if (Tabs.Num() == 0) { ActiveTabIndex = -1; ActiveState = nullptr; }
     else { ActiveTabIndex = std::min(Index, Tabs.Num() - 1); ActiveState = Tabs[ActiveTabIndex]; }
+}
+
+void SSkeletalMeshViewerWindow::UpdateBoneTransformFromSkeleton(ViewerState* State)
+{
+    if (!State || !State->CurrentMesh || State->SelectedBoneIndex < 0)
+        return;
+        
+    // 본의 로컬 트랜스폼에서 값 추출
+    const FTransform& BoneTransform = State->PreviewActor->GetSkeletalMeshComponent()->GetBoneLocalTransform(State->SelectedBoneIndex);
+    State->EditBoneLocation = BoneTransform.Translation;
+    State->EditBoneRotation = BoneTransform.Rotation.ToEulerZYXDeg();
+    State->EditBoneScale = BoneTransform.Scale3D;
+}
+
+void SSkeletalMeshViewerWindow::ApplyBoneTransform(ViewerState* State)
+{
+    if (!State || !State->CurrentMesh || State->SelectedBoneIndex < 0)
+        return;
+
+    FTransform NewTransform(State->EditBoneLocation, FQuat::MakeFromEulerZYX(State->EditBoneRotation), State->EditBoneScale);
+    State->PreviewActor->GetSkeletalMeshComponent()->SetBoneLocalTransform(State->SelectedBoneIndex, NewTransform);
 }

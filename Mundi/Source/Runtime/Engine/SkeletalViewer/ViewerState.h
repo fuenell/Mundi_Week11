@@ -21,4 +21,12 @@ public:
     int32 LastSelectedBoneIndex = -1; // 색상 갱신을 위한 이전 선택 인덱스
     // UI path buffer per-tab
     char MeshPathBuffer[260] = {0};
+
+    // 본 트랜스폼 편집 관련
+    FVector EditBoneLocation;
+    FVector EditBoneRotation;  // Euler angles in degrees
+    FVector EditBoneScale;
+    
+    bool bBoneTransformChanged = false;
+    bool bBoneRotationEditing = false;
 };

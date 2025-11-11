@@ -31,6 +31,8 @@ bool SSkeletalMeshViewerWindow::Initialize(float StartX, float StartY, float Wid
     World = InWorld;
     Device = InDevice;
 
+    // World->GetGizmoActor()->SetSpace(EGizmoSpace::Local);
+
     SetRect(StartX, StartY, StartX + Width, StartY + Height);
 
     // Create first tab/state
@@ -253,7 +255,7 @@ void SSkeletalMeshViewerWindow::OnRender()
                             // Move gizmo to the selected bone and update selection
                             if (ActiveState->PreviewActor && ActiveState->World)
                             {
-                                ActiveState->PreviewActor->MoveGizmoToBone(Index);
+                                ActiveState->PreviewActor->RepositionAnchorToBone(Index);
                                 if (USceneComponent* Anchor = ActiveState->PreviewActor->GetBoneGizmoAnchor())
                                 {
                                     // Ensure actor is selected so the component selection sticks

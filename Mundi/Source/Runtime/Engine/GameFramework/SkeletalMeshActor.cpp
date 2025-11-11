@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "SkeletalMeshActor.h"
-#include "BoneAnchorComponent.h"
 
 ASkeletalMeshActor::ASkeletalMeshActor()
 {
@@ -111,27 +110,33 @@ void ASkeletalMeshActor::RebuildBoneLines(int32 SelectedBoneIndex)
     }
 }
 
-void ASkeletalMeshActor::MoveGizmoToBone(int32 BoneIndex)
+void ASkeletalMeshActor::RepositionAnchorToBone(int32 BoneIndex)
 {
     if (!SkeletalMeshComponent || !BoneAnchor)
+    {
         return;
+    }
 
     USkeletalMesh* SkeletalMesh = SkeletalMeshComponent->GetSkeletalMesh();
     if (!SkeletalMesh)
+    {
         return;
+    }
 
     const FSkeletalMeshData* Data = SkeletalMesh->GetSkeletalMeshData();
     if (!Data)
+    {
         return;
+    }
 
     const auto& Bones = Data->Skeleton.Bones;
     if (BoneIndex < 0 || BoneIndex >= (int32)Bones.size())
+    {
         return;
+    }
 
     // Wire target/index first, then place anchor without writeback
-    BoneAnchor->BeginSuppressWriteback();
     BoneAnchor->SetTarget(SkeletalMeshComponent, BoneIndex);
-    BoneAnchor->EndSuppressWriteback();
 
     BoneAnchor->SetEditability(true);
     BoneAnchor->SetVisibility(true);

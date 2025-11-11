@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "BoneAnchorComponent.h"
-#include "SkinnedMeshComponent.h"
-#include "Renderer.h"
 #include "SelectionManager.h"
 
 IMPLEMENT_CLASS(UBoneAnchorComponent)
@@ -25,9 +23,6 @@ void UBoneAnchorComponent::UpdateAnchorFromBone()
 void UBoneAnchorComponent::OnTransformUpdated()
 {
     Super::OnTransformUpdated();
-
-    if (bSuppressWriteback)
-        return;
 
     if (!Target || BoneIndex < 0)
         return;

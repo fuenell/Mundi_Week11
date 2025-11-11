@@ -2,6 +2,7 @@
 #include "Actor.h"
 #include "LineComponent.h"
 #include "SkeletalMeshComponent.h"
+#include "BoneAnchorComponent.h"
 #include "ASkeletalMeshActor.generated.h"
 
 UCLASS(DisplayName="스켈레탈 메시", Description="스켈레탈 메시를 배치하는 액터입니다")
@@ -24,7 +25,7 @@ public:
     
     // - 본 오버레이(뼈대 선) 시각화를 위한 라인 컴포넌트
     ULineComponent* GetBoneLineComponent() const { return BoneLineComponent; }
-    class UBoneAnchorComponent* GetBoneGizmoAnchor() const { return BoneAnchor; }
+    UBoneAnchorComponent* GetBoneGizmoAnchor() const { return BoneAnchor; }
 
     // Convenience: forward to component
     void SetSkeletalMesh(const FString& PathFileName);
@@ -33,9 +34,8 @@ public:
     // SelectedBoneIndex: highlight this bone and its parent connection
     void RebuildBoneLines(int32 SelectedBoneIndex);
 
-    // Move a hidden anchor component to the specified bone's world position
-    // and make it selectable for the gizmo to latch onto
-    void MoveGizmoToBone(int32 BoneIndex);
+    // Position the anchor
+    void RepositionAnchorToBone(int32 BoneIndex);
 
     // Copy/Serialize
     void DuplicateSubObjects() override;
@@ -49,7 +49,7 @@ protected:
     // - 액터의 로컬 공간에서 선분을 추가하고, 액터 트랜스폼에 따라 함께 이동/회전/스케일됨
     ULineComponent* BoneLineComponent = nullptr;
     // Anchor component used for gizmo selection/transform at a bone
-    class UBoneAnchorComponent* BoneAnchor = nullptr;
+    UBoneAnchorComponent* BoneAnchor = nullptr;
 
     // Incremental bone line overlay cache (avoid ClearLines every frame)
     struct FBoneDebugLines

@@ -4,6 +4,10 @@
 #include "fbxsdk/fileio/fbxiosettings.h"
 #include "fbxsdk/scene/geometry/fbxcluster.h"
 #include "ObjectIterator.h"
+#include "WindowsBinReader.h"
+#include "WindowsBinWriter.h"
+#include "PathUtils.h"
+#include <filesystem>
 
 IMPLEMENT_CLASS(UFbxLoader)
 
@@ -100,6 +104,85 @@ USkeletalMesh* UFbxLoader::LoadFbxMesh(const FString& FilePath)
 
 FSkeletalMeshData* UFbxLoader::LoadFbxMeshAsset(const FString& FilePath)
 {
+	FString NormalizedPath = NormalizePath(FilePath);
+	FSkeletalMeshData* MeshData = nullptr;
+#ifdef USE_OBJ_CACHE
+	// 1. 캐시 파일 경로 설정
+	FString CachePathStr = ConvertDataPathToCachePath(NormalizedPath);
+	const FString BinPathFileName = CachePathStr + ".bin";
+
+	// 캐시를 저장할 디렉토리가 없으면 생성
+	std::filesystem::path CacheFileDirPath(BinPathFileName);
+	if (CacheFileDirPath.has_parent_path())
+	{
+		std::filesystem::create_directories(CacheFileDirPath.parent_path());
+	}
+
+	bool bLoadedFromCache = false;
+	
+
+	// 2. 캐시 유효성 검사
+	bool bShouldRegenerate = true;
+	if (std::filesystem::exists(BinPathFileName))
+	{
+		try
+		{
+			auto binTime = std::filesystem::last_write_time(BinPathFileName);
+			auto fbxTime = std::filesystem::last_write_time(NormalizedPath);
+
+			// FBX 파일이 캐시보다 오래되었으면 캐시 사용
+			if (fbxTime <= binTime)
+			{
+				bShouldRegenerate = false;
+			}
+		}
+		catch (const std::filesystem::filesystem_error& e)
+		{
+			UE_LOG("Filesystem error during cache validation: %s. Forcing regeneration.", e.what());
+			bShouldRegenerate = true;
+		}
+	}
+
+	// 3. 캐시에서 로드 시도
+	if (!bShouldRegenerate)
+	{
+		UE_LOG("Attempting to load FBX '%s' from cache.", NormalizedPath.c_str());
+		try
+		{
+			MeshData = new FSkeletalMeshData();
+			FWindowsBinReader Reader(BinPathFileName);
+			if (!Reader.IsOpen())
+			{
+				throw std::runtime_error("Failed to open bin file for reading.");
+			}
+			Reader << *MeshData;
+			Reader.Close();
+
+			MeshData->CacheFilePath = BinPathFileName;
+			bLoadedFromCache = true;
+
+			UE_LOG("Successfully loaded FBX '%s' from cache.", NormalizedPath.c_str());
+			return MeshData;
+		}
+		catch (const std::exception& e)
+		{
+			UE_LOG("Error loading FBX from cache: %s. Cache might be corrupt or incompatible.", e.what());
+			UE_LOG("Deleting corrupt cache and forcing regeneration for '%s'.", NormalizedPath.c_str());
+
+			std::filesystem::remove(BinPathFileName);
+			if (MeshData)
+			{
+				delete MeshData;
+				MeshData = nullptr;
+			}
+			bLoadedFromCache = false;
+		}
+	}
+
+	// 4. 캐시 로드 실패 시 FBX 파싱
+	UE_LOG("Regenerating cache for FBX '%s'...", NormalizedPath.c_str());
+#endif // USE_OBJ_CACHE
+
 	// 임포트 옵션 세팅 ( 에니메이션 임포트 여부, 머티리얼 임포트 여부 등등 IO에 대한 세팅 )
 	// IOSROOT = IOSetting 객체의 기본 이름( Fbx매니저가 이름으로 관리하고 디버깅 시 매니저 내부의 객체를 이름으로 식별 가능)
 	// 하지만 매니저 자체의 기본 설정이 있기 때문에 아직 안씀
@@ -110,7 +193,7 @@ FSkeletalMeshData* UFbxLoader::LoadFbxMeshAsset(const FString& FilePath)
 	FbxImporter* Importer = FbxImporter::Create(SdkManager, "");
 
 	// 원하는 IO 세팅과 Fbx파일로 Importer initialize
-	if (!Importer->Initialize(FilePath.c_str(), -1, SdkManager->GetIOSettings()))
+	if (!Importer->Initialize(NormalizedPath.c_str(), -1, SdkManager->GetIOSettings()))
 	{
 		UE_LOG("Call to FbxImporter::Initialize() Falied\n");
 		UE_LOG("[FbxImporter::Initialize()] Error Reports: %s\n\n", Importer->GetStatus().GetErrorString());
@@ -147,7 +230,7 @@ FSkeletalMeshData* UFbxLoader::LoadFbxMeshAsset(const FString& FilePath)
 		UE_LOG("Fbx 씬 삼각화가 실패했습니다, 매시가 깨질 수 있습니다\n");
 	}
 
-	FSkeletalMeshData* MeshData = new FSkeletalMeshData(); 
+	MeshData = new FSkeletalMeshData(); 
 	// Fbx파일에 씬은 하나만 존재하고 씬에 매쉬, 라이트, 카메라 등등의 element들이 트리 구조로 저장되어 있음.
 	// 씬 Export 시에 루트 노드 말고 Child 노드만 저장됨. 노드 하나가 여러 Element를 저장할 수 있고 Element는 FbxNodeAttribute 클래스로 정의되어 있음.
 	// 루트 노드 얻어옴
@@ -204,7 +287,25 @@ FSkeletalMeshData* UFbxLoader::LoadFbxMeshAsset(const FString& FilePath)
 		MeshData->GroupInfos[MatrialIndex].IndexCount = IndexList.Num();
 		Count += IndexList.Num();
 	}
-	
+
+#ifdef USE_OBJ_CACHE
+	// 5. 캐시 저장
+	try
+	{
+		FWindowsBinWriter Writer(BinPathFileName);
+		Writer << *MeshData;
+		Writer.Close();
+
+		MeshData->CacheFilePath = BinPathFileName;
+
+		UE_LOG("Cache regeneration complete for FBX '%s'.", NormalizedPath.c_str());
+	}
+	catch (const std::exception& e)
+	{
+		UE_LOG("Failed to save FBX cache: %s", e.what());
+	}
+#endif // USE_OBJ_CACHE
+
 	return MeshData;
 }
 

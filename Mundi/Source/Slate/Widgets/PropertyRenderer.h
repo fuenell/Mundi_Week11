@@ -60,7 +60,7 @@ private:
 	static TArray<FString> CachedSkeletalMeshPaths;
 	static TArray<FString> CachedSkeletalMeshItems;
 	static TArray<FString> CachedStaticMeshPaths;
-	static TArray<const char*> CachedStaticMeshItems;
+	static TArray<FString> CachedStaticMeshItems;
 	static TArray<FString> CachedMaterialPaths;
 	static TArray<const char*> CachedMaterialItems;
 	static TArray<FString> CachedShaderPaths;

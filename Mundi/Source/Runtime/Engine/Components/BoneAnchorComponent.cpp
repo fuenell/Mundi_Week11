@@ -19,7 +19,7 @@ void UBoneAnchorComponent::UpdateAnchorFromBone()
         return;
 
     const FTransform BoneWorld = Target->GetBoneWorldTransform(BoneIndex);
-    SetWorldTransform(BoneWorld);
+    SetWorldTransform(BoneWorld) ;
 }
 
 void UBoneAnchorComponent::OnTransformUpdated()

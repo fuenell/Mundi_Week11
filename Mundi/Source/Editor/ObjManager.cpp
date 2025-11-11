@@ -238,7 +238,7 @@ void FObjManager::Preload()
 		FString Extension = Path.extension().string();
 		std::transform(Extension.begin(), Extension.end(), Extension.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-		if (Extension == ".obj")
+		if (Extension == ".obj"|| Extension == ".fbx")
 		{
 			FString PathStr = NormalizePath(Path.string());
 

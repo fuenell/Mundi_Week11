@@ -1984,7 +1984,9 @@ void SViewportWindow::HandleDropTarget()
 
 				// 마우스 위치를 월드 좌표로 변환
 				ImVec2 mousePos = ImGui::GetMousePos();
-				FVector2D screenPos(mousePos.x - Rect.Left, mousePos.y - (Rect.Top + 35.0f));
+
+				// 뷰포트 내부의 상대 좌표 계산 (ViewportPos 기준)
+				FVector2D screenPos(mousePos.x - ViewportPos.x, mousePos.y - ViewportPos.y);
 
 				// 카메라 방향 기반으로 월드 좌표 계산
 				FVector worldLocation = FVector(0, 0, 0);
@@ -1998,17 +2000,18 @@ void SViewportWindow::HandleDropTarget()
 					float viewportHeight = ViewportSize.y;
 
 					// 스크린 좌표를 NDC(Normalized Device Coordinates)로 변환
+					// NDC 범위: X [-1, 1], Y [-1, 1]
 					float ndcX = (screenPos.X / viewportWidth) * 2.0f - 1.0f;
 					float ndcY = 1.0f - (screenPos.Y / viewportHeight) * 2.0f; // Y축 반전
 
 					// 카메라 정보
 					FVector cameraPos = camera->GetActorLocation();
-					FVector cameraForward = camera->GetActorForward();
-					FVector cameraRight = camera->GetActorRight();
-					FVector cameraUp = camera->GetActorUp();
+					FVector cameraForward = camera->GetForward();
+					FVector cameraRight = camera->GetRight();
+					FVector cameraUp = camera->GetUp();
 
 					// FOV를 고려한 레이 방향 계산
-					float fov = 60.0f; // ViewportClient에서 가져올 수 있다면 더 좋음
+					float fov = 60.0f;
 					float aspectRatio = viewportWidth / viewportHeight;
 					float tanHalfFov = tan(fov * 0.5f * 3.14159f / 180.0f);
 
@@ -2021,6 +2024,11 @@ void SViewportWindow::HandleDropTarget()
 					// 카메라가 바라보는 방향(rayDir)으로 일정 거리(500 units) 앞에 소환
 					float spawnDistance = 10.0f;
 					worldLocation = cameraPos + rayDir * spawnDistance;
+
+					UE_LOG("Viewport: MousePos(%f, %f), ScreenPos(%f, %f), NDC(%f, %f)",
+						mousePos.x, mousePos.y, screenPos.X, screenPos.Y, ndcX, ndcY);
+					UE_LOG("Viewport: RayDir(%f, %f, %f), SpawnPos(%f, %f, %f)",
+						rayDir.X, rayDir.Y, rayDir.Z, worldLocation.X, worldLocation.Y, worldLocation.Z);
 				}
 
 				// 액터 생성

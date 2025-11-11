@@ -5,6 +5,7 @@
 #include <limits>
 
 #include "UEContainer.h"
+#include "Archive.h"
 
 // 혹시 다른 헤더에서 새어 들어온 매크로 방지
 #ifdef min
@@ -169,6 +170,14 @@ struct FVector2D
 		if (Len > 0.0001f)
 			return FVector2D(X / Len, Y / Len);
 		return FVector2D(0.0f, 0.0f);
+	}
+
+	// 직렬화 연산자
+	friend FArchive& operator<<(FArchive& Ar, FVector2D& V)
+	{
+		Ar.Serialize(&V.X, sizeof(float));
+		Ar.Serialize(&V.Y, sizeof(float));
+		return Ar;
 	}
 };
 
@@ -341,6 +350,15 @@ struct FVector
 		return FVector(_X, _Y, _Z);
 	}
 	void Log();
+
+	// 직렬화 연산자
+	friend FArchive& operator<<(FArchive& Ar, FVector& V)
+	{
+		Ar.Serialize(&V.X, sizeof(float));
+		Ar.Serialize(&V.Y, sizeof(float));
+		Ar.Serialize(&V.Z, sizeof(float));
+		return Ar;
+	}
 };
 
 // ─────────────────────────────
@@ -401,6 +419,16 @@ struct alignas(16) FVector4
 	static FVector4 FromDirection(const FVector& D)
 	{
 		return FVector4(D.X, D.Y, D.Z, 0.0f);
+	}
+
+	// 직렬화 연산자
+	friend FArchive& operator<<(FArchive& Ar, FVector4& V)
+	{
+		Ar.Serialize(&V.X, sizeof(float));
+		Ar.Serialize(&V.Y, sizeof(float));
+		Ar.Serialize(&V.Z, sizeof(float));
+		Ar.Serialize(&V.W, sizeof(float));
+		return Ar;
 	}
 
 };
@@ -1088,6 +1116,19 @@ struct alignas(16) FMatrix
 		float FarClip,
 		float ZoomFactor,
 		enum class ECameraProjectionMode ProjectionMode);
+
+	// 직렬화 연산자
+	friend FArchive& operator<<(FArchive& Ar, FMatrix& Matrix)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				Ar.Serialize(&Matrix.M[i][j], sizeof(float));
+			}
+		}
+		return Ar;
+	}
 };
 
 // ─────────────────────────────

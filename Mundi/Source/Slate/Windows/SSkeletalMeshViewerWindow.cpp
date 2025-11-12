@@ -643,48 +643,55 @@ void SSkeletalMeshViewerWindow::OnMouseDown(FVector2D MousePos, uint32 Button)
     {
         FVector2D LocalPos = MousePos - FVector2D(CenterRect.Left, CenterRect.Top);
 
-        // Left click: try bone picking first
-        if (Button == 0 && ActiveState->PreviewActor && ActiveState->CurrentMesh && ActiveState->Client)
+        // First, always try gizmo picking (pass to viewport)
+        ActiveState->Viewport->ProcessMouseButtonDown((int32)LocalPos.X, (int32)LocalPos.Y, (int32)Button);
+
+        // Left click: if no gizmo was picked, try bone picking
+        if (Button == 0 && ActiveState->PreviewActor && ActiveState->CurrentMesh && ActiveState->Client && ActiveState->World)
         {
-            // Get camera from viewport client
-            ACameraActor* Camera = ActiveState->Client->GetCamera();
-            if (Camera)
+            // Check if gizmo was picked by checking selection
+            UActorComponent* SelectedComp = ActiveState->World->GetSelectionManager()->GetSelectedComponent();
+
+            // Only do bone picking if gizmo wasn't selected
+            if (!SelectedComp || !Cast<UBoneAnchorComponent>(SelectedComp))
             {
-                // Get camera vectors
-                FVector CameraPos = Camera->GetActorLocation();
-                FVector CameraRight = Camera->GetRight();
-                FVector CameraUp = Camera->GetUp();
-                FVector CameraForward = Camera->GetForward();
-
-                // Calculate viewport-relative mouse position
-                FVector2D ViewportMousePos(MousePos.X - CenterRect.Left, MousePos.Y - CenterRect.Top);
-                FVector2D ViewportSize(CenterRect.GetWidth(), CenterRect.GetHeight());
-
-                // Generate ray from mouse position
-                FRay Ray = MakeRayFromViewport(
-                    Camera->GetViewMatrix(),
-                    Camera->GetProjectionMatrix(CenterRect.GetWidth() / CenterRect.GetHeight(), ActiveState->Viewport),
-                    CameraPos,
-                    CameraRight,
-                    CameraUp,
-                    CameraForward,
-                    ViewportMousePos,
-                    ViewportSize
-                );
-
-                // Try to pick a bone
-                float HitDistance;
-                int32 PickedBoneIndex = ActiveState->PreviewActor->PickBone(Ray, HitDistance);
-
-                if (PickedBoneIndex >= 0)
+                // Get camera from viewport client
+                ACameraActor* Camera = ActiveState->Client->GetCamera();
+                if (Camera)
                 {
-                    // Bone was picked
-                    ActiveState->SelectedBoneIndex = PickedBoneIndex;
-                    ActiveState->bBoneLinesDirty = true;
+                    // Get camera vectors
+                    FVector CameraPos = Camera->GetActorLocation();
+                    FVector CameraRight = Camera->GetRight();
+                    FVector CameraUp = Camera->GetUp();
+                    FVector CameraForward = Camera->GetForward();
 
-                    // Move gizmo to the selected bone
-                    if (ActiveState->World)
+                    // Calculate viewport-relative mouse position
+                    FVector2D ViewportMousePos(MousePos.X - CenterRect.Left, MousePos.Y - CenterRect.Top);
+                    FVector2D ViewportSize(CenterRect.GetWidth(), CenterRect.GetHeight());
+
+                    // Generate ray from mouse position
+                    FRay Ray = MakeRayFromViewport(
+                        Camera->GetViewMatrix(),
+                        Camera->GetProjectionMatrix(CenterRect.GetWidth() / CenterRect.GetHeight(), ActiveState->Viewport),
+                        CameraPos,
+                        CameraRight,
+                        CameraUp,
+                        CameraForward,
+                        ViewportMousePos,
+                        ViewportSize
+                    );
+
+                    // Try to pick a bone
+                    float HitDistance;
+                    int32 PickedBoneIndex = ActiveState->PreviewActor->PickBone(Ray, HitDistance);
+
+                    if (PickedBoneIndex >= 0)
                     {
+                        // Bone was picked
+                        ActiveState->SelectedBoneIndex = PickedBoneIndex;
+                        ActiveState->bBoneLinesDirty = true;
+
+                        // Move gizmo to the selected bone
                         ActiveState->PreviewActor->RepositionAnchorToBone(PickedBoneIndex);
                         if (USceneComponent* Anchor = ActiveState->PreviewActor->GetBoneGizmoAnchor())
                         {
@@ -692,16 +699,13 @@ void SSkeletalMeshViewerWindow::OnMouseDown(FVector2D MousePos, uint32 Button)
                             ActiveState->World->GetSelectionManager()->SelectComponent(Anchor);
                         }
                     }
-                }
-                else
-                {
-                    // No bone was picked - clear selection
-                    ActiveState->SelectedBoneIndex = -1;
-                    ActiveState->bBoneLinesDirty = true;
-
-                    // Hide gizmo and clear selection
-                    if (ActiveState->World)
+                    else
                     {
+                        // No bone was picked - clear selection
+                        ActiveState->SelectedBoneIndex = -1;
+                        ActiveState->bBoneLinesDirty = true;
+
+                        // Hide gizmo and clear selection
                         if (UBoneAnchorComponent* Anchor = ActiveState->PreviewActor->GetBoneGizmoAnchor())
                         {
                             Anchor->SetVisibility(false);
@@ -710,14 +714,8 @@ void SSkeletalMeshViewerWindow::OnMouseDown(FVector2D MousePos, uint32 Button)
                         ActiveState->World->GetSelectionManager()->ClearSelection();
                     }
                 }
-
-                // Don't pass to viewport - we handle all clicks in bone picking mode
-                return;
             }
         }
-
-        // Fall through to normal viewport processing only if not in bone picking mode
-        ActiveState->Viewport->ProcessMouseButtonDown((int32)LocalPos.X, (int32)LocalPos.Y, (int32)Button);
     }
 }
 

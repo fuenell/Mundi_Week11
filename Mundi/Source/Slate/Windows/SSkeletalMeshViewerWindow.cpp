@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "SSkeletalMeshViewerWindow.h"
 #include "FViewport.h"
 #include "FViewportClient.h"
@@ -7,6 +7,7 @@
 #include "Source/Runtime/Engine/GameFramework/SkeletalMeshActor.h"
 #include "Source/Runtime/Engine/Components/LineComponent.h"
 #include "SelectionManager.h"
+#include"USlateManager.h"
 #include "BoneAnchorComponent.h"
 
 SSkeletalMeshViewerWindow::SSkeletalMeshViewerWindow()
@@ -44,10 +45,110 @@ bool SSkeletalMeshViewerWindow::Initialize(float StartX, float StartY, float Wid
     return true;
 }
 
+void SSkeletalMeshViewerWindow::ApplyModernStyle()
+{
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImVec4* colors = style.Colors;
+
+    // Modern dark theme colors
+    colors[ImGuiCol_Text]                   = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
+    colors[ImGuiCol_TextDisabled]           = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+    colors[ImGuiCol_WindowBg]               = ImVec4(0.13f, 0.14f, 0.15f, 0.95f);
+    colors[ImGuiCol_ChildBg]                = ImVec4(0.16f, 0.17f, 0.18f, 0.95f);
+    colors[ImGuiCol_PopupBg]                = ImVec4(0.11f, 0.11f, 0.14f, 0.94f);
+    colors[ImGuiCol_Border]                 = ImVec4(0.25f, 0.25f, 0.27f, 0.50f);
+    colors[ImGuiCol_BorderShadow]           = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    colors[ImGuiCol_FrameBg]                = ImVec4(0.20f, 0.21f, 0.22f, 0.54f);
+    colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.28f, 0.56f, 0.90f, 0.40f);
+    colors[ImGuiCol_FrameBgActive]          = ImVec4(0.28f, 0.56f, 0.90f, 0.67f);
+    colors[ImGuiCol_TitleBg]                = ImVec4(0.10f, 0.10f, 0.11f, 1.00f);
+    colors[ImGuiCol_TitleBgActive]          = ImVec4(0.15f, 0.15f, 0.16f, 1.00f);
+    colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.10f, 0.10f, 0.11f, 0.51f);
+    colors[ImGuiCol_MenuBarBg]              = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+    colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
+    colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+    colors[ImGuiCol_ScrollbarGrabHovered]   = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+    colors[ImGuiCol_ScrollbarGrabActive]    = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
+    colors[ImGuiCol_CheckMark]              = ImVec4(0.28f, 0.56f, 0.90f, 1.00f);
+    colors[ImGuiCol_SliderGrab]             = ImVec4(0.28f, 0.56f, 0.90f, 1.00f);
+    colors[ImGuiCol_SliderGrabActive]       = ImVec4(0.37f, 0.61f, 0.93f, 1.00f);
+    colors[ImGuiCol_Button]                 = ImVec4(0.20f, 0.25f, 0.30f, 1.00f);
+    colors[ImGuiCol_ButtonHovered]          = ImVec4(0.28f, 0.56f, 0.90f, 1.00f);
+    colors[ImGuiCol_ButtonActive]           = ImVec4(0.26f, 0.54f, 0.86f, 1.00f);
+    colors[ImGuiCol_Header]                 = ImVec4(0.20f, 0.25f, 0.30f, 0.55f);
+    colors[ImGuiCol_HeaderHovered]          = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+    colors[ImGuiCol_HeaderActive]           = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    colors[ImGuiCol_Separator]              = ImVec4(0.28f, 0.28f, 0.29f, 0.50f);
+    colors[ImGuiCol_SeparatorHovered]       = ImVec4(0.28f, 0.56f, 0.90f, 0.78f);
+    colors[ImGuiCol_SeparatorActive]        = ImVec4(0.28f, 0.56f, 0.90f, 1.00f);
+    colors[ImGuiCol_ResizeGrip]             = ImVec4(0.28f, 0.56f, 0.90f, 0.20f);
+    colors[ImGuiCol_ResizeGripHovered]      = ImVec4(0.28f, 0.56f, 0.90f, 0.67f);
+    colors[ImGuiCol_ResizeGripActive]       = ImVec4(0.28f, 0.56f, 0.90f, 0.95f);
+    colors[ImGuiCol_Tab]                    = ImVec4(0.18f, 0.20f, 0.25f, 0.86f);
+    colors[ImGuiCol_TabHovered]             = ImVec4(0.28f, 0.56f, 0.90f, 0.80f);
+    colors[ImGuiCol_TabActive]              = ImVec4(0.23f, 0.40f, 0.63f, 1.00f);
+    colors[ImGuiCol_TabUnfocused]           = ImVec4(0.15f, 0.15f, 0.18f, 1.00f);
+    colors[ImGuiCol_TabUnfocusedActive]     = ImVec4(0.20f, 0.25f, 0.35f, 1.00f);
+    colors[ImGuiCol_PlotLines]              = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+    colors[ImGuiCol_PlotLinesHovered]       = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+    colors[ImGuiCol_PlotHistogram]          = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+    colors[ImGuiCol_PlotHistogramHovered]   = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+    colors[ImGuiCol_TableHeaderBg]          = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
+    colors[ImGuiCol_TableBorderStrong]      = ImVec4(0.31f, 0.31f, 0.35f, 1.00f);
+    colors[ImGuiCol_TableBorderLight]       = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);
+    colors[ImGuiCol_TableRowBg]             = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    colors[ImGuiCol_TableRowBgAlt]          = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
+    colors[ImGuiCol_TextSelectedBg]         = ImVec4(0.28f, 0.56f, 0.90f, 0.35f);
+    colors[ImGuiCol_DragDropTarget]         = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+    colors[ImGuiCol_NavHighlight]           = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    colors[ImGuiCol_NavWindowingHighlight]  = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+    colors[ImGuiCol_NavWindowingDimBg]      = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+    colors[ImGuiCol_ModalWindowDimBg]       = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+
+    // Rounded corners and padding
+    style.WindowPadding      = ImVec2(12, 12);
+    style.FramePadding       = ImVec2(8, 4);
+    style.ItemSpacing        = ImVec2(8, 6);
+    style.ItemInnerSpacing   = ImVec2(6, 4);
+    style.IndentSpacing      = 22.0f;
+    style.ScrollbarSize      = 16.0f;
+    style.GrabMinSize        = 8.0f;
+
+    // Rounded corners
+    style.WindowRounding     = 6.0f;
+    style.ChildRounding      = 6.0f;
+    style.FrameRounding      = 4.0f;
+    style.PopupRounding      = 4.0f;
+    style.ScrollbarRounding  = 9.0f;
+    style.GrabRounding       = 3.0f;
+    style.TabRounding        = 4.0f;
+
+    // Borders
+    style.WindowBorderSize   = 1.0f;
+    style.ChildBorderSize    = 1.0f;
+    style.PopupBorderSize    = 1.0f;
+    style.FrameBorderSize    = 0.0f;
+    style.TabBorderSize      = 0.0f;
+}
+
 void SSkeletalMeshViewerWindow::OnRender()
 {
-    // Parent detachable window (movable, top-level) with transparent background so 3D shows through
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground;
+    // If window is closed, don't render
+    if (!bIsOpen)
+    {
+        return;
+    }
+
+    // Apply modern style on first render
+    static bool bStyleApplied = false;
+    if (!bStyleApplied)
+    {
+        ApplyModernStyle();
+        bStyleApplied = true;
+    }
+
+    // Parent detachable window (movable, top-level) with solid background
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoSavedSettings;
 
     if (!bInitialPlacementDone)
     {
@@ -61,7 +162,7 @@ void SSkeletalMeshViewerWindow::OnRender()
         ImGui::SetNextWindowFocus();
     }
     bool bViewerVisible = false;
-    if (ImGui::Begin("Skeletal Mesh Viewer", nullptr, flags))
+    if (ImGui::Begin("Skeletal Mesh Viewer", &bIsOpen, flags))
     {
         bViewerVisible = true;
         // Render tab bar and switch active state
@@ -102,19 +203,48 @@ void SSkeletalMeshViewerWindow::OnRender()
         float rightWidth = totalWidth * RightPanelRatio;
         float centerWidth = totalWidth - leftWidth - rightWidth;
 
-        // Left panel
-        ImGui::BeginChild("LeftPanel", ImVec2(leftWidth, totalHeight), true);
+        // Remove spacing between panels
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+
+        // Left panel - Asset Browser & Bone Hierarchy
+        ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
+        ImGui::BeginChild("LeftPanel", ImVec2(leftWidth, totalHeight), true, ImGuiWindowFlags_NoScrollbar);
+        ImGui::PopStyleVar();
+
         if (ActiveState)
         {
-            ImGui::Text("Load Skeletal Mesh");
-            ImGui::Separator();
+            // Asset Browser Section
+            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.25f, 0.35f, 0.50f, 0.8f));
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4);
+            ImGui::Indent(8.0f);
+            ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]);
+            ImGui::Text("Asset Browser");
+            ImGui::PopFont();
+            ImGui::Unindent(8.0f);
+            ImGui::PopStyleColor();
 
-            // Path input + browse
-            ImGui::PushItemWidth(-100.0f);
-            ImGui::InputTextWithHint("##MeshPath", "Data/Model/YourMesh.fbx", ActiveState->MeshPathBuffer, sizeof(ActiveState->MeshPathBuffer));
+            ImGui::Spacing();
+            ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.35f, 0.45f, 0.60f, 0.7f));
+            ImGui::Separator();
+            ImGui::PopStyleColor();
+            ImGui::Spacing();
+
+            // Mesh path section
+            ImGui::BeginGroup();
+            ImGui::Text("Mesh Path:");
+            ImGui::PushItemWidth(-1.0f);
+            ImGui::InputTextWithHint("##MeshPath", "Browse for FBX file...", ActiveState->MeshPathBuffer, sizeof(ActiveState->MeshPathBuffer));
             ImGui::PopItemWidth();
-            ImGui::SameLine();
-            if (ImGui::Button("Browse"))
+
+            ImGui::Spacing();
+
+            // Buttons
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.28f, 0.40f, 0.55f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.35f, 0.50f, 0.70f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.25f, 0.35f, 0.50f, 1.0f));
+
+            float buttonWidth = (leftWidth - 24.0f) * 0.5f - 4.0f;
+            if (ImGui::Button("Browse...", ImVec2(buttonWidth, 32)))
             {
                 auto widePath = FPlatformProcess::OpenLoadFileDialog(UTF8ToWide(GDataDir), L"fbx", L"FBX Files");
                 if (!widePath.empty())
@@ -124,10 +254,12 @@ void SSkeletalMeshViewerWindow::OnRender()
                 }
             }
 
-            // [메시 로드 UI]
-            // - 입력된 경로(또는 Browse로 선택된 경로)를 사용해 스켈레탈 메시를 로드하고
-            //   프리뷰 액터에 바로 세팅합니다. 이후 본 오버레이는 다음 프레임에 재구성됩니다.
-            if (ImGui::Button("Load FBX"))
+            ImGui::SameLine();
+
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.20f, 0.60f, 0.40f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.70f, 0.50f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.15f, 0.50f, 0.30f, 1.0f));
+            if (ImGui::Button("Load FBX", ImVec2(buttonWidth, 32)))
             {
                 FString Path = ActiveState->MeshPathBuffer;
                 if (!Path.empty())
@@ -137,20 +269,168 @@ void SSkeletalMeshViewerWindow::OnRender()
                     {
                         ActiveState->PreviewActor->SetSkeletalMesh(Path);
                         ActiveState->CurrentMesh = Mesh;
-                        // 메시 표시에 대한 체크박스 상태와 동기화
                         if (auto* Skeletal = ActiveState->PreviewActor->GetSkeletalMeshComponent())
                         {
                             Skeletal->SetVisibility(ActiveState->bShowMesh);
                         }
-                        // 새 메시 로드시 본 라인 재구축 요청
                         ActiveState->bBoneLinesDirty = true;
                         if (auto* LineComp = ActiveState->PreviewActor->GetBoneLineComponent())
                         {
-                            // 기존 선 데이터를 지우고(화면 잔상 방지), 현재 토글 상태에 맞춰 가시성을 동기화합니다.
                             LineComp->ClearLines();
                             LineComp->SetLineVisible(ActiveState->bShowBones);
                         }
                     }
+                }
+            }
+            ImGui::PopStyleColor(6);
+            ImGui::EndGroup();
+
+            ImGui::Spacing();
+            ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.35f, 0.45f, 0.60f, 0.7f));
+            ImGui::Separator();
+            ImGui::PopStyleColor();
+            ImGui::Spacing();
+
+            // Display Options
+            ImGui::BeginGroup();
+            ImGui::Text("Display Options:");
+            ImGui::Spacing();
+
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.25f, 0.30f, 0.35f, 0.8f));
+            ImGui::PushStyleColor(ImGuiCol_CheckMark, ImVec4(0.40f, 0.70f, 1.00f, 1.0f));
+
+            if (ImGui::Checkbox("Show Mesh", &ActiveState->bShowMesh))
+            {
+                if (ActiveState->PreviewActor && ActiveState->PreviewActor->GetSkeletalMeshComponent())
+                {
+                    ActiveState->PreviewActor->GetSkeletalMeshComponent()->SetVisibility(ActiveState->bShowMesh);
+                }
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Checkbox("Show Bones", &ActiveState->bShowBones))
+            {
+                if (ActiveState->PreviewActor && ActiveState->PreviewActor->GetBoneLineComponent())
+                {
+                    ActiveState->PreviewActor->GetBoneLineComponent()->SetLineVisible(ActiveState->bShowBones);
+                }
+                if (ActiveState->bShowBones)
+                {
+                    ActiveState->bBoneLinesDirty = true;
+                }
+            }
+            ImGui::PopStyleColor(2);
+            ImGui::EndGroup();
+
+            ImGui::Spacing();
+            ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.35f, 0.45f, 0.60f, 0.7f));
+            ImGui::Separator();
+            ImGui::PopStyleColor();
+            ImGui::Spacing();
+
+            // Bone Hierarchy Section
+            ImGui::Text("Bone Hierarchy:");
+            ImGui::Spacing();
+
+            if (!ActiveState->CurrentMesh)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+                ImGui::TextWrapped("No skeletal mesh loaded.");
+                ImGui::PopStyleColor();
+            }
+            else
+            {
+                const FSkeleton* Skeleton = ActiveState->CurrentMesh->GetSkeleton();
+                if (!Skeleton || Skeleton->Bones.IsEmpty())
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+                    ImGui::TextWrapped("This mesh has no skeleton data.");
+                    ImGui::PopStyleColor();
+                }
+                else
+                {
+                    // Scrollable tree view
+                    ImGui::BeginChild("BoneTreeView", ImVec2(0, 0), true);
+                    const TArray<FBone>& Bones = Skeleton->Bones;
+                    TArray<TArray<int32>> Children;
+                    Children.resize(Bones.size());
+                    for (int32 i = 0; i < Bones.size(); ++i)
+                    {
+                        int32 Parent = Bones[i].ParentIndex;
+                        if (Parent >= 0 && Parent < Bones.size())
+                        {
+                            Children[Parent].Add(i);
+                        }
+                    }
+
+                    std::function<void(int32)> DrawNode = [&](int32 Index)
+                    {
+                        const bool bLeaf = Children[Index].IsEmpty();
+                        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth;
+                        if (bLeaf)
+                        {
+                            flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                        }
+                        if (ActiveState->SelectedBoneIndex == Index)
+                        {
+                            flags |= ImGuiTreeNodeFlags_Selected;
+                        }
+
+                        ImGui::PushID(Index);
+                        const char* Label = Bones[Index].Name.c_str();
+
+                        if (ActiveState->SelectedBoneIndex == Index)
+                        {
+                            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.35f, 0.55f, 0.85f, 0.8f));
+                            ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.40f, 0.60f, 0.90f, 1.0f));
+                            ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.30f, 0.50f, 0.80f, 1.0f));
+                        }
+
+                        bool open = ImGui::TreeNodeEx((void*)(intptr_t)Index, flags, "%s", Label ? Label : "<noname>");
+
+                        if (ActiveState->SelectedBoneIndex == Index)
+                        {
+                            ImGui::PopStyleColor(3);
+                        }
+
+                        if (ImGui::IsItemClicked())
+                        {
+                            if (ActiveState->SelectedBoneIndex != Index)
+                            {
+                                ActiveState->SelectedBoneIndex = Index;
+                                ActiveState->bBoneLinesDirty = true;
+
+                                if (ActiveState->PreviewActor && ActiveState->World)
+                                {
+                                    ActiveState->PreviewActor->RepositionAnchorToBone(Index);
+                                    if (USceneComponent* Anchor = ActiveState->PreviewActor->GetBoneGizmoAnchor())
+                                    {
+                                        ActiveState->World->GetSelectionManager()->SelectActor(ActiveState->PreviewActor);
+                                        ActiveState->World->GetSelectionManager()->SelectComponent(Anchor);
+                                    }
+                                }
+                            }
+                        }
+                        if (!bLeaf && open)
+                        {
+                            for (int32 Child : Children[Index])
+                            {
+                                DrawNode(Child);
+                            }
+                            ImGui::TreePop();
+                        }
+                        ImGui::PopID();
+                    };
+
+                    for (int32 i = 0; i < Bones.size(); ++i)
+                    {
+                        if (Bones[i].ParentIndex < 0)
+                        {
+                            DrawNode(i);
+                        }
+                    }
+
+                    ImGui::EndChild();
                 }
             }
         }
@@ -162,10 +442,10 @@ void SSkeletalMeshViewerWindow::OnRender()
         }
         ImGui::EndChild();
 
-        ImGui::SameLine();
+        ImGui::SameLine(0, 0); // No spacing between panels
 
-        // Center panel (viewport area) — draw with no background so viewport remains visible
-        ImGui::BeginChild("SkeletalMeshViewport", ImVec2(centerWidth, totalHeight), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
+        // Center panel (viewport area) — draw with border to see the viewport area
+        ImGui::BeginChild("SkeletalMeshViewport", ImVec2(centerWidth, totalHeight), true, ImGuiWindowFlags_NoScrollbar);
         ImVec2 childPos = ImGui::GetWindowPos();
         ImVec2 childSize = ImGui::GetWindowSize();
         ImVec2 rectMin = childPos;
@@ -173,39 +453,27 @@ void SSkeletalMeshViewerWindow::OnRender()
         CenterRect.Left = rectMin.x; CenterRect.Top = rectMin.y; CenterRect.Right = rectMax.x; CenterRect.Bottom = rectMax.y; CenterRect.UpdateMinMax();
         ImGui::EndChild();
 
-        ImGui::SameLine();
+        ImGui::SameLine(0, 0); // No spacing between panels
 
-        // Right panel
+        // Right panel - Bone Properties
+        ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
         ImGui::BeginChild("RightPanel", ImVec2(rightWidth, totalHeight), true);
-        ImGui::Text("Skeleton Tree");
-        
-        ImGui::Separator();
-        
-        if (ImGui::Checkbox("Show Mesh", &ActiveState->bShowMesh))
-        {
-            if (ActiveState->PreviewActor && ActiveState->PreviewActor->GetSkeletalMeshComponent())
-            {
-                ActiveState->PreviewActor->GetSkeletalMeshComponent()->SetVisibility(ActiveState->bShowMesh);
-            }
-        }
-        
-        ImGui::SameLine();
-        // [본 표시 토글]
-        // - 라인 컴포넌트의 Visibility를 직접 토글하여 불필요한 드로우를 줄입니다.
-        if (ImGui::Checkbox("Show Bones", &ActiveState->bShowBones))
-        {
-            if (ActiveState->PreviewActor && ActiveState->PreviewActor->GetBoneLineComponent())
-            {
-                ActiveState->PreviewActor->GetBoneLineComponent()->SetLineVisible(ActiveState->bShowBones);
-            }
-            if (ActiveState->bShowBones)
-            {
-                ActiveState->bBoneLinesDirty = true; // 표시 켜질 때 재구축
-            }
-        }
+        ImGui::PopStyleVar();
 
+        // Panel header
+        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.25f, 0.35f, 0.50f, 0.8f));
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4);
+        ImGui::Indent(8.0f);
+        ImGui::Text("Bone Properties");
+        ImGui::Unindent(8.0f);
+        ImGui::PopStyleColor();
+
+        ImGui::Spacing();
+        ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.35f, 0.45f, 0.60f, 0.7f));
         ImGui::Separator();
-        
+        ImGui::PopStyleColor();
+        ImGui::Spacing();
+
         // === 선택된 본의 트랜스폼 편집 UI ===
         if (ActiveState->SelectedBoneIndex >= 0 && ActiveState->CurrentMesh)
         {
@@ -213,171 +481,117 @@ void SSkeletalMeshViewerWindow::OnRender()
             if (Skeleton && ActiveState->SelectedBoneIndex < Skeleton->Bones.size())
             {
                 const FBone& SelectedBone = Skeleton->Bones[ActiveState->SelectedBoneIndex];
-                
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.85f, 0.3f, 1.0f));
-                ImGui::Text("Selected Bone: %s", SelectedBone.Name.c_str());
+
+                // Selected bone header with icon-like prefix
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.90f, 0.40f, 1.0f));
+                ImGui::Text("> Selected Bone");
                 ImGui::PopStyleColor();
-                
+
+                ImGui::Spacing();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.90f, 0.95f, 1.00f, 1.0f));
+                ImGui::TextWrapped("%s", SelectedBone.Name.c_str());
+                ImGui::PopStyleColor();
+
+                ImGui::Spacing();
+                ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.45f, 0.55f, 0.70f, 0.8f));
                 ImGui::Separator();
-                
+                ImGui::PopStyleColor();
+
                 // 본의 현재 트랜스폼 가져오기 (편집 중이 아닐 때만)
                 if (!ActiveState->bBoneRotationEditing)
                 {
                     UpdateBoneTransformFromSkeleton(ActiveState);
                 }
-                
+
+                ImGui::Spacing();
+
                 // Location 편집
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
                 ImGui::Text("Location");
+                ImGui::PopStyleColor();
+
                 ImGui::PushItemWidth(-1);
+                ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.28f, 0.20f, 0.20f, 0.6f));
                 bool bLocationChanged = false;
                 bLocationChanged |= ImGui::DragFloat("##BoneLocX", &ActiveState->EditBoneLocation.X, 0.1f, 0.0f, 0.0f, "X: %.3f");
                 bLocationChanged |= ImGui::DragFloat("##BoneLocY", &ActiveState->EditBoneLocation.Y, 0.1f, 0.0f, 0.0f, "Y: %.3f");
                 bLocationChanged |= ImGui::DragFloat("##BoneLocZ", &ActiveState->EditBoneLocation.Z, 0.1f, 0.0f, 0.0f, "Z: %.3f");
+                ImGui::PopStyleColor();
                 ImGui::PopItemWidth();
-                
+
                 if (bLocationChanged)
                 {
                     ApplyBoneTransform(ActiveState);
                     ActiveState->bBoneLinesDirty = true;
                 }
-                
+
                 ImGui::Spacing();
-                
+
                 // Rotation 편집
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 1.0f, 0.5f, 1.0f));
                 ImGui::Text("Rotation");
+                ImGui::PopStyleColor();
+
                 ImGui::PushItemWidth(-1);
+                ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.20f, 0.28f, 0.20f, 0.6f));
                 bool bRotationChanged = false;
-                
+
                 if (ImGui::IsAnyItemActive())
                 {
                     ActiveState->bBoneRotationEditing = true;
                 }
-                
+
                 bRotationChanged |= ImGui::DragFloat("##BoneRotX", &ActiveState->EditBoneRotation.X, 0.5f, -180.0f, 180.0f, "X: %.2f°");
                 bRotationChanged |= ImGui::DragFloat("##BoneRotY", &ActiveState->EditBoneRotation.Y, 0.5f, -180.0f, 180.0f, "Y: %.2f°");
                 bRotationChanged |= ImGui::DragFloat("##BoneRotZ", &ActiveState->EditBoneRotation.Z, 0.5f, -180.0f, 180.0f, "Z: %.2f°");
+                ImGui::PopStyleColor();
                 ImGui::PopItemWidth();
-                
+
                 if (!ImGui::IsAnyItemActive())
                 {
                     ActiveState->bBoneRotationEditing = false;
                 }
-                
+
                 if (bRotationChanged)
                 {
                     ApplyBoneTransform(ActiveState);
                     ActiveState->bBoneLinesDirty = true;
                 }
-                
+
                 ImGui::Spacing();
-                
+
                 // Scale 편집
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 1.0f, 1.0f));
                 ImGui::Text("Scale");
+                ImGui::PopStyleColor();
+
                 ImGui::PushItemWidth(-1);
+                ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.20f, 0.20f, 0.28f, 0.6f));
                 bool bScaleChanged = false;
                 bScaleChanged |= ImGui::DragFloat("##BoneScaleX", &ActiveState->EditBoneScale.X, 0.01f, 0.001f, 100.0f, "X: %.3f");
                 bScaleChanged |= ImGui::DragFloat("##BoneScaleY", &ActiveState->EditBoneScale.Y, 0.01f, 0.001f, 100.0f, "Y: %.3f");
                 bScaleChanged |= ImGui::DragFloat("##BoneScaleZ", &ActiveState->EditBoneScale.Z, 0.01f, 0.001f, 100.0f, "Z: %.3f");
+                ImGui::PopStyleColor();
                 ImGui::PopItemWidth();
-                
+
                 if (bScaleChanged)
                 {
                     ApplyBoneTransform(ActiveState);
                     ActiveState->bBoneLinesDirty = true;
                 }
-                
-                ImGui::Spacing();
-                ImGui::Separator();
             }
-        }
-
-        ImGui::Separator();
-        
-        if (!ActiveState->CurrentMesh)
-        {
-            ImGui::TextDisabled("No skeletal mesh loaded");
         }
         else
         {
-            const FSkeleton* Skeleton = ActiveState->CurrentMesh->GetSkeleton();
-            if (!Skeleton || Skeleton->Bones.IsEmpty())
-            {
-                ImGui::TextDisabled("Mesh has no bones");
-            }
-            else
-            {
-                const TArray<FBone>& Bones = Skeleton->Bones;
-                // Build children adjacency per frame (cheap for typical skeleton sizes)
-                TArray<TArray<int32>> Children;
-                Children.resize(Bones.size());
-                for (int32 i = 0; i < Bones.size(); ++i)
-                {
-                    int32 Parent = Bones[i].ParentIndex;
-                    if (Parent >= 0 && Parent < Bones.size())
-                    {
-                        Children[Parent].Add(i);
-                    }
-                }
-
-                // Recursive lambda to draw a node and its children
-                std::function<void(int32)> DrawNode = [&](int32 Index)
-                {
-                    const bool bLeaf = Children[Index].IsEmpty();
-                    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth;
-                    if (bLeaf)
-                    {
-                        flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-                    }
-                    if (ActiveState->SelectedBoneIndex == Index)
-                    {
-                        flags |= ImGuiTreeNodeFlags_Selected;
-                    }
-
-                    ImGui::PushID(Index);
-                    const char* Label = Bones[Index].Name.c_str();
-                    bool open = ImGui::TreeNodeEx((void*)(intptr_t)Index, flags, "%s", Label ? Label : "<noname>");
-                    if (ImGui::IsItemClicked())
-                    {
-                        if (ActiveState->SelectedBoneIndex != Index)
-                        {
-                            ActiveState->SelectedBoneIndex = Index;
-                            ActiveState->bBoneLinesDirty = true; // 색상 갱신 필요
-
-                            // Move gizmo to the selected bone and update selection
-                            if (ActiveState->PreviewActor && ActiveState->World)
-                            {
-                                ActiveState->PreviewActor->RepositionAnchorToBone(Index);
-                                if (USceneComponent* Anchor = ActiveState->PreviewActor->GetBoneGizmoAnchor())
-                                {
-                                    // Ensure actor is selected so the component selection sticks
-                                    ActiveState->World->GetSelectionManager()->SelectActor(ActiveState->PreviewActor);
-                                    ActiveState->World->GetSelectionManager()->SelectComponent(Anchor);
-                                }
-                            }
-                        }
-                    }
-                    if (!bLeaf && open)
-                    {
-                        for (int32 Child : Children[Index])
-                        {
-                            DrawNode(Child);
-                        }
-                        ImGui::TreePop();
-                    }
-                    ImGui::PopID();
-                };
-
-                // Draw all roots (ParentIndex == -1)
-                for (int32 i = 0; i < Bones.size(); ++i)
-                {
-                    if (Bones[i].ParentIndex < 0)
-                    {
-                        DrawNode(i);
-                    }
-                }
-            }
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+            ImGui::TextWrapped("Select a bone from the hierarchy to edit its transform properties.");
+            ImGui::PopStyleColor();
         }
-        ImGui::EndChild();
+
+        ImGui::EndChild(); // RightPanel
+
+        // Pop the ItemSpacing style
+        ImGui::PopStyleVar();
     }
     ImGui::End();
 
@@ -386,6 +600,12 @@ void SSkeletalMeshViewerWindow::OnRender()
     {
         CenterRect = FRect(0, 0, 0, 0);
         CenterRect.UpdateMinMax();
+    }
+
+    // If window was closed via X button, notify the manager to clean up
+    if (!bIsOpen)
+    {
+        USlateManager::GetInstance().CloseSkeletalMeshViewer();
     }
 
     bRequestFocus = false;

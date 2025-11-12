@@ -59,7 +59,15 @@ private:
     // Request focus on first open
     bool bRequestFocus = false;
 
+    // Window open state
+    bool bIsOpen = true;
+
+public:
+    bool IsOpen() const { return bIsOpen; }
+    void Close() { bIsOpen = false; }
+
 private:
     void UpdateBoneTransformFromSkeleton(ViewerState* State);
     void ApplyBoneTransform(ViewerState* State);
+    void ApplyModernStyle();
 };

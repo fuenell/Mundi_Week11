@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "SkeletalMeshActor.h"
+#include "World.h"
 
 ASkeletalMeshActor::ASkeletalMeshActor()
 {
@@ -9,26 +10,6 @@ ASkeletalMeshActor::ASkeletalMeshActor()
     // - 프리뷰 장면에서 메시를 표시하는 실제 렌더링 컴포넌트
     SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("SkeletalMeshComponent");
     RootComponent = SkeletalMeshComponent;
-
-    // 뼈 라인 오버레이용 컴포넌트 생성 후 루트에 부착
-    // - 이 컴포넌트는 "라인 데이터"(시작/끝점, 색상)를 모아 렌더러에 배치합니다.
-    // - 액터의 로컬 공간으로 선을 추가하면, 액터의 트랜스폼에 따라 선도 함께 변환됩니다.
-    BoneLineComponent = CreateDefaultSubobject<ULineComponent>("BoneLines");
-    if (BoneLineComponent && RootComponent)
-    {
-        // 부모 트랜스폼을 유지하면서(=로컬 좌표 유지) 루트에 붙입니다.
-        BoneLineComponent->SetupAttachment(RootComponent, EAttachmentRule::KeepRelative);
-        // Render skeleton overlay always on top of geometry
-        BoneLineComponent->SetAlwaysOnTop(true);
-    }
-
-    // Hidden anchor for gizmo placement on selected bone
-    BoneAnchor = CreateDefaultSubobject<UBoneAnchorComponent>("BoneAnchor");
-    if (BoneAnchor && RootComponent)
-    {
-        BoneAnchor->SetupAttachment(RootComponent, EAttachmentRule::KeepRelative);
-        BoneAnchor->SetVisibility(false); // not rendered; used only for selection/gizmo
-    }
 }
 
 ASkeletalMeshActor::~ASkeletalMeshActor() = default;
@@ -61,8 +42,54 @@ void ASkeletalMeshActor::SetSkeletalMesh(const FString& PathFileName)
     }
 }
 
+void ASkeletalMeshActor::EnsureViewerComponents()
+{
+    // Only create viewer components if they don't exist and we're in a preview world
+    if (BoneLineComponent && BoneAnchor)
+    {
+        return;
+    }
+
+    UWorld* World = GetWorld();
+    if (!World || !World->IsPreviewWorld())
+    {
+        return;
+    }
+
+    // Create bone line component for skeleton visualization
+    if (!BoneLineComponent)
+    {
+        BoneLineComponent = NewObject<ULineComponent>();
+        if (BoneLineComponent && RootComponent)
+        {
+            BoneLineComponent->ObjectName = "BoneLines";
+            BoneLineComponent->SetupAttachment(RootComponent, EAttachmentRule::KeepRelative);
+            BoneLineComponent->SetAlwaysOnTop(true);
+            AddOwnedComponent(BoneLineComponent);
+            BoneLineComponent->RegisterComponent(World);
+        }
+    }
+
+    // Create bone anchor for gizmo placement
+    if (!BoneAnchor)
+    {
+        BoneAnchor = NewObject<UBoneAnchorComponent>();
+        if (BoneAnchor && RootComponent)
+        {
+            BoneAnchor->ObjectName = "BoneAnchor";
+            BoneAnchor->SetupAttachment(RootComponent, EAttachmentRule::KeepRelative);
+            BoneAnchor->SetVisibility(false);
+            AddOwnedComponent(BoneAnchor);
+            BoneAnchor->RegisterComponent(World);
+        }
+    }
+}
+
 void ASkeletalMeshActor::RebuildBoneLines(int32 SelectedBoneIndex)
 {
+    // Ensure viewer components exist before using them
+    EnsureViewerComponents();
+
     if (!BoneLineComponent || !SkeletalMeshComponent)
     {
         return;
@@ -112,6 +139,9 @@ void ASkeletalMeshActor::RebuildBoneLines(int32 SelectedBoneIndex)
 
 void ASkeletalMeshActor::RepositionAnchorToBone(int32 BoneIndex)
 {
+    // Ensure viewer components exist before using them
+    EnsureViewerComponents();
+
     if (!SkeletalMeshComponent || !BoneAnchor)
     {
         return;
@@ -145,6 +175,8 @@ void ASkeletalMeshActor::RepositionAnchorToBone(int32 BoneIndex)
 void ASkeletalMeshActor::DuplicateSubObjects()
 {
     Super::DuplicateSubObjects();
+
+    // Find skeletal mesh component (always exists)
     for (UActorComponent* Component : OwnedComponents)
     {
         if (auto* Comp = Cast<USkeletalMeshComponent>(Component))
@@ -153,12 +185,17 @@ void ASkeletalMeshActor::DuplicateSubObjects()
             break;
         }
     }
+
+    // Find viewer components (may not exist if not in preview world)
     for (UActorComponent* Component : OwnedComponents)
     {
         if (auto* Comp = Cast<ULineComponent>(Component))
         {
             BoneLineComponent = Comp;
-            break;
+        }
+        else if (auto* Comp = Cast<UBoneAnchorComponent>(Component))
+        {
+            BoneAnchor = Comp;
         }
     }
 }

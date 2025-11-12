@@ -30,7 +30,7 @@ ViewerState* SkeletalViewerBootstrap::CreateViewerState(const char* Name, UWorld
     Client->SetWorld(State->World);
     Client->SetViewportType(EViewportType::Perspective);
     Client->SetViewMode(EViewMode::VMI_Lit_Phong);
-    Client->GetCamera()->SetActorLocation(FVector(10, 0, 5));
+    Client->GetCamera()->SetActorLocation(FVector(3, 0, 2));
 
     State->Client = Client;
     State->Viewport->SetViewportClient(Client);

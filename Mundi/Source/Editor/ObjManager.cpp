@@ -127,7 +127,7 @@ static FString FindMtlFilePath(const FString& InObjPath)
  * @param OutMtlFilePaths[out] 발견된 .mtl 파일들의 전체 경로가 저장될 배열입니다.
  * @return 스캔에 성공하면 true, 파일 열기에 실패하면 false를 반환합니다.
  */
-bool GetMtlDependencies(const FString& ObjPath, TArray<FString>& OutMtlFilePaths)
+bool GetMtlDependencies(const FString& ObjPath, TArray<FWideString>& OutMtlFilePaths)
 {
 	// 한글 경로 지원: UTF-8 → UTF-16 변환 후 파일 열기
 	FWideString WPath = UTF8ToWide(ObjPath);
@@ -154,7 +154,7 @@ bool GetMtlDependencies(const FString& ObjPath, TArray<FString>& OutMtlFilePaths
 			if (!MtlFileName.empty())
 			{
 				fs::path FullPath = fs::weakly_canonical(BaseDir / MtlFileName);
-				FString PathStr = FullPath.string();
+				FWideString PathStr = FullPath.wstring();
 				std::replace(PathStr.begin(), PathStr.end(), '\\', '/');
 				OutMtlFilePaths.AddUnique(NormalizePath(PathStr));
 			}
@@ -189,14 +189,14 @@ bool ShouldRegenerateCache(const FString& ObjPath, const FString& BinPath, const
 		}
 
 		// 2. .obj 파일을 빠르게 스캔하여 의존하는 .mtl 파일 목록을 가져옵니다.
-		TArray<FString> MtlDependencies;
+		TArray<FWideString> MtlDependencies;
 		if (!GetMtlDependencies(ObjPath, MtlDependencies))
 		{
 			return true; // .obj 파일을 읽을 수 없으면 안전을 위해 캐시를 재생성합니다.
 		}
 
 		// 3. 각 .mtl 파일의 수정 시간을 캐시 파일과 비교합니다.
-		for (const FString& MtlPath : MtlDependencies)
+		for (const FWideString& MtlPath : MtlDependencies)
 		{
 			// .mtl 파일이 존재하지 않거나 캐시보다 최신 버전이면 재생성합니다.
 			if (!fs::exists(MtlPath) || fs::last_write_time(MtlPath) > BinTimestamp)
@@ -539,7 +539,7 @@ void FObjManager::RegisterStaticMeshAsset(const FString& PathFileName, FStaticMe
 	ObjStaticMeshMap.Add(NormalizedPathStr, InStaticMesh);
 }
 
-// 여기서 BVH 정보 담아주기 작업을 해야 함 
+// 여기서 BVH 정보 담아주기 작업을 해야 함
 UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 {
 	// 0) 경로

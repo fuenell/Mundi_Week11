@@ -45,6 +45,9 @@ public:
 	template<typename T, typename... Args>
 	T* Load(const FString& InFilePath, Args&&... InArgs);
 
+	template<typename T, typename... Args>
+	T* Load(const FWideString& InFilePath, Args&&... InArgs);
+
 	template<typename T>
 	bool Add(const FString& InFilePath, UObject* InObject);
 
@@ -91,7 +94,7 @@ public:
 	void SetSkeletalMeshs();
 	const TArray<UStaticMesh*>& GetStaticMeshs() { return StaticMeshs; }
 
-	void SetAudioFiles();  
+	void SetAudioFiles();
 
 	// --- Deprecated (향후 제거될 함수들) ---
 	TArray<UStaticMesh*> GetAllStaticMeshes() { return GetAll<UStaticMesh>(); }
@@ -206,6 +209,17 @@ inline T* UResourceManager::Load(const FString& InFilePath, Args && ...InArgs)
 		Resources[typeIndex][NormalizedPath] = Resource;
 		return Resource;
 	}
+}
+
+template <typename T, typename ... Args>
+T* UResourceManager::Load(const FWideString& InFilePath, Args&&... InArgs)
+{
+
+	if (InFilePath.empty())
+	{
+		return nullptr;
+	}
+
 }
 
 template<>

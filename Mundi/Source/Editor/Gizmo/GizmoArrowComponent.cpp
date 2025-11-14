@@ -87,7 +87,7 @@ void UGizmoArrowComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMesh
 	}
 
 	// 화면에 그려지는 크기 설정
-	SetDrawScale(View->ViewRect.Width(), View->ViewRect.Height(), View->ViewMatrix, View->ProjectionMatrix);
+	SetDrawScale(static_cast<float>(View->ViewRect.Width()), static_cast<float>(View->ViewRect.Height()), View->ViewMatrix, View->ProjectionMatrix);
 
 	// --- 사용할 머티리얼 결정 ---
 	UMaterialInterface* MaterialToUse = GizmoMaterial;

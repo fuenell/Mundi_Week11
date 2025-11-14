@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
     <FxCompile Include="Shaders\Materials\Fireball.hlsl">
@@ -194,27 +194,6 @@
     </ClCompile>
     <ClCompile Include="Source\Slate\Widgets\PropertyRenderer.cpp">
       <Filter>Source\Slate\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\imgui.cpp">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\imgui_demo.cpp">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\imgui_draw.cpp">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\imgui_impl_dx11.cpp">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\imgui_impl_win32.cpp">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\imgui_tables.cpp">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\imgui_widgets.cpp">
-      <Filter>ThirdParty\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\Gizmo\GizmoActor.cpp">
       <Filter>Source\Editor\Gizmo</Filter>
@@ -429,6 +408,24 @@
     <ClCompile Include="Source\Slate\ImGui\ImGuiHelper.cpp">
       <Filter>Source\Slate\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui.cpp">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui_draw.cpp">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui_tables.cpp">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui_widgets.cpp">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui_impl_dx11.cpp">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui_impl_win32.cpp">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Slate\StatsOverlayD2D.cpp">
       <Filter>Source\Slate</Filter>
     </ClCompile>
@@ -628,7 +625,26 @@
     <ClCompile Include="Generated\UTextRenderComponent.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
-  <ClCompile Include="Generated\UMeshComponent.generated.cpp"><Filter>Generated</Filter></ClCompile><ClCompile Include="Generated\USkinnedMeshComponent.generated.cpp"><Filter>Generated</Filter></ClCompile><ClCompile Include="Generated\UTestLuaBindComponent.generated.cpp"><Filter>Generated</Filter></ClCompile><ClCompile Include="Generated\ASkinnedMeshActor.generated.cpp"><Filter>Generated</Filter></ClCompile><ClCompile Include="Generated\USkeletalMeshComponent.generated.cpp"><Filter>Generated</Filter></ClCompile><ClCompile Include="Generated\ASkeletalMeshActor.generated.cpp"><Filter>Generated</Filter></ClCompile></ItemGroup>
+    <ClCompile Include="Generated\UMeshComponent.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\USkinnedMeshComponent.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\USkeletalMeshComponent.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\ASkeletalMeshActor.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\AssetManagement\SkeletalMesh.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Components\SkeletalMeshComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Components\SkinnedMeshComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\SkeletalMeshActor.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Components\BoneAnchorComponent.cpp" />
+    <ClCompile Include="Source\Slate\Windows\ContentBrowserWindow.cpp" />
+    <ClCompile Include="Source\Slate\ThumbnailManager.cpp" />
+  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Source\Editor\Clipboard\ClipboardManager.h">
@@ -786,93 +802,6 @@
     </ClInclude>
     <ClInclude Include="Source\Slate\Widgets\PropertyRenderer.h">
       <Filter>Source\Slate\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\Audio.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\BufferHelpers.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\CommonStates.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\DDSTextureLoader.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\DirectXHelpers.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\Effects.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\GamePad.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\GeometricPrimitive.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\GraphicsMemory.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\Keyboard.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\Model.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\Mouse.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\PostProcess.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\PrimitiveBatch.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\ScreenGrab.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\SimpleMath.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\SpriteBatch.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\SpriteFont.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\VertexTypes.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\WICTextureLoader.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\XboxDDSTextureLoader.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\ImGui\imconfig.h">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\ImGui\imgui.h">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\ImGui\imgui_impl_dx11.h">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\ImGui\imgui_impl_win32.h">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\ImGui\imgui_internal.h">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\ImGui\imstb_rectpack.h">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\ImGui\imstb_textedit.h">
-      <Filter>ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\ImGui\imstb_truetype.h">
-      <Filter>ThirdParty\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\Gizmo\GizmoActor.h">
       <Filter>Source\Editor\Gizmo</Filter>
@@ -1195,21 +1124,6 @@
     <ClInclude Include="Source\Slate\Windows\UIWindow.h">
       <Filter>Source\Slate\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\Lua\include\lauxlib.h">
-      <Filter>ThirdParty\Lua\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\Lua\include\lua.h">
-      <Filter>ThirdParty\Lua\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\Lua\include\lua.hpp">
-      <Filter>ThirdParty\Lua\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\Lua\include\luaconf.h">
-      <Filter>ThirdParty\Lua\include</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\Lua\include\lualib.h">
-      <Filter>ThirdParty\Lua\include</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_LetterBox.h">
       <Filter>Source\Runtime\Engine\GameFramework\Camera</Filter>
     </ClInclude>
@@ -1217,7 +1131,6 @@
       <Filter>Source\Runtime\Engine\GameFramework\Camera</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Renderer\PostProcessing\GammaPass.h" />
-    <ClInclude Include="ThirdParty\ImGui\imgui_curve.hpp" />
     <ClInclude Include="Source\Runtime\Engine\Scripting\LuaBindHelpers.h" />
     <ClInclude Include="Source\Runtime\Engine\Scripting\LuaBindingRegistry.h" />
     <ClInclude Include="Source\Runtime\Engine\Scripting\LuaComponentProxy.h" />
@@ -1344,7 +1257,29 @@
     <ClInclude Include="Generated\UTextRenderComponent.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
-  <ClInclude Include="Generated\UMeshComponent.generated.h"><Filter>Generated</Filter></ClInclude><ClInclude Include="Generated\USkinnedMeshComponent.generated.h"><Filter>Generated</Filter></ClInclude><ClInclude Include="Generated\UTestLuaBindComponent.generated.h"><Filter>Generated</Filter></ClInclude><ClInclude Include="Generated\ASkinnedMeshActor.generated.h"><Filter>Generated</Filter></ClInclude><ClInclude Include="Generated\USkeletalMeshComponent.generated.h"><Filter>Generated</Filter></ClInclude><ClInclude Include="Generated\ASkeletalMeshActor.generated.h"><Filter>Generated</Filter></ClInclude></ItemGroup>
+    <ClInclude Include="Generated\UMeshComponent.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\USkinnedMeshComponent.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ASkinnedMeshActor.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\USkeletalMeshComponent.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ASkeletalMeshActor.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\AssetManagement\SkeletalMesh.h" />
+    <ClInclude Include="Source\Runtime\Engine\Components\BoneAnchorComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\Components\SkeletalMeshComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\Components\SkinnedMeshComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\SkeletalMeshActor.h" />
+    <ClInclude Include="Source\Slate\Windows\ContentBrowserWindow.h" />
+    <ClInclude Include="Source\Slate\ThumbnailManager.h" />
+  </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">
       <UniqueIdentifier>{5795df92-1510-45f1-8bda-7ed2d162568b}</UniqueIdentifier>
@@ -1477,6 +1412,9 @@
     </Filter>
     <Filter Include="ThirdParty\Lua\include">
       <UniqueIdentifier>{3ad57ef5-b375-4262-abe5-b3a5f8f9a886}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\ImGui">
+      <UniqueIdentifier>{f2a8c1e4-5b72-4d3e-9a1f-8c7e6d5b4a3c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Tools">
       <UniqueIdentifier>{3cca26d2-60f7-47fe-a080-6deff27b677e}</UniqueIdentifier>

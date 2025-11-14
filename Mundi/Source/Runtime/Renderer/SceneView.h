@@ -22,7 +22,6 @@ struct FViewportRect
     uint32 Height() const { return MaxY - MinY; }
 };
 
-
 struct FMinimalViewInfo
 {
     FVector ViewLocation;

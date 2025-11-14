@@ -186,7 +186,7 @@ bool UUIManager::RegisterUIWindow(UUIWindow* InWindow)
 	auto Iter = std::find(UIWindows.begin(), UIWindows.end(), InWindow);
 	if (Iter != UIWindows.end())
 	{
-		UE_LOG("UIManager: Warning: Window Already Registered: %d", InWindow->GetWindowID());
+		UE_LOG("UIManager: Warning: Window Already Registered: %d", InWindow->GetID());
 		return false;
 	}
 
@@ -197,13 +197,13 @@ bool UUIManager::RegisterUIWindow(UUIWindow* InWindow)
 	}
 	catch (const std::exception& e)
 	{
-		UE_LOG("UIManager: Error: Failed To Initialize Window %d: %s", InWindow->GetWindowID(), e.what());
+		UE_LOG("UIManager: Error: Failed To Initialize Window %d: %s", InWindow->GetID(), e.what());
 		return false;
 	}
 
 	UIWindows.push_back(InWindow);
 
-	UE_LOG("UIManager: Registered UI Window: %d (%s)", InWindow->GetWindowID(), InWindow->GetWindowTitle().c_str());
+	UE_LOG("UIManager: Registered UI Window: %d (%s)", InWindow->GetID(), InWindow->GetWindowTitle().c_str());
 	UE_LOG("UIManager: Total Registered Windows: %zu", UIWindows.size());
 
 	return true;
@@ -219,7 +219,7 @@ bool UUIManager::UnregisterUIWindow(UUIWindow* InWindow)
 	auto It = std::find(UIWindows.begin(), UIWindows.end(), InWindow);
 	if (It == UIWindows.end())
 	{
-		UE_LOG("UIManager: Warning: Attempted to unregister non-existent window: %d", InWindow->GetWindowID());
+		UE_LOG("UIManager: Warning: Attempted to unregister non-existent window: %d", InWindow->GetID());
 		return false;
 	}
 
@@ -234,7 +234,7 @@ bool UUIManager::UnregisterUIWindow(UUIWindow* InWindow)
 
 	UIWindows.erase(It);
 
-	UE_LOG("UIManager: Unregistered UI Window: %d", InWindow->GetWindowID());
+	UE_LOG("UIManager: Unregistered UI Window: %d", InWindow->GetID());
 	UE_LOG("UIManager: Total Registered Windows: %zu", UIWindows.size());
 
 	return true;

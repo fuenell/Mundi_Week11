@@ -16,10 +16,6 @@
 #include "GlobalConsole.h"
 #include "Vector.h"
 #include "Enums.h"
-#include "nlohmann/json.hpp"  // 사용하는 JSON 라이브러리
-
-namespace json { class JSON; }
-using JSON = json::JSON;
 
 /**
  * @brief Level 직렬화에 관여하는 클래스

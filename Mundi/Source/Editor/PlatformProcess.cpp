@@ -19,7 +19,8 @@ void FPlatformProcess::OpenFileInDefaultEditor(const FWideString& RelativePath)
     catch (const fs::filesystem_error& e)
     {
         // 경로 변환 실패 처리 (예: GConsole->LogError(...))
-        MessageBoxA(NULL, "경로 변환에 실패했습니다.", "Error", MB_OK | MB_ICONERROR);
+        UE_LOG(e.what());
+        MessageBoxA(nullptr, "경로 변환에 실패했습니다.", "Error", MB_OK | MB_ICONERROR);
         return;
     }
 

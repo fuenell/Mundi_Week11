@@ -52,11 +52,11 @@ struct FAABB
 inline TArray<FVector> CubeVerticesToLine(const TArray<FVector>& CubeVertices)
 {
 	TArray<FVector> Lines;
-	if (CubeVertices.size() % 8 != 0)
+	if (CubeVertices.Num() % 8 != 0)
 	{
 		return Lines;
 	}
-	int CubeCount = CubeVertices.size() / 8;
+	int32 CubeCount = CubeVertices.Num() / 8;
 	Lines.reserve(24 * CubeCount);
 
 	for (int i = 0; i < CubeCount; i++)

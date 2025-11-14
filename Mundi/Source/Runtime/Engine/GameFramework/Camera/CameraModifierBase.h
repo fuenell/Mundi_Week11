@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 struct FPostProcessModifier;
+struct FMinimalViewInfo;
 
-class FMinimalViewInfo;
 class UCameraModifierBase : public UObject
 {
 public:

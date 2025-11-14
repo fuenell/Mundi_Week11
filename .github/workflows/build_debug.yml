@@ -17,35 +17,20 @@ jobs:
       fail-fast: false
 
     steps:
-      # 1. lfs: false로 설정하여 LFS 파일은 제외하고 코드만 먼저 체크아웃합니다.
-      - name: Checkout Code (no LFS)
+      - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          lfs: false # LFS 파일은 캐시 복원 후에 별도로 받습니다.
-
-      # 2. 현재 커밋에 필요한 LFS 파일 목록을 기반으로 고유한 캐시 키를 생성합니다.
-      - name: Generate LFS cache key
-        run: |
-          echo "LFS_CACHE_KEY=$(git lfs ls-files -l | cut -d' ' -f1 | git hash-object --stdin)" >> $GITHUB_ENV
-        shell: bash
-
-      # 3. 생성된 키를 사용해 LFS 객체(.git/lfs/objects)를 캐시에서 복원합니다.
-      - name: Restore LFS cache
-        uses: actions/cache@v4
-        id: lfs-cache
-        with:
-          path: .git/lfs/objects
-          key: lfs-${{ runner.os }}-${{ env.LFS_CACHE_KEY }}
-          restore-keys: |
-            lfs-${{ runner.os }}-${{ github.ref_name }}-
-            lfs-${{ runner.os }}-
-
-      # 4. git lfs pull을 실행합니다.
-      #    캐시에서 복원된 파일은 건너뛰고, 캐시에 없는 새 파일만 다운로드합니다.
-      - name: Pull LFS files
-        run: git lfs pull
 
       # --- 여기부터는 기존 워크플로우와 동일합니다 ---
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python Dependencies
+        run: |
+          pip install -r Mundi/Tools/CodeGenerator/requirements.txt
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
@@ -56,6 +41,12 @@ jobs:
           [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
           [Console]::InputEncoding = [System.Text.Encoding]::UTF8
 
+      - name: Run Code Generation
+        shell: pwsh
+        run: |
+          $env:PYTHONIOENCODING = "utf-8"
+          python Mundi/Tools/CodeGenerator/generate.py --source Mundi/Source/Runtime --output Mundi/Generated --vcxproj Mundi/Mundi.vcxproj
+
       - name: Build Solution
         run: |
           chcp 65001
@@ -65,10 +56,11 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: game-jam-build-${{ matrix.configuration }}-${{ matrix.platform }}
+          name: mundi-build-${{ matrix.configuration }}-${{ matrix.platform }}
           path: |
-            x64/${{ matrix.configuration }}/Engine.exe
-            x64/${{ matrix.configuration }}/Engine.pdb
+            Binaries/${{ matrix.configuration }}/Mundi.exe
+            Binaries/${{ matrix.configuration }}/Mundi.pdb
+            Binaries/${{ matrix.configuration }}/*.dll
           retention-days: 7
 
       - name: Upload Build Logs (On Failure)
@@ -77,6 +69,7 @@ jobs:
         with:
           name: build-logs-${{ matrix.configuration }}-${{ matrix.platform }}
           path: |
-            UnlearnEngine/x64/${{ matrix.configuration }}/*.log
+            Intermediate/**/*.log
+            Intermediate/**/*.tlog
             *.log
           retention-days: 7

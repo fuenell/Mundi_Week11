@@ -18,7 +18,14 @@
 #include "PlatformProcess.h"
 #include "SkeletalMeshComponent.h"
 #include "USlateManager.h"
+
+// Disable warnings for third-party library
+#pragma warning(push)
+#pragma warning(disable: 4244) // conversion from 'type1' to 'type2', possible loss of data
+#pragma warning(disable: 4805) // unsafe mix of type and type in operation
+#pragma warning(disable: 5055) // operator between enumeration and floating-point type
 #include "ImGui/imgui_curve.hpp"
+#pragma warning(pop)
 
 // 정적 멤버 변수 초기화
 TArray<FString> UPropertyRenderer::CachedSkeletalMeshPaths;

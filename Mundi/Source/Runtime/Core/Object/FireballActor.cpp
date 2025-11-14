@@ -3,7 +3,7 @@
 #include "PointLightComponent.h"
 #include "StaticMeshComponent.h"
 #include "Material.h"
-#include "ResourceManager.h"1
+#include "ResourceManager.h"
 #include "Texture.h"
 #include "RotatingMovementComponent.h"
 // IMPLEMENT_CLASS is now auto-generated in .generated.cpp

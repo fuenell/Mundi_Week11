@@ -9,6 +9,23 @@ from pathlib import Path
 import sys
 
 
+def indent_xml(elem, level=0):
+    """XML 요소에 들여쓰기 추가 (in-place)"""
+    i = "\n" + level * "  "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "  "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for child in elem:
+            indent_xml(child, level + 1)
+        if not child.tail or not child.tail.strip():
+            child.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
+
+
 def update_vcxproj(vcxproj_path: Path, generated_cpp_files: list[Path], generated_h_files: list[Path]) -> bool:
     """
     .vcxproj 파일에 generated 파일들을 추가합니다.
@@ -112,6 +129,8 @@ def update_vcxproj(vcxproj_path: Path, generated_cpp_files: list[Path], generate
             modified = True
 
     if modified:
+        # 들여쓰기 적용
+        indent_xml(root)
         tree.write(vcxproj_path, encoding='utf-8', xml_declaration=True)
         print(f"[OK] Updated: {vcxproj_path.name}")
         return True
@@ -255,6 +274,8 @@ def update_vcxproj_filters(filters_path: Path, generated_cpp_files: list[Path], 
             print(f"  [+] Added Header to filter: {rel_path_str}")
 
     if modified:
+        # 들여쓰기 적용
+        indent_xml(root)
         tree.write(filters_path, encoding='utf-8', xml_declaration=True)
         print(f"[OK] Updated: {filters_path.name}")
         return True
@@ -294,9 +315,9 @@ def main():
     print()
     print("=" * 60)
     if vcxproj_updated or filters_updated:
-        print(" ✅ Project files updated!")
+        print(" [OK] Project files updated!")
     else:
-        print(" ⏭️  No changes needed")
+        print(" [INFO] No changes needed")
     print("=" * 60)
 
 

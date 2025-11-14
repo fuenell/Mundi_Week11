@@ -25,7 +25,13 @@ extern const FString GCacheDir;
 inline FString NormalizePath(const FString& InPath)
 {
 	FString Result = InPath;
-	std::replace(Result.begin(), Result.end(), '\\', '/');
+	std::ranges::replace(Result, '\\', '/');
+	return Result;
+}
+inline FWideString NormalizePath(const FWideString& InPath)
+{
+	FWideString Result = InPath;
+	std::ranges::replace(Result, '\\', '/');
 	return Result;
 }
 
@@ -100,6 +106,121 @@ inline FString WideToUTF8(const FWideString& InWideStr)
 	);
 
 	return result;
+}
+
+/**
+ * @brief UTF-16 와이드 문자열을 현재 시스템 ANSI 코드 페이지(MBCS) 문자열로 변환합니다.
+ * @details FBX SDK나 legacy Win32 API처럼 wchar_t 버전이 없는 API에 경로를 전달할 때 사용합니다.
+ * @param InWideStr UTF-16 인코딩된 입력 와이드 문자열
+ * @return ANSI(MBCS, CP_ACP) 인코딩된 문자열 (변환 실패 시 빈 문자열)
+ */
+inline FString WideToACP(const FWideString& InWideStr)
+{
+	if (InWideStr.empty()) return FString();
+
+	int size_needed = ::WideCharToMultiByte(
+		CP_ACP,                             // 시스템 기본 코드 페이지
+		0,
+		InWideStr.c_str(),
+		-1,                                 // null-terminated 입력
+		nullptr,
+		0,
+		nullptr,
+		nullptr
+	);
+
+	if (size_needed <= 0)
+	{
+		return FString();
+	}
+
+	// null 문자 제외한 길이만큼 버퍼 할당
+	FString result(size_needed - 1, 0);
+	::WideCharToMultiByte(
+		CP_ACP,
+		0,
+		InWideStr.c_str(),
+		-1,
+		&result[0],
+		size_needed,
+		nullptr,
+		nullptr
+	);
+
+	return result;
+}
+
+/**
+ * @brief 현재 시스템 ANSI 코드 페이지(MBCS) 문자열을 UTF-16 와이드 문자열로 변환합니다.
+ * @details legacy Win32 API의 ANSI 버전에서 받은 문자열을 내부 FWideString으로 변환할 때 사용합니다.
+ * @param InAcpStr ANSI(MBCS, CP_ACP) 인코딩된 입력 문자열
+ * @return UTF-16 인코딩된 와이드 문자열 (변환 실패 시 빈 문자열)
+ */
+inline FWideString ACPToWide(const FString& InAcpStr)
+{
+	if (InAcpStr.empty()) return FWideString();
+
+	// 1. 필요한 와이드 문자열의 길이 계산 (null 문자 포함)
+	int size_needed = ::MultiByteToWideChar(
+		CP_ACP,                             // 시스템 기본 코드 페이지
+		0,
+		InAcpStr.c_str(),
+		-1,                                 // null-terminated 입력
+		nullptr,
+		0
+	);
+
+	if (size_needed <= 0)
+	{
+		return FWideString();
+	}
+
+	// 2. null 문자를 제외한 길이만큼 버퍼 할당
+	FWideString result(size_needed - 1, 0);
+
+	// 3. 실제 변환 수행
+	::MultiByteToWideChar(
+		CP_ACP,
+		0,
+		InAcpStr.c_str(),
+		-1,
+		&result[0],                         // FWideString의 내부 버퍼에 직접 쓰기
+		size_needed
+	);
+
+	return result;
+}
+
+/**
+ * @brief UTF-8 문자열을 현재 시스템 ANSI 코드 페이지(MBCS) 문자열로 변환합니다.
+ * @details 내부에서는 UTF-8 → UTF-16 → ANSI 순으로 변환합니다.
+ * @param InUtf8Str UTF-8 인코딩된 입력 문자열
+ * @return ANSI(MBCS, CP_ACP) 인코딩된 문자열 (변환 실패 시 빈 문자열)
+ */
+inline FString UTF8ToACP(const FString& InUtf8Str)
+{
+	if (InUtf8Str.empty()) return FString();
+	FWideString wide = UTF8ToWide(InUtf8Str);
+	if (wide.empty()) return FString();
+	return WideToACP(wide);
+}
+
+/**
+ * @brief 현재 시스템 ANSI 코드 페이지(MBCS) 문자열을 UTF-8 문자열로 변환합니다.
+ * @details 내부에서는 ANSI → UTF-16 → UTF-8 순으로 변환합니다.
+ * @param InAcpStr ANSI(MBCS, CP_ACP) 인코딩된 입력 문자열
+ * @return UTF-8 인코딩된 문자열 (변환 실패 시 빈 문자열)
+ */
+inline FString ACPToUTF8(const FString& InAcpStr)
+{
+	if (InAcpStr.empty()) return FString();
+
+	// 1. ANSI(FString) -> UTF-16(FWideString)
+	FWideString wide = ACPToWide(InAcpStr);
+	if (wide.empty()) return FString();
+
+	// 2. UTF-16(FWideString) -> UTF-8(FString)
+	return WideToUTF8(wide);
 }
 
 inline FString ConvertDataPathToCachePath(const FString& InAssetPath)

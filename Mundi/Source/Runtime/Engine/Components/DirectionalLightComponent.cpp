@@ -165,8 +165,8 @@ FDirectionalLightInfo UDirectionalLightComponent::GetLightInfo() const
 	Info.CascadeCount = CascadedCount;
 	Info.CascadedOverlapValue = CascadedOverlapValue;
 	Info.CascadedAreaColorDebugValue = CascadedAreaColorDebugValue;
-	Info.CascadedAreaShadowDebugValue = CascadedAreaShadowDebugValue;
-	for (int i = 0; i < CascadedSliceDepth.Num(); i++)
+	Info.CascadedAreaShadowDebugValue = static_cast<float>(CascadedAreaShadowDebugValue);
+	for (int32 i = 0; i < CascadedSliceDepth.Num(); i++)
 	{
 		Info.CascadedSliceDepth[i] = CascadedSliceDepth[i];
 	}

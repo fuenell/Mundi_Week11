@@ -33,7 +33,7 @@ public:
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 	virtual void DuplicateSubObjects() override;
 
-	float GetShadowResolutionScale() const { return ShadowResolutionScale; }
+	float GetShadowResolutionScale() const { return static_cast<float>(ShadowResolutionScale); }
 	float GetShadowBias() const { return ShadowBias; }
 	float GetShadowSlopeBias() const { return ShadowSlopeBias; }
 	float GetShadowSharpen() const { return ShadowSharpen; }

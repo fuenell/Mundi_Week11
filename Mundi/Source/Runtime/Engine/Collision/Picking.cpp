@@ -373,9 +373,9 @@ AActor* CPickingSystem::PerformViewportPicking(const TArray<AActor*>& Actors,
 	// 베스트 퍼스트 탐색으로 가장 가까운 것을 직접 구한다
 	AActor* PickedActor = nullptr;
 	Partition->RayQueryClosest(ray, PickedActor, PickedT);
-	LastPickTime = PickCounter.Finish();
+	LastPickTime = static_cast<uint64>(PickCounter.Finish());
 	TotalPickTime += LastPickTime;
-	double Milliseconds = ((double)LastPickTime * FPlatformTime::GetSecondsPerCycle()) * 1000.0f;
+	double Milliseconds = (static_cast<double>(LastPickTime) * FPlatformTime::GetSecondsPerCycle()) * 1000.0;
 
 	if (PickedActor)
 	{

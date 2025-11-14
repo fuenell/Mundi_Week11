@@ -107,7 +107,7 @@ public:
 	const FUIWindowConfig& GetConfig() const { return Config; }
 	FUIWindowConfig& GetMutableConfig() { return Config; }
 	EUIWindowState GetWindowState() const { return CurrentState; }
-	const uint32& GetWindowID() const { return WindowID; }
+	const uint32& GetID() const { return WindowID; }
 	const FString& GetWindowTitle() const { return Config.WindowTitle; }
 	int GetPriority() const { return Config.Priority; }
 	float GetLastFocusTime() const { return LastFocusTime; }

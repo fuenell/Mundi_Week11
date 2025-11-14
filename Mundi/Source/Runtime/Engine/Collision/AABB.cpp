@@ -12,7 +12,7 @@ FAABB::FAABB(const FVector* Vertices, uint32 Size)
 	}
 	Min = Vertices[0];
 	Max = Vertices[0];
-	for (int i = 1; i < Size; i++)
+	for (int i = 1; i < static_cast<int32>(Size); ++i)
 	{
 		Min.X = Vertices[i].X < Min.X ? Vertices[i].X : Min.X;
 		Min.Y = Vertices[i].Y < Min.Y ? Vertices[i].Y : Min.Y;
@@ -25,7 +25,7 @@ FAABB::FAABB(const FVector* Vertices, uint32 Size)
 
 FAABB::FAABB(const TArray<FVector>& Vertices)
 {
-	uint32 Size = Vertices.size();
+	int32 Size = Vertices.Num();
 	if (Size == 0)
 	{
 		return;

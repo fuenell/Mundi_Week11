@@ -21,6 +21,18 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from header_parser import HeaderParser
 from property_generator import PropertyGenerator
 from lua_generator import LuaBindingGenerator
+import re
+
+
+def pascal_case_to_upper_snake(name: str) -> str:
+    """
+    PascalCase를 UPPER_SNAKE_CASE로 변환
+    AActor -> A_ACTOR
+    UActorComponent -> U_ACTOR_COMPONENT
+    """
+    # 대문자 앞에 언더스코어 삽입 (첫 글자 제외)
+    result = re.sub(r'(?<!^)(?=[A-Z])', '_', name)
+    return result.upper()
 
 
 GENERATED_HEADER_TEMPLATE = """// Auto-generated file - DO NOT EDIT!
@@ -30,7 +42,14 @@ GENERATED_HEADER_TEMPLATE = """// Auto-generated file - DO NOT EDIT!
 
 // Macro expansion for GENERATED_REFLECTION_BODY()
 // This file must be included BEFORE the class definition
-#define CURRENT_CLASS_GENERATED_BODY \\
+
+// Undefine previous class's macro if exists
+#ifdef CURRENT_CLASS_GENERATED_BODY
+#undef CURRENT_CLASS_GENERATED_BODY
+#endif
+
+// Define class-specific body macro
+#define {macro_name}_BODY \\
 public: \\
     using Super = {parent_class}; \\
     using ThisClass_t = {class_name}; \\
@@ -53,6 +72,9 @@ private: \\
     static void StaticRegisterProperties(); \\
     static const bool bPropertiesRegistered; \\
 public:
+
+// Redirect generic macro to class-specific one
+#define CURRENT_CLASS_GENERATED_BODY {macro_name}_BODY
 """
 
 GENERATED_CPP_TEMPLATE = """// Auto-generated file - DO NOT EDIT!
@@ -95,9 +117,11 @@ def write_file_if_different(file_path: Path, new_content: str) -> bool:
 
 def generate_header_file(class_info):
     """.generated.h 파일 생성"""
+    macro_name = pascal_case_to_upper_snake(class_info.name)
     return GENERATED_HEADER_TEMPLATE.format(
         class_name=class_info.name,
-        parent_class=class_info.parent
+        parent_class=class_info.parent,
+        macro_name=macro_name
     )
 
 
@@ -238,11 +262,11 @@ def main():
 
         print(f"{status}: {class_info.name}")
         if header_updated:
-            print(f"  ├─ {header_output.name} (modified)")
+            print(f"  - {header_output.name} (modified)")
         if cpp_updated:
-            print(f"  ├─ {cpp_output.name} (modified)")
-        print(f"  ├─ Properties: {len(class_info.properties)}")
-        print(f"  └─ Functions:  {len([f for f in class_info.functions if f.metadata.get('lua_bind')])}")
+            print(f"  - {cpp_output.name} (modified)")
+        print(f"  - Properties: {len(class_info.properties)}")
+        print(f"  - Functions:  {len([f for f in class_info.functions if f.metadata.get('lua_bind')])}")
 
     print()
     print("=" * 60)

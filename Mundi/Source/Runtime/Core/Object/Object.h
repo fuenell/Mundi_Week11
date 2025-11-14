@@ -4,7 +4,6 @@
 #include "MemoryManager.h"
 #include "Name.h"
 #include "Property.h"
-#include "nlohmann/json.hpp"
 //#include "GlobalConsole.h"
 
 namespace json { class JSON; }

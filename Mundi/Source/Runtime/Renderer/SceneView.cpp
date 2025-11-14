@@ -32,8 +32,8 @@ FSceneView::FSceneView(FMinimalViewInfo* InMinimalViewInfo, URenderSettings* InR
 	ProjectionMatrix = FMatrix::CreateProjectionMatrix(
 		InMinimalViewInfo->FieldOfView,
 		InMinimalViewInfo->AspectRatio,
-		InMinimalViewInfo->ViewRect.Width(),
-		InMinimalViewInfo->ViewRect.Height(),
+		static_cast<float>(InMinimalViewInfo->ViewRect.Width()),
+		static_cast<float>(InMinimalViewInfo->ViewRect.Height()),
 		InMinimalViewInfo->NearClip,
 		InMinimalViewInfo->FarClip,
 		InMinimalViewInfo->ZoomFactor,

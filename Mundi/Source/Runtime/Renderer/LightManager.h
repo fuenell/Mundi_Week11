@@ -143,7 +143,7 @@ public:
     // --- 섀도우 리소스 접근자 (FSceneRenderer가 사용) ---
     ID3D11DepthStencilView* GetShadowAtlasDSV2D() const { return ShadowAtlasDSV2D; }
     ID3D11ShaderResourceView* GetShadowAtlasSRV2D() const { return ShadowAtlasSRV2D; }
-    float GetShadowAtlasSize2D() const { return ShadowAtlasSize2D; }
+    float GetShadowAtlasSize2D() const { return static_cast<float>(ShadowAtlasSize2D); }
     uint32 GetShadowCubeArraySize() const { return AtlasSizeCube; }
     uint32 GetShadowCubeArrayCount() const { return CubeArrayCount; }
     ID3D11DepthStencilView* GetShadowCubeFaceDSV(UINT SliceIndex, UINT FaceIndex) const; // (구현 필요)

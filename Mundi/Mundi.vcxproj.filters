@@ -1368,6 +1368,9 @@
     <ClInclude Include="Generated\AStaticMeshActor.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
+    <ClInclude Include="AnimDataModel.h">
+      <Filter>Source\Runtime\AssetManagement</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ThirdParty\ImGui">

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "SkinnedMeshComponent.h"
 #include "USkeletalMeshComponent.generated.h"
 
@@ -58,17 +58,14 @@ protected:
     TArray<FTransform> CurrentLocalSpacePose;
 
     /**
-     * @brief LocalSpacePose로부터 계산된 컴포넌트 기준 트랜스폼
+     * @brief LocalSpacePose로부터 계산된 컴포넌트(모델 좌표계) 기준 트랜스폼
      */
     TArray<FTransform> CurrentComponentSpacePose;
 
     /**
-     * @brief 부모에게 보낼 최종 스키닝 행렬 (임시 계산용)
+     * @brief 부모에게 보낼 최종 스키닝 행렬 (임시 계산용 버퍼)
      */
     TArray<FMatrix> TempFinalSkinningMatrices;
-    /**
-     * @brief CPU 스키닝에 전달할 최종 노말 스키닝 행렬
-     */
     TArray<FMatrix> TempFinalSkinningNormalMatrices;
 
 

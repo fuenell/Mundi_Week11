@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "MeshComponent.h"
 #include "SkeletalMesh.h"
 #include "USkinnedMeshComponent.generated.h"
@@ -52,10 +52,6 @@ protected:
      * @brief CPU 스키닝 최종 결과물. 렌더러가 이 데이터를 사용합니다.
      */
     TArray<FNormalVertex> SkinnedVertices;
-    /**
-     * @brief CPU 스키닝 최종 결과물. 렌더러가 이 데이터를 사용합니다.
-     */
-    TArray<FNormalVertex> NormalSkinnedVertices;
 
 private:
     FVector SkinVertexPosition(const FSkinnedVertex& InVertex) const;

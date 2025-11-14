@@ -140,7 +140,7 @@ class UAnimDataModel : public UObject
 	int32 NumberOfKeys;
 	FAnimationCurveData CurveData;
 
-	virtual const TArray<FBoneAnimationTrack>& GetBoneAnimationTracks() const;
+	//virtual const TArray<FBoneAnimationTrack>& GetBoneAnimationTracks() const;
 
 	//... 기타 멤버 함수 및 데이터 ...
 };

@@ -477,6 +477,9 @@
     <ClCompile Include="ThirdParty\Include\ImGui\imgui.cpp">
       <Filter>ThirdParty\Include\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui_demo.cpp">
+      <Filter>ThirdParty\Include\ImGui</Filter>
+    </ClCompile>
     <ClCompile Include="ThirdParty\Include\ImGui\imgui_draw.cpp">
       <Filter>ThirdParty\Include\ImGui</Filter>
     </ClCompile>
@@ -660,6 +663,9 @@
     <ClInclude Include="Source\Editor\Grid\GridActor.h">
       <Filter>Source\Editor\Grid</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\AssetManagement\AnimDataModel.h">
+      <Filter>Source\Runtime\AssetManagement</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Runtime\AssetManagement\Cube.h">
       <Filter>Source\Runtime\AssetManagement</Filter>
     </ClInclude>
@@ -699,7 +705,6 @@
     <ClInclude Include="Source\Runtime\AssetManagement\Triangle.h">
       <Filter>Source\Runtime\AssetManagement</Filter>
     </ClInclude>
-    <ClInclude Include="AnimDataModel.h" />
     <ClInclude Include="Source\Runtime\Core\Misc\Archive.h">
       <Filter>Source\Runtime\Core\Misc</Filter>
     </ClInclude>
@@ -1162,83 +1167,1310 @@
     <ClInclude Include="Source\Slate\ImGui\ImGuiHelper.h">
       <Filter>Source\Slate\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\Audio.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTex\DirectXTex.h">
+      <Filter>ThirdParty\Include\DirectXTex</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\BufferHelpers.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\Audio.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\CommonStates.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\BufferHelpers.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\DDSTextureLoader.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\CommonStates.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\DirectXHelpers.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\DDSTextureLoader.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\Effects.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\DirectXHelpers.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\GamePad.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\Effects.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\GeometricPrimitive.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\GamePad.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\GraphicsMemory.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\GeometricPrimitive.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\Keyboard.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\GraphicsMemory.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\Model.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\Keyboard.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\Mouse.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\Model.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\PostProcess.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\Mouse.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\PrimitiveBatch.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\PostProcess.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\ScreenGrab.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\PrimitiveBatch.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\SimpleMath.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\ScreenGrab.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\SpriteBatch.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\SimpleMath.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\SpriteFont.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\SpriteBatch.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\VertexTypes.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\SpriteFont.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\WICTextureLoader.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\VertexTypes.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\DirectXTK\include\XboxDDSTextureLoader.h">
-      <Filter>ThirdParty\DirectXTK\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\WICTextureLoader.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\Lua\include\lauxlib.h">
-      <Filter>ThirdParty\Lua\include</Filter>
+    <ClInclude Include="ThirdParty\Include\DirectXTK\XboxDDSTextureLoader.h">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\Lua\include\lua.h">
-      <Filter>ThirdParty\Lua\include</Filter>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk.h">
+      <Filter>ThirdParty\Include\FBX</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\Lua\include\lua.hpp">
-      <Filter>ThirdParty\Lua\include</Filter>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fbxsdk_def.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\Lua\include\luaconf.h">
-      <Filter>ThirdParty\Lua\include</Filter>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fbxsdk_nsbegin.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\Lua\include\lualib.h">
-      <Filter>ThirdParty\Lua\include</Filter>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fbxsdk_nsend.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fbxsdk_version.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxclassid.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxconnectionpoint.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxdatatypes.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxemitter.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxevent.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxeventhandler.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxlistener.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxloadingstrategy.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxmanager.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxmodule.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxobject.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxperipheral.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxplugin.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxplugincontainer.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxproperty.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxpropertydef.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxpropertyhandle.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxpropertypage.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxpropertytypes.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxquery.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxqueryevent.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxscopedloadingdirectory.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxscopedloadingfilename.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxstream.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxsymbol.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxsystemunit.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\fbxxref.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\arch\fbxalloc.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\arch</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\arch\fbxarch.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\arch</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\arch\fbxdebug.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\arch</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\arch\fbxnew.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\arch</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\arch\fbxstdcompliant.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\arch</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\arch\fbxtypes.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\arch</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxarray.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxbitset.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxcharptrset.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxcontainerallocators.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxdynamicarray.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxfile.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxfolder.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxhashmap.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxintrusivelist.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxmap.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxmemorypool.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxmultimap.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxpair.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxredblacktree.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxset.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxstatus.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxstring.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxstringlist.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxtime.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxtimecode.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\base\fbxutils.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\base</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\math\fbxaffinematrix.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\math\fbxdualquaternion.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\math\fbxmath.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\math\fbxmatrix.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\math\fbxquaternion.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\math\fbxtransforms.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\math\fbxvector2.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\math\fbxvector4.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\sync\fbxatomic.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\sync</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\sync\fbxclock.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\sync</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\sync\fbxsync.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\sync</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\core\sync\fbxthread.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\core\sync</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxbase64coder.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxcallbacks.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxexporter.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxexternaldocreflistener.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxfiletokens.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxglobalcamerasettings.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxgloballightsettings.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxglobalsettings.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxgobo.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbximporter.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxiobase.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxiopluginregistry.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxiosettings.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxiosettingspath.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxprogress.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxreader.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxstatistics.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxstatisticsfbx.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbxwriter.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\collada\fbxcolladaanimationelement.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\collada</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\collada\fbxcolladaelement.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\collada</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\collada\fbxcolladaiostream.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\collada</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\collada\fbxcolladanamespace.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\collada</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\collada\fbxcolladatokens.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\collada</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\collada\fbxcolladautils.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\collada</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\collada\fbxreadercollada14.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\collada</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\collada\fbxwritercollada14.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\collada</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbx\fbxio.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\fbx</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbx\fbxreaderfbx5.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\fbx</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbx\fbxreaderfbx6.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\fbx</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbx\fbxreaderfbx7.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\fbx</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbx\fbxwriterfbx5.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\fbx</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbx\fbxwriterfbx6.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\fbx</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbx\fbxwriterfbx7.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\fileio\fbx</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxaudio.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxaudiolayer.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxaxissystem.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxcollection.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxcollectionexclusive.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxcontainer.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxcontainertemplate.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxdisplaylayer.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxdocument.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxdocumentinfo.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxenvironment.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxgroupname.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxlibrary.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxmediaclip.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxobjectfilter.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxobjectmetadata.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxobjectscontainer.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxpose.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxreference.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxscene.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxselectionnode.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxselectionset.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxtakeinfo.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxthumbnail.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\fbxvideo.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\animation\fbxanimcurve.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\animation\fbxanimcurvebase.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\animation\fbxanimcurvefilters.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\animation\fbxanimcurvenode.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\animation\fbxanimevalclassic.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\animation\fbxanimevalstate.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\animation\fbxanimevaluator.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\animation\fbxanimlayer.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\animation\fbxanimstack.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\animation\fbxanimutilities.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxcharacter.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxcharacternodename.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxcharacterpose.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxconstraint.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxconstraintaim.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxconstraintcustom.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxconstraintparent.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxconstraintposition.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxconstraintrotation.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxconstraintscale.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxconstraintsinglechainik.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxconstraintutils.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxcontrolset.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint\fbxhik2fbxcharacter.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\constraint</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxblendshape.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxblendshapechannel.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxcache.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxcachedeffect.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxcamera.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxcamerastereo.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxcameraswitcher.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxcluster.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxdeformer.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxgenericnode.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxgeometry.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxgeometrybase.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxgeometryweightedmap.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxlayer.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxlayercontainer.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxlight.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxlimitsutilities.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxline.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxlodgroup.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxmarker.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxmesh.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxnode.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxnodeattribute.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxnull.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxnurbs.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxnurbscurve.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxnurbssurface.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxopticalreference.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxpatch.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxproceduralgeometry.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxshape.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxskeleton.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxskin.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxsubdeformer.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxsubdiv.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxtrimnurbssurface.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxvertexcachedeformer.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry\fbxweightedmapping.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxbindingoperator.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxbindingsentryview.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxbindingtable.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxbindingtablebase.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxbindingtableentry.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxconstantentryview.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxentryview.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxfiletexture.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbximplementation.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbximplementationfilter.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbximplementationutils.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxlayeredtexture.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxlayerentryview.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxoperatorentryview.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxproceduraltexture.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxpropertyentryview.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxsemanticentryview.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxshadingconventions.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxsurfacelambert.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxsurfacematerial.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxsurfacematerialutils.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxsurfacephong.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\scene\shading\fbxtexture.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\scene\shading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxclonemanager.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxdeformationsevaluator.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxembeddedfilesaccumulator.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxgeometryconverter.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxmanipulators.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxmaterialconverter.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxnamehandler.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxprocessor.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxprocessorshaderdependency.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxprocessorxref.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxprocessorxrefuserlib.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxrenamingstrategy.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxrenamingstrategybase.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxrenamingstrategyfbx5.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxrenamingstrategyfbx6.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxrenamingstrategyfbx7.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxrenamingstrategyutilities.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxrootnodeutility.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxscenecheckutility.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\fbxsdk\utils\fbxusernotification.h">
+      <Filter>ThirdParty\Include\FBX\fbxsdk\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\c14n.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\catalog.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\chvalid.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\debugXML.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\dict.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\encoding.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\entities.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\globals.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\hash.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\HTMLparser.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\HTMLtree.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\list.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\nanoftp.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\nanohttp.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\parser.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\parserInternals.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\pattern.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\relaxng.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\SAX.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\SAX2.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\schemasInternals.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\schematron.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\threads.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\tree.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\uri.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\valid.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xinclude.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xlink.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlautomata.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlerror.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlexports.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlIO.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlmemory.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlmodule.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlreader.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlregexp.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlsave.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlschemas.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlschemastypes.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlstring.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlunicode.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlversion.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xmlwriter.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xpath.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xpathInternals.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\FBX\libxml2\libxml\xpointer.h">
+      <Filter>ThirdParty\Include\FBX\libxml2\libxml</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\ImGui\imconfig.h">
+      <Filter>ThirdParty\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\ImGui\imgui.h">
+      <Filter>ThirdParty\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\ImGui\imgui_curve.hpp">
+      <Filter>ThirdParty\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\ImGui\imgui_impl_dx11.h">
+      <Filter>ThirdParty\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\ImGui\imgui_impl_win32.h">
+      <Filter>ThirdParty\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\ImGui\imgui_internal.h">
+      <Filter>ThirdParty\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\ImGui\imstb_rectpack.h">
+      <Filter>ThirdParty\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\ImGui\imstb_textedit.h">
+      <Filter>ThirdParty\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\ImGui\imstb_truetype.h">
+      <Filter>ThirdParty\Include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\Lua\lauxlib.h">
+      <Filter>ThirdParty\Include\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\Lua\lua.h">
+      <Filter>ThirdParty\Include\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\Lua\lua.hpp">
+      <Filter>ThirdParty\Include\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\Lua\luaconf.h">
+      <Filter>ThirdParty\Include\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\Lua\lualib.h">
+      <Filter>ThirdParty\Include\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\nlohmann\json.hpp">
+      <Filter>ThirdParty\Include\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\abort.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\assert.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\as_args.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\as_returns.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\base_traits.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\bind_traits.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\bytecode.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\call.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\compatibility.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\config.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\coroutine.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\debug.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\demangle.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\deprecate.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\dump_handler.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\ebco.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\environment.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\epilogue.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\error.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\error_handler.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\forward.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\forward_as.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\forward_detail.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\function.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\function_result.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\function_types.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\function_types_core.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\function_types_overloaded.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\function_types_stateful.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\function_types_stateless.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\function_types_templated.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\inheritance.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\in_place.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\load_result.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\lua_table.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\lua_value.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\make_reference.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\metatable.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\object.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\object_base.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\optional.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\optional_implementation.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\overload.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\packaged_coroutine.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\pairs_iterator.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\pointer_like.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\policies.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\prologue.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\property.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\protect.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\protected_function.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\protected_function_result.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\protected_handler.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\proxy_base.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\raii.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\reference.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\resolve.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\sol.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_check.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_check_get.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_check_get_qualified.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_check_get_unqualified.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_check_qualified.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_check_unqualified.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_core.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_field.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_get.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_get_qualified.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_get_unqualified.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_guard.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_iterator.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_pop.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_probe.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_proxy.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_proxy_base.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_push.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack_reference.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\state.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\state_handling.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\state_view.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\string_view.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\table.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\table_core.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\table_iterator.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\table_proxy.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\thread.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\tie.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\traits.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\trampoline.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\tuple.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\types.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\unicode.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\unique_usertype_traits.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\unreachable.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\unsafe_function.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\unsafe_function_result.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\userdata.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\usertype.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\usertype_container.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\usertype_container_launch.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\usertype_core.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\usertype_proxy.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\usertype_storage.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\usertype_traits.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\variadic_args.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\variadic_results.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\version.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\wrapper.hpp">
+      <Filter>ThirdParty\Include\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\compatibility\compat-5.3.c.h">
+      <Filter>ThirdParty\Include\sol\compatibility</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\compatibility\compat-5.3.h">
+      <Filter>ThirdParty\Include\sol\compatibility</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\compatibility\compat-5.4.h">
+      <Filter>ThirdParty\Include\sol\compatibility</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\compatibility\lua_version.hpp">
+      <Filter>ThirdParty\Include\sol\compatibility</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\detail\build_version.hpp">
+      <Filter>ThirdParty\Include\sol\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\stack\detail\pairs.hpp">
+      <Filter>ThirdParty\Include\sol\stack\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\utility\is_integer.hpp">
+      <Filter>ThirdParty\Include\sol\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Include\sol\utility\to_string.hpp">
+      <Filter>ThirdParty\Include\sol\utility</Filter>
     </ClInclude>
     <ClInclude Include="Generated\AActor.generated.h">
       <Filter>Generated</Filter>
@@ -1371,142 +2603,247 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="ThirdParty\Include\DirectXTex\DirectXTex.inl">
+      <Filter>ThirdParty\Include\DirectXTex</Filter>
+    </None>
+    <None Include="ThirdParty\Include\DirectXTK\SimpleMath.inl">
+      <Filter>ThirdParty\Include\DirectXTK</Filter>
+    </None>
+    <None Include="Tools\CodeGenerator\add_uclass.py">
+      <Filter>Tools\CodeGenerator</Filter>
+    </None>
+    <None Include="Tools\CodeGenerator\cache_manager.py">
+      <Filter>Tools\CodeGenerator</Filter>
+    </None>
+    <None Include="Tools\CodeGenerator\EnsurePython.ps1">
+      <Filter>Tools\CodeGenerator</Filter>
+    </None>
     <None Include="Tools\CodeGenerator\generate.py">
+      <Filter>Tools\CodeGenerator</Filter>
+    </None>
+    <None Include="Tools\CodeGenerator\header_parser.py">
       <Filter>Tools\CodeGenerator</Filter>
     </None>
     <None Include="Tools\CodeGenerator\lua_generator.py">
       <Filter>Tools\CodeGenerator</Filter>
     </None>
-    <None Include="Tools\CodeGenerator\parser.py">
+    <None Include="Tools\CodeGenerator\macro_parser.py">
+      <Filter>Tools\CodeGenerator</Filter>
+    </None>
+    <None Include="Tools\CodeGenerator\parallel_parser.py">
       <Filter>Tools\CodeGenerator</Filter>
     </None>
     <None Include="Tools\CodeGenerator\property_generator.py">
       <Filter>Tools\CodeGenerator</Filter>
     </None>
+    <None Include="Tools\CodeGenerator\RunCodeGen.bat">
+      <Filter>Tools\CodeGenerator</Filter>
+    </None>
+    <None Include="Tools\CodeGenerator\update_filters.py">
+      <Filter>Tools\CodeGenerator</Filter>
+    </None>
+    <None Include="Tools\CodeGenerator\update_headers.py">
+      <Filter>Tools\CodeGenerator</Filter>
+    </None>
+    <None Include="Tools\CodeGenerator\vcxproj_updater.py">
+      <Filter>Tools\CodeGenerator</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
-      <UniqueIdentifier>{62e8200e-3257-4648-97c9-70088ae8b544}</UniqueIdentifier>
+      <UniqueIdentifier>{7f53e65c-9ebc-4309-84dc-02da6613689b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Editor">
-      <UniqueIdentifier>{871f117c-4558-40d2-8aaf-75ebccc30537}</UniqueIdentifier>
+      <UniqueIdentifier>{3a26c12f-c18a-49cf-b5ab-a160162f9048}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Editor\Clipboard">
-      <UniqueIdentifier>{06c98d2c-708f-484b-be96-30893d589e8b}</UniqueIdentifier>
+      <UniqueIdentifier>{2bac2527-d63d-41c2-8f10-4703379e2e4c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Editor\Gizmo">
-      <UniqueIdentifier>{c1633cc4-f6f2-40a1-8ef4-745d031a460d}</UniqueIdentifier>
+      <UniqueIdentifier>{10c68836-5ba9-4b7e-b242-c5b5b8733ba9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Editor\Grid">
-      <UniqueIdentifier>{685beb3b-b31a-4a25-bda6-7d34303c4e52}</UniqueIdentifier>
+      <UniqueIdentifier>{dd4681ce-f6dd-44d1-9a18-ca06064b35eb}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime">
-      <UniqueIdentifier>{fa7ea52a-4d18-48b9-a51e-eee769590d9f}</UniqueIdentifier>
+      <UniqueIdentifier>{8bb1ceed-34a9-4e4c-a861-004b7ebc4cf0}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\AssetManagement">
-      <UniqueIdentifier>{c3c605e3-fe36-473f-a92b-c2e95687c913}</UniqueIdentifier>
+      <UniqueIdentifier>{1d98490f-d1c6-4ddf-9171-a274691db9d6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Core">
-      <UniqueIdentifier>{34eb6b14-4dff-4eb0-ba00-60caf6300c70}</UniqueIdentifier>
+      <UniqueIdentifier>{57ae64e4-be68-4ebe-adc3-21c0a2499525}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Core\Misc">
-      <UniqueIdentifier>{5d76d771-7ba7-4b23-8d47-c1cd053353e0}</UniqueIdentifier>
+      <UniqueIdentifier>{ce6597f9-6f18-416f-a5ca-9d0aa3dc46e1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Core\Object">
-      <UniqueIdentifier>{b5fa599f-708a-4f06-823b-53c9923ca032}</UniqueIdentifier>
+      <UniqueIdentifier>{b55d90b3-c468-466f-9188-958cd8a62338}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Core\Math">
-      <UniqueIdentifier>{c052daf0-1f8f-4457-b98a-792b31e7be17}</UniqueIdentifier>
+      <UniqueIdentifier>{c227eca0-260d-4f74-b6c4-51861068a716}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Core\Containers">
-      <UniqueIdentifier>{1c8f67fc-156a-465c-80e2-8cd48e43a089}</UniqueIdentifier>
+      <UniqueIdentifier>{9cc538fb-10f8-4e5e-af01-99b3e13183b8}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Core\Memory">
-      <UniqueIdentifier>{6caaedd2-8051-416a-a11e-643424721a91}</UniqueIdentifier>
+      <UniqueIdentifier>{11d036c8-182d-4128-9950-2ee5eb4940d4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Engine">
-      <UniqueIdentifier>{add0b385-713b-4e31-aaec-10378df9877a}</UniqueIdentifier>
+      <UniqueIdentifier>{0f515fe1-faf5-45c6-bb5f-4fe75a412168}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Engine\Components">
-      <UniqueIdentifier>{3e7f7538-eefc-4083-bdf9-808915568ed4}</UniqueIdentifier>
+      <UniqueIdentifier>{d9130b80-00f1-4538-86d9-fa85766c8dd2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Engine\GameFramework">
-      <UniqueIdentifier>{8b2e5e90-266d-4238-b025-a45660633df5}</UniqueIdentifier>
+      <UniqueIdentifier>{edefcdfe-ca5a-41a2-85de-598ea702efcc}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Engine\GameFramework\Camera">
-      <UniqueIdentifier>{2d9a8f17-27fb-4cb8-a89d-dd0a17c416ac}</UniqueIdentifier>
+      <UniqueIdentifier>{8bf24893-351c-46ce-a293-0a005ba2870f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Engine\Scripting">
-      <UniqueIdentifier>{9dcd1b06-65ab-4771-aec6-3e0fcd79a0bb}</UniqueIdentifier>
+      <UniqueIdentifier>{5148d228-0b1e-4ae1-a70b-8b8e3d1e3478}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Engine\SkeletalViewer">
-      <UniqueIdentifier>{b8c5bea9-d18d-47d1-95a7-37ad54051998}</UniqueIdentifier>
+      <UniqueIdentifier>{574e3f79-76d2-4134-92d0-3dd417814ff5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Engine\Audio">
-      <UniqueIdentifier>{2386162b-3530-445f-a29c-b5faeb61878c}</UniqueIdentifier>
+      <UniqueIdentifier>{96ab0598-3d59-47fb-b677-c56027534e75}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Engine\Collision">
-      <UniqueIdentifier>{4e092027-4466-482b-a407-1dc0128e9186}</UniqueIdentifier>
+      <UniqueIdentifier>{f4bd73e5-8905-42c0-9d10-b8dd0e456ee9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Engine\Spatial">
-      <UniqueIdentifier>{55b8cb87-5ffc-431b-884c-066d7fad86d7}</UniqueIdentifier>
+      <UniqueIdentifier>{1133c9b7-4746-4835-8161-a367af82b46e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Renderer">
-      <UniqueIdentifier>{54e2a3d2-551e-4e71-90cd-7ef69d64efa5}</UniqueIdentifier>
+      <UniqueIdentifier>{5d99f530-4867-43f0-afee-37ddd4f676e9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Renderer\PostProcessing">
-      <UniqueIdentifier>{f34f9672-8e62-43e2-bff9-eb524e3726c9}</UniqueIdentifier>
+      <UniqueIdentifier>{1662b057-b7e8-410a-9ee2-de01dac98378}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\InputCore">
-      <UniqueIdentifier>{8048947c-4a6c-4d78-8a93-82f7d5e6d6e2}</UniqueIdentifier>
+      <UniqueIdentifier>{7fc60118-5b08-44ec-96ae-cd5aee53e3b0}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\RHI">
-      <UniqueIdentifier>{7322ad95-42cb-4b3e-94cc-c85951c8dfcf}</UniqueIdentifier>
+      <UniqueIdentifier>{45759f69-7408-4206-9e41-2ce2154264cd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Slate">
-      <UniqueIdentifier>{8b5e33bc-9c5d-4cf4-872e-a177d23030c9}</UniqueIdentifier>
+      <UniqueIdentifier>{4a9eb830-3bf4-4c0f-8bfb-81961d003ca2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Slate\Windows">
-      <UniqueIdentifier>{7df732b4-ecf0-4689-b5c3-6715704664d6}</UniqueIdentifier>
+      <UniqueIdentifier>{1c9e1089-15f7-495a-b96b-b1daee686743}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Slate\Widgets">
-      <UniqueIdentifier>{a38dfebc-a09a-4ac9-874d-8df66b64e01c}</UniqueIdentifier>
+      <UniqueIdentifier>{63b3a2f6-27c2-49c1-bf5d-8a0a98d0679c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Slate\Factory">
-      <UniqueIdentifier>{23058267-cf9c-45aa-b8f6-ac0036d6976d}</UniqueIdentifier>
+      <UniqueIdentifier>{a01237c8-8b0c-4b80-b20f-2619d6df3473}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Slate\ImGui">
-      <UniqueIdentifier>{f8ee19f8-3bf7-4ee0-b5a1-a45261100f1c}</UniqueIdentifier>
+      <UniqueIdentifier>{d60637c8-40cc-463c-b779-ef97cb76fc35}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty">
-      <UniqueIdentifier>{84b2cbfe-76ff-4149-8121-3eb2a6081851}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ThirdParty\DirectXTK">
-      <UniqueIdentifier>{508e2e34-ed70-4d1e-aa56-fc14c7161cee}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ThirdParty\DirectXTK\include">
-      <UniqueIdentifier>{189f1970-b707-44dc-91c2-705467b6c07d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ThirdParty\Lua">
-      <UniqueIdentifier>{a7fab105-27d7-40a1-9727-df36dd7594d4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ThirdParty\Lua\include">
-      <UniqueIdentifier>{06636f69-6ba3-4709-b556-0b02777b588b}</UniqueIdentifier>
+      <UniqueIdentifier>{14f3fb8f-4058-4bf4-b0f6-92cdd1176a8d}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include">
-      <UniqueIdentifier>{26fba408-51f2-4f54-b7f8-3406040003ab}</UniqueIdentifier>
+      <UniqueIdentifier>{ee8b77d0-421d-47fa-bfdd-17c301c87758}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\DirectXTex">
+      <UniqueIdentifier>{2136ab82-9c79-4f98-9688-246199ca9c40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\DirectXTK">
+      <UniqueIdentifier>{b637341a-7bb2-4c49-9438-a6b7a73ae535}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX">
+      <UniqueIdentifier>{7cc1a7e1-297f-4c3e-89c2-20902136522e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk">
+      <UniqueIdentifier>{eff9b885-f624-4f4d-bb86-0ba66a5c6d18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\core">
+      <UniqueIdentifier>{2f235bff-3aa6-401c-aac8-b227dd18d96a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\core\arch">
+      <UniqueIdentifier>{b8f00fe2-1331-447d-bb23-0d26a9294d67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\core\base">
+      <UniqueIdentifier>{b9ed8289-62e7-44a5-a700-c6785381787a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\core\math">
+      <UniqueIdentifier>{0fe12306-38a9-4849-a47a-cba60dcf6424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\core\sync">
+      <UniqueIdentifier>{97e6b166-1120-4e98-a4b9-105a5efbdec3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\fileio">
+      <UniqueIdentifier>{5ccb83cc-f19b-412f-ac92-5758a9c176fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\fileio\collada">
+      <UniqueIdentifier>{4f521d48-5a56-4bc1-af75-b8a6e0a7498c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbx">
+      <UniqueIdentifier>{1bd69ad0-220a-4829-8a6d-70290b853c3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\scene">
+      <UniqueIdentifier>{6809147f-7b34-4316-a2af-9d5fa2eb4017}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\scene\animation">
+      <UniqueIdentifier>{16019ceb-1b88-416b-bd31-ed177d18b839}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint">
+      <UniqueIdentifier>{ec083eb8-257b-4ab5-8527-6adb8cd808f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry">
+      <UniqueIdentifier>{7c5c35a8-8587-4d74-b553-fea36209a574}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\scene\shading">
+      <UniqueIdentifier>{7a80d523-6684-497f-941e-02269d3cca81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\fbxsdk\utils">
+      <UniqueIdentifier>{1279da83-9862-41ac-9757-db211087694b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\libxml2">
+      <UniqueIdentifier>{6e2216c9-bdd6-4378-9e6e-031c5ce89770}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\FBX\libxml2\libxml">
+      <UniqueIdentifier>{5f393442-0db3-4bb1-a1f5-ddf702f230d2}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\ImGui">
-      <UniqueIdentifier>{7696405a-4eb7-46d7-8a2d-50a967926c94}</UniqueIdentifier>
+      <UniqueIdentifier>{b69c3ecc-1263-4013-8a1e-f0192deef52d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\Lua">
+      <UniqueIdentifier>{07d1ca1a-2add-45c8-9abd-b12f38505917}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\nlohmann">
+      <UniqueIdentifier>{cde348bc-d246-4e86-bf70-cbf0b0d2e84e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\sol">
+      <UniqueIdentifier>{ec9a69a6-f0a8-4a1f-a3ef-e1a50067c2b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\sol\compatibility">
+      <UniqueIdentifier>{20842bbb-1e62-4013-8df9-82caa08ad77d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\sol\detail">
+      <UniqueIdentifier>{249c71c8-7cc8-4d04-b965-0ae22aaafc45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\sol\stack">
+      <UniqueIdentifier>{04786473-4a56-47ca-ab3c-94633d0fae4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\sol\stack\detail">
+      <UniqueIdentifier>{3547aee5-4158-4871-99bf-8771ff7a1e81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Include\sol\utility">
+      <UniqueIdentifier>{9e915487-f216-4bac-8441-82d21b90555b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Tools">
-      <UniqueIdentifier>{3e7e49ba-bd79-4b8a-9386-4668f9ac0bcc}</UniqueIdentifier>
+      <UniqueIdentifier>{feb312e8-7d9d-416f-963b-667da9f9ef7b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Tools\CodeGenerator">
-      <UniqueIdentifier>{fc9022e6-a5c5-498d-8940-da0349aaa5c9}</UniqueIdentifier>
+      <UniqueIdentifier>{5bbbd796-8c62-4fd4-aaf5-fba9b6b1c4bf}</UniqueIdentifier>
     </Filter>
     <Filter Include="Generated">
-      <UniqueIdentifier>{fde101ab-a13e-4161-a859-e9cdbeccdc89}</UniqueIdentifier>
+      <UniqueIdentifier>{cff04942-fdec-4267-9033-bdadced5f06a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

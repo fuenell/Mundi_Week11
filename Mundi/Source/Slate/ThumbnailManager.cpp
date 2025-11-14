@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "ThumbnailManager.h"
 #include "Texture.h"
 #include "ResourceManager.h"
@@ -8,8 +8,6 @@ void FThumbnailManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* 
 {
 	Device = InDevice;
 	DeviceContext = InDeviceContext;
-
-	UE_LOG("ThumbnailManager: Initialized");
 }
 
 void FThumbnailManager::Shutdown()
@@ -44,8 +42,6 @@ void FThumbnailManager::Shutdown()
 		}
 	}
 	DefaultIconCache.clear();
-
-	UE_LOG("ThumbnailManager: Shutdown");
 }
 
 ID3D11ShaderResourceView* FThumbnailManager::GetThumbnail(const std::string& FilePath)
@@ -111,15 +107,12 @@ void FThumbnailManager::ClearCache()
 		}
 	}
 	ThumbnailCache.clear();
-
-	UE_LOG("ThumbnailManager: Cache cleared");
 }
 
 FThumbnailData* FThumbnailManager::CreateFBXThumbnail(const std::string& FilePath)
 {
 	// TODO: 실제 FBX 메시를 렌더타겟에 렌더링하여 썸네일 생성
 	// 현재는 기본 아이콘 반환
-	UE_LOG("ThumbnailManager: FBX thumbnail generation not yet implemented for %s", FilePath.c_str());
 	return CreateDefaultThumbnail(".fbx");
 }
 

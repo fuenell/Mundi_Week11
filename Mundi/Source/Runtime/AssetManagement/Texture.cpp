@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Texture.h"
 #include "TextureConverter.h"
 #include "DDSTextureLoader.h"
@@ -60,7 +60,6 @@ void UTexture::Load(const FString& InFilePath, ID3D11Device* InDevice, bool bSRG
 			{
 				// 기존 DDS 캐시 사용
 				ActualLoadPath = DDSCachePath;
-				UE_LOG("[UTexture] Using cached DDS: %s", DDSCachePath.c_str());
 			}
 
 			// 경로 정규화: 모든 백슬래시를 슬래시로 변환하여 일관성 유지

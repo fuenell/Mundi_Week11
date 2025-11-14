@@ -1,4 +1,4 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "pch.h"
 #include "ContentBrowserWindow.h"
@@ -133,8 +133,6 @@ void UContentBrowserWindow::RefreshCurrentDirectory()
 				}
 			}
 		}
-
-		UE_LOG("ContentBrowserWindow: Loaded %d items from %s", DisplayedFiles.size(), CurrentPath.string().c_str());
 	}
 	catch (const std::exception& e)
 	{

@@ -41,7 +41,7 @@ void USkinnedMeshComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle
 void USkinnedMeshComponent::DuplicateSubObjects()
 {
 	Super::DuplicateSubObjects();
-	SkeletalMesh->CreateVertexBuffer(&VertexBuffer);
+	SkeletalMesh->CreateVertexBuffer(&VertexBuffer, ESkinningMode::CPU);
 }
 
 void USkinnedMeshComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View)
@@ -207,7 +207,7 @@ void USkinnedMeshComponent::SetSkeletalMesh(const FString& PathFileName)
 	
 	if (SkeletalMesh && SkeletalMesh->GetSkeletalMeshData())
 	{
-		SkeletalMesh->CreateVertexBuffer(&VertexBuffer);
+		SkeletalMesh->CreateVertexBuffer(&VertexBuffer, ESkinningMode::CPU);
 
 		const TArray<FMatrix> IdentityMatrices(SkeletalMesh->GetBoneCount(), FMatrix::Identity());
 		UpdateSkinningMatrices(IdentityMatrices, IdentityMatrices);

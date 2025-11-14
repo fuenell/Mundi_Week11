@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "RHIDevice.h"
 #include "ResourceManager.h"
 #include "VertexData.h"
@@ -387,6 +387,7 @@ inline HRESULT D3D11RHI::CreateVertexBuffer<FBillboardVertexInfo_GPU>(ID3D11Devi
 	return CreateVertexBufferImpl<FBillboardVertexInfo_GPU>(device, srcVertices, outBuffer, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 }
 
+// For CPU Skinning
 template<>
 inline HRESULT D3D11RHI::CreateVertexBuffer<FVertexDynamic>(ID3D11Device* Device, const std::vector<FSkinnedVertex>& SrcVertices, ID3D11Buffer** OutBuffer)
 {
@@ -414,6 +415,22 @@ inline HRESULT D3D11RHI::CreateVertexBuffer<FVertexDynamic>(ID3D11Device* Device
 
 	D3D11_SUBRESOURCE_DATA InitData = {};
 	InitData.pSysMem = VertexArray.data();
+
+	return Device->CreateBuffer(&BufferDesc, &InitData, OutBuffer);
+}
+
+// For GPU Skinning
+template<>
+inline HRESULT D3D11RHI::CreateVertexBuffer<FSkinnedVertex>(ID3D11Device* Device, const std::vector<FSkinnedVertex>& SrcVertices, ID3D11Buffer** OutBuffer)
+{
+	D3D11_BUFFER_DESC BufferDesc = {};
+	BufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	BufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	BufferDesc.CPUAccessFlags = 0;
+	BufferDesc.ByteWidth = static_cast<UINT>(sizeof(FSkinnedVertex) * SrcVertices.size());
+
+	D3D11_SUBRESOURCE_DATA InitData = {};
+	InitData.pSysMem = SrcVertices.data();
 
 	return Device->CreateBuffer(&BufferDesc, &InitData, OutBuffer);
 }

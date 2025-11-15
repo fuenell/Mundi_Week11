@@ -1,6 +1,7 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "ObjectFactory.h"
 #include "FbxLoader.h"
+#include "AnimDataModel.h"
 #include "fbxsdk/fileio/fbxiosettings.h"
 #include "fbxsdk/scene/geometry/fbxcluster.h"
 #include "ObjectIterator.h"
@@ -54,6 +55,10 @@ void UFbxLoader::PreLoad()
           {
              ProcessedFiles.insert(WPathStr);
              FbxLoader.LoadFbxMesh(PathStr);
+
+			 // for test
+			 //FbxLoader.LoadAnimationFromFbx(PathStr);
+
              ++LoadedCount;
           }
        }
@@ -352,7 +357,6 @@ FSkeletalMeshData* UFbxLoader::LoadFbxMeshAsset(const FString& FilePath)
 
     return MeshData;
 }
-
 
 void UFbxLoader::LoadMeshFromNode(FbxNode* InNode,
 	FSkeletalMeshData& MeshData,
@@ -1190,5 +1194,503 @@ void UFbxLoader::EnsureSingleRootBone(FSkeletalMeshData& MeshData)
 
 		UE_LOG("UFbxLoader: Created virtual root bone. Found %d root bones.", RootBoneIndices.Num());
 	}
+}
+
+//====================================================================================
+// 애니메이션 추출 메인 함수
+//====================================================================================
+UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 AnimStackIndex)
+{
+    // 1. 경로 정규화
+    FString NormalizedPath = NormalizePath(FilePath);
+    FWideString WNormalizedPath = UTF8ToWide(NormalizedPath);
+    std::filesystem::path FbxPath(WNormalizedPath);
+    FString FbxPathAcp = UTF8ToACP(NormalizedPath);
+    CurrentFbxBaseDir = NormalizePath(WideToUTF8(FbxPath.parent_path().wstring()));
+
+    UE_LOG("Loading animation from FBX: %s", NormalizedPath.c_str());
+
+    // 2. FBX 임포터 생성 및 초기화
+    FbxImporter* Importer = FbxImporter::Create(SdkManager, "AnimImporter");
+    if (!Importer->Initialize(FbxPathAcp.c_str(), -1, SdkManager->GetIOSettings()))
+    {
+        UE_LOG("Failed to initialize FBX Importer for animation: %s", Importer->GetStatus().GetErrorString());
+        return nullptr;
+    }
+
+    // 3. 씬 임포트
+    FbxScene* Scene = FbxScene::Create(SdkManager, "AnimScene");
+    if (!Importer->Import(Scene))
+    {
+        UE_LOG("Failed to import FBX scene for animation");
+        Importer->Destroy();
+        return nullptr;
+    }
+    Importer->Destroy();
+
+    // 4. 씬의 좌표계 변환 (Unreal Engine 좌표계로)
+    FbxAxisSystem UnrealImportAxis(FbxAxisSystem::eZAxis, FbxAxisSystem::eParityEven, FbxAxisSystem::eLeftHanded);
+    FbxAxisSystem SourceSetup = Scene->GetGlobalSettings().GetAxisSystem();
+    FbxSystemUnit::m.ConvertScene(Scene);
+    
+    if (SourceSetup != UnrealImportAxis)
+    {
+        UE_LOG("Converting FBX axis system to Unreal coordinate system");
+        UnrealImportAxis.DeepConvertScene(Scene);
+    }
+
+    // 5. AnimStack 개수 확인
+    int32 AnimStackCount = Scene->GetSrcObjectCount<FbxAnimStack>();
+    if (AnimStackCount == 0)
+    {
+        UE_LOG("No animation (AnimStack) found in FBX file: %s", NormalizedPath.c_str());
+        return nullptr;
+    }
+    UE_LOG("Found %d AnimStack(s) in FBX file", AnimStackCount);
+
+    // 6. 인자로 들어온 인덱스(디폴트 0)에 해당하는 AnimStack 가져오기
+    if (AnimStackIndex < 0 || AnimStackIndex >= AnimStackCount)
+    {
+        UE_LOG("Invalid AnimStackIndex %d (valid range: 0-%d). Using index 0.", AnimStackIndex, AnimStackCount - 1);
+        AnimStackIndex = 0;
+    }
+
+    FbxAnimStack* AnimStack = Scene->GetSrcObject<FbxAnimStack>(AnimStackIndex);
+    if (!AnimStack)
+    {
+        UE_LOG("Failed to get AnimStack at index %d", AnimStackIndex);
+        return nullptr;
+    }
+    UE_LOG("Using AnimStack: '%s'", AnimStack->GetName());
+
+    // 7. AnimStack을 현재 씬에 적용
+    Scene->SetCurrentAnimationStack(AnimStack);
+
+	// 8. 리턴할 UAnimDataModel 생성
+	UAnimDataModel* AnimData = NewObject<UAnimDataModel>();
+
+    // 9. UAnimDataModel에 Duration, FrameRate 설정
+    FbxTakeInfo* TakeInfo = Scene->GetTakeInfo(AnimStack->GetName());
+    FbxTime StartTime = TakeInfo ? TakeInfo->mLocalTimeSpan.GetStart() : AnimStack->GetLocalTimeSpan().GetStart();
+    FbxTime EndTime = TakeInfo ? TakeInfo->mLocalTimeSpan.GetStop() : AnimStack->GetLocalTimeSpan().GetStop();
+    FbxTime Duration = EndTime - StartTime;
+
+    FbxTime::EMode TimeMode = Scene->GetGlobalSettings().GetTimeMode();
+    double FrameRateDouble = FbxTime::GetFrameRate(TimeMode);
+
+    AnimData->SetPlayLength(static_cast<float>(Duration.GetSecondDouble()));
+    AnimData->SetFrameRate(static_cast<int32>(FrameRateDouble), 1);
+
+	UE_LOG("Animation timeline - Start: %.2fs, End: %.2fs, Duration: %.2fs, FrameRate: %.2f fps",
+		StartTime.GetSecondDouble(), EndTime.GetSecondDouble(), Duration.GetSecondDouble(), FrameRateDouble);
+
+	// 10. UAnimDataModel에 Frame 수 설정
+    int32 NumFrames = static_cast<int32>(Duration.GetFrameCount(TimeMode));
+    AnimData->SetNumberOfFrames(NumFrames);
+
+    // 11. AnimLayer 개수 확인
+    int32 AnimLayerCount = AnimStack->GetMemberCount<FbxAnimLayer>();
+    if (AnimLayerCount == 0)
+    {
+        UE_LOG("No AnimLayer found in AnimStack");
+        return nullptr;
+    }
+    UE_LOG("Found %d AnimLayer(s) in AnimStack", AnimLayerCount);
+
+	// 12. 본 인덱스 맵 생성: 각 본에 해당하는 애니메이션 트랙을 UAnimDataModel에 추가하기 위함
+    TMap<FbxNode*, int32> BoneToIndex;
+    FbxNode* RootNode = Scene->GetRootNode();
+    FSkeletalMeshData TempMeshData;
+    if (RootNode)
+    {
+        for (int Index = 0; Index < RootNode->GetChildCount(); Index++)
+        {
+            LoadSkeletonFromNode(RootNode->GetChild(Index), TempMeshData, -1, BoneToIndex);
+        }
+    }
+    UE_LOG("Found %d bones in skeleton", BoneToIndex.Num());
+
+    // 13. 프레임 간격 계산
+    FbxTime FrameTime;
+    FrameTime.SetTime(0, 0, 0, 1, 0, TimeMode);
+
+	// 14. UAnimDataModel에 애니메이션 트랙 데이터 할당
+	for (auto& BonePair : BoneToIndex)
+	{
+		FbxNode* BoneNode = BonePair.first;
+
+		ExtractBoneAnimation(BoneNode, StartTime, EndTime, FrameTime, AnimData);
+	}
+
+	// 15. UAnimDataModel에 커브 데이터 할당
+    for (int32 LayerIndex = 0; LayerIndex < AnimLayerCount; ++LayerIndex)
+    {
+        FbxAnimLayer* AnimLayer = AnimStack->GetMember<FbxAnimLayer>(LayerIndex);
+        if (!AnimLayer)
+        {
+            UE_LOG("Failed to get AnimLayer at index %d", LayerIndex);
+            continue;
+        }
+
+        UE_LOG("Processing AnimLayer %d: '%s'", LayerIndex, AnimLayer->GetName());
+
+        // 14-1. 각 본에 대한 커브 데이터 추출
+        for (auto& BonePair : BoneToIndex)
+        {
+            FbxNode* BoneNode = BonePair.first;
+            
+            // 커브 데이터 추출
+            ExtractAnimationCurves(BoneNode, AnimLayer, AnimData, LayerIndex);
+        }
+
+        // 14-2. 추가적인 Float Curve 추출 (Morph Target, Custom Attributes 등)
+        ExtractAllFloatCurves(Scene, AnimLayer, AnimData, LayerIndex);
+    }
+
+    // 16. UAnimDataModel에 총 키 개수 할당
+	int32 TotalKeyCount = 0;
+    for (const FBoneAnimationTrack& Track : AnimData->GetBoneAnimationTracks())
+    {
+        TotalKeyCount += Track.InternalTrack.PosKeys.Num();
+        TotalKeyCount += Track.InternalTrack.RotKeys.Num();
+        TotalKeyCount += Track.InternalTrack.ScaleKeys.Num();
+    }
+    AnimData->SetNumberOfKeys(TotalKeyCount);
+
+	// 결과 로그	출력
+    UE_LOG("Successfully loaded animation from %s", NormalizedPath.c_str());
+    UE_LOG("  - Duration: %.2fs", AnimData->GetPlayLength());
+    UE_LOG("  - Frames: %d", AnimData->GetNumberOfFrames());
+    UE_LOG("  - FrameRate: %.2f fps", AnimData->GetFrameRate().ToFloat());
+    UE_LOG("  - Layers: %d", AnimLayerCount);
+    UE_LOG("  - Bone Tracks: %d", AnimData->GetBoneAnimationTracks().Num());
+    UE_LOG("  - Total Keys: %d", TotalKeyCount);
+    UE_LOG("  - Float Curves: %d", AnimData->GetCurveData().FloatCurves.Num());
+    UE_LOG("  - Transform Curves: %d", AnimData->GetCurveData().TransformCurves.Num());
+
+    return AnimData;
+}
+
+//====================================================================================
+// 본 애니메이션 추출 (기본 레이어)
+//====================================================================================
+void UFbxLoader::ExtractBoneAnimation(FbxNode* InNode,
+                                      FbxTime StartTime, FbxTime EndTime, FbxTime FrameTime,
+                                      UAnimDataModel* OutAnimData)
+{
+    if (!InNode || !OutAnimData)
+        return;
+
+    // 본 트랙 생성
+    FBoneAnimationTrack BoneTrack;
+    BoneTrack.Name = FName(InNode->GetName());
+
+    // 각 프레임마다 Transform 샘플링
+    FbxTime CurrentTime = StartTime;
+    int32 FrameIndex = 0;
+    
+    while (CurrentTime <= EndTime)
+    {
+        // Local Transform 추출 (부모 본 기준)
+        FbxAMatrix LocalTransform = InNode->EvaluateLocalTransform(CurrentTime);
+
+        // Translation
+        FbxVector4 Translation = LocalTransform.GetT();
+        BoneTrack.InternalTrack.PosKeys.Add(FVector(
+            static_cast<float>(Translation[0]),
+            static_cast<float>(Translation[1]),
+            static_cast<float>(Translation[2])
+        ));
+
+        // Rotation (Quaternion으로 변환)
+        FbxQuaternion Rotation = LocalTransform.GetQ();
+        BoneTrack.InternalTrack.RotKeys.Add(FQuat(
+            static_cast<float>(Rotation[0]),
+            static_cast<float>(Rotation[1]),
+            static_cast<float>(Rotation[2]),
+            static_cast<float>(Rotation[3])
+        ));
+
+        // Scale
+        FbxVector4 Scale = LocalTransform.GetS();
+        BoneTrack.InternalTrack.ScaleKeys.Add(FVector(
+            static_cast<float>(Scale[0]),
+            static_cast<float>(Scale[1]),
+            static_cast<float>(Scale[2])
+        ));
+
+        CurrentTime += FrameTime;
+        FrameIndex++;
+    }
+
+    // 트랙을 AnimDataModel에 추가
+    OutAnimData->AddBoneTrack(BoneTrack);
+}
+
+//====================================================================================
+// Transform Curve 추출
+//====================================================================================
+void UFbxLoader::ExtractAnimationCurves(FbxNode* InNode, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex)
+{
+    if (!InNode || !InAnimLayer || !OutAnimData)
+        return;
+
+    FTransformCurve TransformCurve;
+    bool bHasTransformKeys = false;
+
+    // 레이어 구분용 접미사
+    FString LayerSuffix = (LayerIndex > 0) ? ("_Layer" + std::to_string(LayerIndex)) : "";
+    FString NodeName = FString(InNode->GetName()) + LayerSuffix;
+
+    // Translation Curve 추출
+    FbxAnimCurve* TranslationCurveX = InNode->LclTranslation.GetCurve(InAnimLayer, FBXSDK_CURVENODE_COMPONENT_X);
+    FbxAnimCurve* TranslationCurveY = InNode->LclTranslation.GetCurve(InAnimLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+    FbxAnimCurve* TranslationCurveZ = InNode->LclTranslation.GetCurve(InAnimLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+
+    if (TranslationCurveX || TranslationCurveY || TranslationCurveZ)
+    {
+        ExtractVectorCurve(TranslationCurveX, TranslationCurveY, TranslationCurveZ, 
+                          TransformCurve.TranslationCurve, NodeName.c_str(), "Translation");
+        bHasTransformKeys = true;
+    }
+
+    // Rotation Curve 추출
+    FbxAnimCurve* RotationCurveX = InNode->LclRotation.GetCurve(InAnimLayer, FBXSDK_CURVENODE_COMPONENT_X);
+    FbxAnimCurve* RotationCurveY = InNode->LclRotation.GetCurve(InAnimLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+    FbxAnimCurve* RotationCurveZ = InNode->LclRotation.GetCurve(InAnimLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+
+    if (RotationCurveX || RotationCurveY || RotationCurveZ)
+    {
+        ExtractVectorCurve(RotationCurveX, RotationCurveY, RotationCurveZ, 
+                          TransformCurve.RotationCurve, NodeName.c_str(), "Rotation");
+        bHasTransformKeys = true;
+    }
+
+    // Scale Curve 추출
+    FbxAnimCurve* ScaleCurveX = InNode->LclScaling.GetCurve(InAnimLayer, FBXSDK_CURVENODE_COMPONENT_X);
+    FbxAnimCurve* ScaleCurveY = InNode->LclScaling.GetCurve(InAnimLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+    FbxAnimCurve* ScaleCurveZ = InNode->LclScaling.GetCurve(InAnimLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+
+    if (ScaleCurveX || ScaleCurveY || ScaleCurveZ)
+    {
+        ExtractVectorCurve(ScaleCurveX, ScaleCurveY, ScaleCurveZ, 
+                          TransformCurve.ScaleCurve, NodeName.c_str(), "Scale");
+        bHasTransformKeys = true;
+    }
+
+    if (bHasTransformKeys)
+    {
+        OutAnimData->AddTransformCurve(TransformCurve);
+    }
+}
+
+//====================================================================================
+// Vector Curve 추출 (X, Y, Z 컴포넌트)
+//====================================================================================
+void UFbxLoader::ExtractVectorCurve(FbxAnimCurve* CurveX, FbxAnimCurve* CurveY, FbxAnimCurve* CurveZ,
+                                    FVectorCurve& OutVectorCurve, const char* NodeName, const char* CurveType)
+{
+    // X 컴포넌트
+    if (CurveX && CurveX->KeyGetCount() > 0)
+    {
+        FFloatCurve& FloatCurveX = OutVectorCurve.FloatCurves[static_cast<int>(FVectorCurve::EIndex::X)];
+        FloatCurveX.Name = FName(FString(NodeName) + "_" + CurveType + "_X");
+        ExtractFloatCurveFromFbx(CurveX, FloatCurveX);
+    }
+
+    // Y 컴포넌트
+    if (CurveY && CurveY->KeyGetCount() > 0)
+    {
+        FFloatCurve& FloatCurveY = OutVectorCurve.FloatCurves[static_cast<int>(FVectorCurve::EIndex::Y)];
+        FloatCurveY.Name = FName(FString(NodeName) + "_" + CurveType + "_Y");
+        ExtractFloatCurveFromFbx(CurveY, FloatCurveY);
+    }
+
+    // Z 컴포넌트
+    if (CurveZ && CurveZ->KeyGetCount() > 0)
+    {
+        FFloatCurve& FloatCurveZ = OutVectorCurve.FloatCurves[static_cast<int>(FVectorCurve::EIndex::Z)];
+        FloatCurveZ.Name = FName(FString(NodeName) + "_" + CurveType + "_Z");
+        ExtractFloatCurveFromFbx(CurveZ, FloatCurveZ);
+    }
+}
+
+//====================================================================================
+// Float Curve 추출 (FbxAnimCurve -> FFloatCurve)
+//====================================================================================
+void UFbxLoader::ExtractFloatCurveFromFbx(FbxAnimCurve* FbxCurve, FFloatCurve& OutFloatCurve)
+{
+    if (!FbxCurve)
+        return;
+
+    int KeyCount = FbxCurve->KeyGetCount();
+    if (KeyCount == 0)
+        return;
+
+    OutFloatCurve.Keys.Reserve(KeyCount);
+
+    for (int KeyIndex = 0; KeyIndex < KeyCount; ++KeyIndex)
+    {
+        FRichCurveKey Key;
+        
+        // 시간과 값
+        FbxAnimCurveKey FbxKey = FbxCurve->KeyGet(KeyIndex);
+        Key.Time = static_cast<float>(FbxKey.GetTime().GetSecondDouble());
+        Key.Value = FbxKey.GetValue();
+
+        // 보간 모드 변환
+        FbxAnimCurveDef::EInterpolationType InterpType = FbxCurve->KeyGetInterpolation(KeyIndex);
+        switch (InterpType)
+        {
+        case FbxAnimCurveDef::eInterpolationConstant:
+            Key.InterpMode = ERichCurveInterpMode::RCIM_Constant;
+            break;
+        case FbxAnimCurveDef::eInterpolationLinear:
+            Key.InterpMode = ERichCurveInterpMode::RCIM_Linear;
+            break;
+        case FbxAnimCurveDef::eInterpolationCubic:
+            Key.InterpMode = ERichCurveInterpMode::RCIM_Cubic;
+            break;
+        default:
+            Key.InterpMode = ERichCurveInterpMode::RCIM_Linear;
+            break;
+        }
+
+        // Tangent 모드 변환
+        FbxAnimCurveDef::ETangentMode TangentMode = FbxCurve->KeyGetTangentMode(KeyIndex);
+        if (TangentMode & FbxAnimCurveDef::eTangentAuto)
+        {
+            Key.TangentMode = ERichCurveTangentMode::RCTM_Auto;
+        }
+        else if (TangentMode & FbxAnimCurveDef::eTangentBreak)
+        {
+            Key.TangentMode = ERichCurveTangentMode::RCTM_Break;
+        }
+        else if (TangentMode & FbxAnimCurveDef::eTangentUser)
+        {
+            Key.TangentMode = ERichCurveTangentMode::RCTM_User;
+        }
+        else
+        {
+            Key.TangentMode = ERichCurveTangentMode::RCTM_Auto;
+        }
+
+        // Tangent Weight 모드
+        Key.TangentWeightMode = ERichCurveTangentWeightMode::RCTWM_WeightedNone;
+
+        // Tangent 값 추출 (Cubic인 경우에만)
+        if (Key.InterpMode == ERichCurveInterpMode::RCIM_Cubic)
+        {
+            Key.ArriveTangent = FbxCurve->KeyGetLeftDerivative(KeyIndex);
+            Key.LeaveTangent = FbxCurve->KeyGetRightDerivative(KeyIndex);
+            Key.ArriveTangentWeight = 0.0f;
+            Key.LeaveTangentWeight = 0.0f;
+        }
+        else
+        {
+            Key.ArriveTangent = 0.0f;
+            Key.LeaveTangent = 0.0f;
+            Key.ArriveTangentWeight = 0.0f;
+            Key.LeaveTangentWeight = 0.0f;
+        }
+
+        OutFloatCurve.Keys.Add(Key);
+    }
+}
+
+//====================================================================================
+// Float Curve 추출 (Custom Properties & Morph Targets)
+//====================================================================================
+void UFbxLoader::ExtractAllFloatCurves(FbxScene* Scene, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex)
+{
+    if (!Scene || !InAnimLayer || !OutAnimData)
+        return;
+
+    FbxNode* RootNode = Scene->GetRootNode();
+    if (RootNode)
+    {
+        ExtractAllFloatCurvesRecursive(RootNode, InAnimLayer, OutAnimData, LayerIndex);
+    }
+}
+
+void UFbxLoader::ExtractAllFloatCurvesRecursive(FbxNode* InNode, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex)
+{
+    if (!InNode || !InAnimLayer || !OutAnimData)
+        return;
+
+    FString LayerSuffix = (LayerIndex > 0) ? ("_Layer" + std::to_string(LayerIndex)) : "";
+
+    // 노드의 프로퍼티 순회
+    FbxProperty Property = InNode->GetFirstProperty();
+    while (Property.IsValid())
+    {
+        if (Property.GetPropertyDataType().GetType() == eFbxFloat)
+        {
+            FbxAnimCurve* AnimCurve = Property.GetCurve(InAnimLayer);
+            if (AnimCurve && AnimCurve->KeyGetCount() > 0)
+            {
+                FFloatCurve FloatCurve;
+                FString CurveName = FString(InNode->GetName()) + "_" + Property.GetName().Buffer() + LayerSuffix;
+                FloatCurve.Name = FName(CurveName);
+                
+                ExtractFloatCurveFromFbx(AnimCurve, FloatCurve);
+                OutAnimData->AddFloatCurve(FloatCurve);
+            }
+        }
+        
+        Property = InNode->GetNextProperty(Property);
+    }
+
+    // Morph Target 추출
+    FbxNodeAttribute* Attribute = InNode->GetNodeAttribute();
+    if (Attribute && Attribute->GetAttributeType() == FbxNodeAttribute::eMesh)
+    {
+        FbxMesh* Mesh = static_cast<FbxMesh*>(Attribute);
+        ExtractMorphTargetCurves(Mesh, InNode, InAnimLayer, OutAnimData, LayerIndex);
+    }
+
+    // 자식 노드 재귀 처리
+    for (int i = 0; i < InNode->GetChildCount(); ++i)
+    {
+        ExtractAllFloatCurvesRecursive(InNode->GetChild(i), InAnimLayer, OutAnimData, LayerIndex);
+    }
+}
+
+//====================================================================================
+// Morph Target (BlendShape) Curve 추출
+//====================================================================================
+void UFbxLoader::ExtractMorphTargetCurves(FbxMesh* Mesh, FbxNode* InNode, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex)
+{
+    if (!Mesh || !InNode || !InAnimLayer || !OutAnimData)
+        return;
+
+    FString LayerSuffix = (LayerIndex > 0) ? ("_Layer" + std::to_string(LayerIndex)) : "";
+
+    int DeformerCount = Mesh->GetDeformerCount(FbxDeformer::eBlendShape);
+    for (int DeformerIndex = 0; DeformerIndex < DeformerCount; ++DeformerIndex)
+    {
+        FbxBlendShape* BlendShape = static_cast<FbxBlendShape*>(Mesh->GetDeformer(DeformerIndex, FbxDeformer::eBlendShape));
+        if (!BlendShape)
+            continue;
+
+        int BlendShapeChannelCount = BlendShape->GetBlendShapeChannelCount();
+        for (int ChannelIndex = 0; ChannelIndex < BlendShapeChannelCount; ++ChannelIndex)
+        {
+            FbxBlendShapeChannel* Channel = BlendShape->GetBlendShapeChannel(ChannelIndex);
+            if (!Channel)
+                continue;
+
+            FbxAnimCurve* AnimCurve = Mesh->GetShapeChannel(DeformerIndex, ChannelIndex, InAnimLayer);
+            if (AnimCurve && AnimCurve->KeyGetCount() > 0)
+            {
+                FFloatCurve MorphCurve;
+                FString CurveName = FString(InNode->GetName()) + "_Morph_" + Channel->GetName() + LayerSuffix;
+                MorphCurve.Name = FName(CurveName);
+                
+                ExtractFloatCurveFromFbx(AnimCurve, MorphCurve);
+                OutAnimData->AddFloatCurve(MorphCurve);
+            }
+        }
+    }
 }
 

@@ -38,10 +38,10 @@ public:
 	DECLARE_CLASS(UAnimDataModel, UObject)
 
 	UAnimDataModel() = default;
-	virtual ~UAnimDataModel() override = default;
+	~UAnimDataModel() override = default;
 
 	// Getter 함수들
-	virtual const TArray<FBoneAnimationTrack>& GetBoneAnimationTracks() const;
+	const TArray<FBoneAnimationTrack>& GetBoneAnimationTracks() const;
 	float GetPlayLength() const;
 	const FFrameRate& GetFrameRate() const;
 	int32 GetNumberOfFrames() const;
@@ -66,10 +66,10 @@ public:
 	void PrintDebugInfo() const;
 
 private:
-	TArray<FBoneAnimationTrack> BoneAnimationTracks;
+	TArray<FBoneAnimationTrack> BoneAnimationTracks; // 현재 부모 기준 로컬 트랜스폼으로 저장함
 	float PlayLength = 0.0f;
 	FFrameRate FrameRate = { 30, 1 }; // 기본값: 30fps
 	int32 NumberOfFrames = 0;
 	int32 NumberOfKeys = 0;
-	FAnimationCurveData CurveData;
+	FAnimationCurveData CurveData; // 현재는 그냥 fbx 파싱 중 발견한 곡선들을 발견한 순서대로 저장 -> 추후 파싱 로직 수정 가능성 존재
 };

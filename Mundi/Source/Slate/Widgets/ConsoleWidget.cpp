@@ -55,6 +55,7 @@ void UConsoleWidget::Initialize()
 	HelpCommandList.Add("STAT LIGHT");
 	HelpCommandList.Add("STAT SHADOW");
 	HelpCommandList.Add("CRASH");
+	HelpCommandList.Add("SKINNING");
 
 	// Add welcome messages
 	AddLog("=== Console Widget Initialized ===");
@@ -360,6 +361,37 @@ void UConsoleWidget::ExecCommand(const char* command_line)
 		UStatsOverlayD2D::Get().SetShowDecal(false);
 		UStatsOverlayD2D::Get().SetShowTileCulling(false);
 		AddLog("STAT: OFF");
+	}
+	else if (Stricmp(command_line, "SKINNING") == 0)
+	{
+		AddLog("Skinning Modes:");
+		AddLog("- SKINNING CPU");
+		AddLog("- SKINNING GPU");
+	}
+	else if (Stricmp(command_line, "SKINNING CPU") == 0)
+	{
+		if (UWorld* World = GEngine.GetDefaultWorld())
+		{
+			World->GetRenderSettings().SetSkinningMode(ESkinningMode::CPU);
+			AddLog("Switched to CPU Skinning.");
+		}
+		else
+		{
+			AddLog("Error: No default world available.");
+		}
+		
+	}
+	else if (Stricmp(command_line, "SKINNING GPU") == 0)
+	{
+		if (UWorld* World = GEngine.GetDefaultWorld())
+		{
+			World->GetRenderSettings().SetSkinningMode(ESkinningMode::GPU);
+			AddLog("Switched to GPU Skinning.");
+		}
+		else
+		{
+			AddLog("Error: No default world available.");
+		}
 	}
 	else if (Stricmp(command_line, "CRASH") == 0)
 	{

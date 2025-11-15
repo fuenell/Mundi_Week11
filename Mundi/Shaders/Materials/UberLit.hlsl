@@ -9,6 +9,13 @@
 // #define LIGHTING_MODEL_LAMBERT 1
 // #define LIGHTING_MODEL_PHONG 1
 
+// --- GPU 스키닝 매크로 ---
+#ifndef USE_GPU_SKINNING
+#define USE_GPU_SKINNING 0
+#endif
+
+#define GPU_SKINNING_BUFFER_REGISTER t12
+
 // --- Material 구조체 (OBJ 머티리얼 정보) ---
 // 주의: SPECULAR_COLOR 매크로에서 사용하므로 include 전에 정의 필요
 struct FMaterial
@@ -85,6 +92,10 @@ TextureCubeArray g_ShadowAtlasCube : register(t8);
 Texture2D g_ShadowAtlas2D : register(t9);
 Texture2D<float2> g_VSMShadowAtlas : register(t10);
 TextureCubeArray<float2> g_VSMShadowCube : register(t11);   // TODO: 지금은 전달 안 되고, 안 쓰는 중
+
+#if USE_GPU_SKINNING
+StructuredBuffer<float4x4> g_SkinningMatrices : register(GPU_SKINNING_BUFFER_REGISTER);
+#endif
 
 SamplerState g_Sample : register(s0);
 SamplerState g_Sample2 : register(s1);

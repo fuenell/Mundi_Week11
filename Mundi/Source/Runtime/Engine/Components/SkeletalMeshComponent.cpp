@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "SkeletalMeshComponent.h"
 
 USkeletalMeshComponent::USkeletalMeshComponent()
@@ -137,7 +137,7 @@ void USkeletalMeshComponent::ForceRecomputePose()
     // ComponentSpace -> Final Skinning Matrices 계산
     UpdateFinalSkinningMatrices();
     UpdateSkinningMatrices(TempFinalSkinningMatrices, TempFinalSkinningNormalMatrices);
-    PerformSkinning();
+    PerformCpuSkinning();
 }
 
 void USkeletalMeshComponent::UpdateComponentSpaceTransforms()

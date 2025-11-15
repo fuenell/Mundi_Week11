@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "ResourceBase.h"
 
 class USkeletalMesh : public UResourceBase
@@ -16,7 +16,7 @@ public:
     const FSkeleton* GetSkeleton() const { return Data ? &Data->Skeleton : nullptr; }
     uint32 GetBoneCount() const { return Data ? Data->Skeleton.Bones.Num() : 0; }
     
-    // ID3D11Buffer* GetVertexBuffer() const { return VertexBuffer; } // W10 CPU Skinning이라 Component가 VB 소유
+    ID3D11Buffer* GetVertexBuffer() const { return VertexBuffer; }
     ID3D11Buffer* GetIndexBuffer() const { return IndexBuffer; }
 
     uint32 GetVertexCount() const { return VertexCount; }
@@ -29,7 +29,7 @@ public:
 
     uint64 GetMeshGroupCount() const { return Data ? Data->GroupInfos.size() : 0; }
 
-    void CreateVertexBuffer(ID3D11Buffer** InVertexBuffer);
+    void CreateVertexBuffer(ID3D11Buffer** InVertexBuffer, ESkinningMode Skinning);
     void UpdateVertexBuffer(const TArray<FNormalVertex>& SkinnedVertices, ID3D11Buffer* InVertexBuffer);
     
 private:
@@ -37,11 +37,10 @@ private:
     void ReleaseResources();
     
 private:
-    // GPU 리소스
-    // ID3D11Buffer* VertexBuffer = nullptr; // W10 CPU Skinning이라 Component가 VB 소유
-    ID3D11Buffer* IndexBuffer = nullptr;
-    uint32 VertexCount = 0;     // 정점 개수
-    uint32 IndexCount = 0;     // 버텍스 점의 개수 
+	ID3D11Buffer* VertexBuffer = nullptr; // GPU 스키닝용 버텍스 버퍼
+    ID3D11Buffer* IndexBuffer = nullptr;  // CPU, GPU 스키닝 공용 인덱스 버퍼
+    uint32 VertexCount = 0;               // 정점 개수
+    uint32 IndexCount = 0;                // 버텍스 점의 개수 
     uint32 VertexStride = 0;
     
     // CPU 리소스

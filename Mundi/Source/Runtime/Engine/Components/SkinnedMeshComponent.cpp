@@ -2,6 +2,7 @@
 #include "SkinnedMeshComponent.h"
 #include "MeshBatchElement.h"
 #include "SceneView.h"
+#include "D3D11RHI.h"
 
 USkinnedMeshComponent::USkinnedMeshComponent() : SkeletalMesh(nullptr)
 {
@@ -15,6 +16,7 @@ USkinnedMeshComponent::~USkinnedMeshComponent()
 		VertexBuffer->Release();
 		VertexBuffer = nullptr;
 	}
+	ReleaseSkinningMatrixResources();
 }
 
 void USkinnedMeshComponent::BeginPlay()
@@ -41,7 +43,7 @@ void USkinnedMeshComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle
 void USkinnedMeshComponent::DuplicateSubObjects()
 {
 	Super::DuplicateSubObjects();
-	SkeletalMesh->CreateVertexBuffer(&VertexBuffer);
+	SkeletalMesh->CreateVertexBuffer(&VertexBuffer, ESkinningMode::CPU);
 }
 
 void USkinnedMeshComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View)
@@ -204,14 +206,17 @@ void USkinnedMeshComponent::SetSkeletalMesh(const FString& PathFileName)
 		VertexBuffer->Release();
 		VertexBuffer = nullptr;
 	}
+	ReleaseSkinningMatrixResources();
 	
 	if (SkeletalMesh && SkeletalMesh->GetSkeletalMeshData())
 	{
-		SkeletalMesh->CreateVertexBuffer(&VertexBuffer);
+		SkeletalMesh->CreateVertexBuffer(&VertexBuffer, ESkinningMode::CPU);
 
-		const TArray<FMatrix> IdentityMatrices(SkeletalMesh->GetBoneCount(), FMatrix::Identity());
+		const uint32 BoneCount = SkeletalMesh->GetBoneCount();
+		const TArray<FMatrix> IdentityMatrices(BoneCount, FMatrix::Identity());
 		UpdateSkinningMatrices(IdentityMatrices, IdentityMatrices);
-		PerformSkinning();
+		PerformCpuSkinning();
+		CreateSkinningMatrixResources(BoneCount);
 		
 		const TArray<FGroupInfo>& GroupInfos = SkeletalMesh->GetMeshGroupInfo();
 		MaterialSlots.resize(GroupInfos.size());
@@ -226,11 +231,12 @@ void USkinnedMeshComponent::SetSkeletalMesh(const FString& PathFileName)
 	{
 		SkeletalMesh = nullptr;
 		UpdateSkinningMatrices(TArray<FMatrix>(), TArray<FMatrix>());
-		PerformSkinning();
+		PerformCpuSkinning();
+		ReleaseSkinningMatrixResources();
 	}
 }
 
-void USkinnedMeshComponent::PerformSkinning()
+void USkinnedMeshComponent::PerformCpuSkinning()
 {
 	if (!SkeletalMesh || FinalSkinningMatrices.IsEmpty()) { return; }
 	if (!bSkinningMatricesDirty) { return; }
@@ -320,4 +326,47 @@ FVector4 USkinnedMeshComponent::SkinVertexTangent(const FSkinnedVertex& InVertex
 
 	const FVector FinalTangentDir = BlendedTangentDir.GetSafeNormal();
 	return { FinalTangentDir.X, FinalTangentDir.Y, FinalTangentDir.Z, OriginalSignW };
+}
+
+void USkinnedMeshComponent::CreateSkinningMatrixResources(uint32 InBoneCount)
+{
+	ReleaseSkinningMatrixResources();
+
+	if (InBoneCount == 0)
+	{
+		return;
+	}
+
+	D3D11RHI* RHIDevice = GEngine.GetRHIDevice();
+	if (!RHIDevice)
+	{
+		return;
+	}
+
+	HRESULT hr = RHIDevice->CreateStructuredBuffer(sizeof(FMatrix), InBoneCount, nullptr, &SkinningMatrixBuffer);
+	assert(SUCCEEDED(hr));
+
+	hr = RHIDevice->CreateStructuredBufferSRV(SkinningMatrixBuffer, &SkinningMatrixSRV);
+	assert(SUCCEEDED(hr));
+
+	SkinningMatrixCount = InBoneCount;
+	SkinningMatrixOffset = 0;
+}
+
+void USkinnedMeshComponent::ReleaseSkinningMatrixResources()
+{
+	if (SkinningMatrixSRV)
+	{
+		SkinningMatrixSRV->Release();
+		SkinningMatrixSRV = nullptr;
+	}
+
+	if (SkinningMatrixBuffer)
+	{
+		SkinningMatrixBuffer->Release();
+		SkinningMatrixBuffer = nullptr;
+	}
+
+	SkinningMatrixCount = 0;
+	SkinningMatrixOffset = 0;
 }

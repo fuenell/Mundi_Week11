@@ -38,7 +38,7 @@ public:
     USkeletalMesh* GetSkeletalMesh() const { return SkeletalMesh; }
 
 protected:
-    void PerformSkinning();
+    void PerformCpuSkinning();
     /**
      * @brief 자식에게서 원본 메시를 받아 CPU 스키닝을 수행
      * @param InSkinningMatrices 스키닝 매트릭스
@@ -54,9 +54,14 @@ protected:
     TArray<FNormalVertex> SkinnedVertices;
 
 private:
+	// CPU Skinning Methods
     FVector SkinVertexPosition(const FSkinnedVertex& InVertex) const;
     FVector SkinVertexNormal(const FSkinnedVertex& InVertex) const;
     FVector4 SkinVertexTangent(const FSkinnedVertex& InVertex) const;
+
+	// GPU Skinning Resources
+    void CreateSkinningMatrixResources(uint32 InBoneCount);
+    void ReleaseSkinningMatrixResources();
 
     /**
      * @brief 자식이 계산해 준, 현재 프레임의 최종 스키닝 행렬
@@ -66,7 +71,15 @@ private:
     bool bSkinningMatricesDirty = true;
     
     /**
-     * @brief CPU 스키닝에서 진행하기 때문에, Component별로 VertexBuffer를 가지고 스키닝 업데이트를 진행해야함
+     * @brief CPU 스키닝용 Component별로 VertexBuffer
     */
     ID3D11Buffer* VertexBuffer = nullptr;
+
+	/**
+	 * @brief GPU 스키닝용 StructuredBuffer 및 SRV
+	*/
+    ID3D11Buffer* SkinningMatrixBuffer = nullptr;
+    ID3D11ShaderResourceView* SkinningMatrixSRV = nullptr;
+    uint32 SkinningMatrixCount = 0;
+    uint32 SkinningMatrixOffset = 0;
 };

@@ -251,3 +251,9 @@ enum class EWorldType : uint8
     End,
     PreviewMinimal, 
 };
+
+enum class ESkinningMode
+{
+	CPU,
+	GPU
+};

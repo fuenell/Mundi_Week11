@@ -47,11 +47,6 @@ private:
 	void ExtractBoneAnimation(FbxNode* InNode, FbxTime StartTime, FbxTime EndTime, FbxTime FrameTime,
 		UAnimDataModel* OutAnimData);
 
-	void ExtractBoneAnimationAdditiveLayer(FbxNode* InNode, FbxAnimLayer* InAnimLayer, 
-	                                       const TMap<FbxNode*, int32>& BoneToIndex,
-	                                       FbxTime StartTime, FbxTime EndTime, FbxTime FrameTime,
-	                                       UAnimDataModel* OutAnimData, int32 LayerIndex);
-
 	void BlendAnimationTracks(FBoneAnimationTrack& BaseTrack, const FBoneAnimationTrack& AdditiveTrack);
 
 	void ExtractAnimationCurves(FbxNode* InNode, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex = 0);

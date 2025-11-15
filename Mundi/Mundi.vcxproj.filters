@@ -6,9 +6,6 @@
     <ClCompile Include="Source\Runtime\Core\Misc\WindowsCrashReporter.cpp">
       <Filter>Source\Runtime\Core\Misc</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\AssetManagement\AnimDataModel.cpp">
-      <Filter>Source\Runtime\AssetManagement</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Editor\FbxLoader.cpp">
       <Filter>Source\Editor</Filter>
     </ClCompile>
@@ -630,6 +627,9 @@
     <ClCompile Include="Generated\AStaticMeshActor.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimDataModel.cpp">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -671,9 +671,6 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\Grid\GridActor.h">
       <Filter>Source\Editor\Grid</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\AssetManagement\AnimDataModel.h">
-      <Filter>Source\Runtime\AssetManagement</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\AssetManagement\Cube.h">
       <Filter>Source\Runtime\AssetManagement</Filter>
@@ -2612,6 +2609,27 @@
     </ClInclude>
     <ClInclude Include="Generated\AStaticMeshActor.generated.h">
       <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimationAsset.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimDataModel.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimSequenceBase.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimTypes.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimSequence.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimInstance.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimSingleNodeInstance.h">
+      <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

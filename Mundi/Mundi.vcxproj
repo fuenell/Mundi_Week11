@@ -356,7 +356,9 @@
     <ClCompile Include="Source\Editor\ObjManager.cpp" />
     <ClCompile Include="Source\Editor\PlatformProcess.cpp" />
     <ClCompile Include="Source\Editor\SelectionManager.cpp" />
-    <ClCompile Include="Source\Runtime\AssetManagement\AnimDataModel.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\AnimDataModel.cpp">
+      <DeploymentContent>false</DeploymentContent>
+    </ClCompile>
     <ClCompile Include="Source\Runtime\AssetManagement\DynamicMesh.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\Line.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\LineDynamicMesh.cpp" />
@@ -616,10 +618,28 @@
     <ClInclude Include="Source\Editor\ObjManager.h" />
     <ClInclude Include="Source\Editor\PlatformProcess.h" />
     <ClInclude Include="Source\Editor\SelectionManager.h" />
+    <ClInclude Include="Source\Runtime\Animation\AnimationAsset.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
     <ClInclude Include="Source\Runtime\Animation\AnimCurveTypes.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\AssetManagement\AnimDataModel.h">
+    <ClInclude Include="Source\Runtime\Animation\AnimDataModel.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimInstance.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimSequence.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimSequenceBase.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimSingleNodeInstance.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimTypes.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Source\Runtime\AssetManagement\Cube.h" />

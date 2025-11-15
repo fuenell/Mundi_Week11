@@ -68,6 +68,10 @@ protected:
     TArray<FMatrix> TempFinalSkinningMatrices;
     TArray<FMatrix> TempFinalSkinningNormalMatrices;
 
+	/**
+	 * @brief 이 컴포넌트에 연결된 애니메이션 인스턴스
+	 */
+	class UAnimInstance* AnimInstance;
 
 // FOR TEST!!!
 private:

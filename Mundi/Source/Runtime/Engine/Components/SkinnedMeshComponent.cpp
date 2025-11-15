@@ -3,6 +3,8 @@
 #include "MeshBatchElement.h"
 #include "SceneView.h"
 #include "D3D11RHI.h"
+#include "VertexData.h"
+#include "World.h"
 
 USkinnedMeshComponent::USkinnedMeshComponent() : SkeletalMesh(nullptr)
 {
@@ -50,7 +52,10 @@ void USkinnedMeshComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMes
 {
 	if (!SkeletalMesh || !SkeletalMesh->GetSkeletalMeshData()) { return; }
 
-	if (bSkinningMatricesDirty)
+	const ESkinningMode SkinningModeToUse =
+		(View && View->RenderSettings) ? View->RenderSettings->GetSkinningMode() : ESkinningMode::CPU;
+
+	if (SkinningModeToUse == ESkinningMode::CPU && bSkinningMatricesDirty)
 	{
 		bSkinningMatricesDirty = false;
 		SkeletalMesh->UpdateVertexBuffer(SkinnedVertices, VertexBuffer);
@@ -131,9 +136,24 @@ void USkinnedMeshComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMes
 		
 		BatchElement.Material = MaterialToUse;
 		
-		BatchElement.VertexBuffer = VertexBuffer;
+		BatchElement.SkinningMode = SkinningModeToUse;
+		if (SkinningModeToUse == ESkinningMode::GPU)
+		{
+			BatchElement.VertexBuffer = SkeletalMesh->GetVertexBuffer();
+			BatchElement.VertexStride = sizeof(FSkinnedVertex);
+			BatchElement.SkinningMatrixSRV = SkinningMatrixSRV;
+			BatchElement.SkinningMatrixOffset = SkinningMatrixOffset;
+			BatchElement.SkinningMatrixCount = SkinningMatrixCount;
+		}
+		else
+		{
+			BatchElement.VertexBuffer = VertexBuffer;
+			BatchElement.VertexStride = SkeletalMesh->GetVertexStride();
+			BatchElement.SkinningMatrixSRV = nullptr;
+			BatchElement.SkinningMatrixOffset = 0;
+			BatchElement.SkinningMatrixCount = 0;
+		}
 		BatchElement.IndexBuffer = SkeletalMesh->GetIndexBuffer();
-		BatchElement.VertexStride = SkeletalMesh->GetVertexStride();
 		
 		BatchElement.IndexCount = IndexCount;
 		BatchElement.StartIndex = StartIndex;
@@ -239,6 +259,13 @@ void USkinnedMeshComponent::SetSkeletalMesh(const FString& PathFileName)
 void USkinnedMeshComponent::PerformCpuSkinning()
 {
 	if (!SkeletalMesh || FinalSkinningMatrices.IsEmpty()) { return; }
+	const UWorld* World = GetWorld();
+	const ESkinningMode CurrentSkinningMode =
+		(World ? World->GetRenderSettings().GetSkinningMode() : ESkinningMode::CPU);
+	if (CurrentSkinningMode != ESkinningMode::CPU)
+	{
+		return;
+	}
 	if (!bSkinningMatricesDirty) { return; }
 	
 	const TArray<FSkinnedVertex>& SrcVertices = SkeletalMesh->GetSkeletalMeshData()->Vertices;

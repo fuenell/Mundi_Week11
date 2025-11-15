@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Vector.h" // FMatrix
 #include "Enums.h"
 #include "CameraComponent.h"
@@ -62,7 +62,7 @@ public:
 
     TArray<FVector> FrustumVertices;
 
-    URenderSettings* RenderSettings;
+    URenderSettings* RenderSettings; // World의 렌더 설정을 참조 (자체 설정 X)
 
     // 렌더링 설정
     ECameraProjectionMode ProjectionMode = ECameraProjectionMode::Perspective;

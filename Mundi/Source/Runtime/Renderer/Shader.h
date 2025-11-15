@@ -7,6 +7,19 @@ struct FShaderMacro
 	FName Name;
 	FName Definition;
 
+	FShaderMacro() = default;
+	FShaderMacro(const FName& InName, const FName& InDefinition)
+		: Name(InName)
+		, Definition(InDefinition)
+	{
+	}
+
+	FShaderMacro(const char* InName, const char* InDefinition)
+		: Name(InName)
+		, Definition(InDefinition)
+	{
+	}
+
 	// TMap의 키로 사용하기 위해 비교 연산자 정의
 	bool operator==(const FShaderMacro& Other) const
 	{

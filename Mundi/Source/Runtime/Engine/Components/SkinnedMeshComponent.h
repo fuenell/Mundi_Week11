@@ -71,7 +71,7 @@ private:
     bool bSkinningMatricesDirty = true;
     
     /**
-     * @brief CPU 스키닝용 Component별로 VertexBuffer
+     * @brief CPU 스키닝용 Component별 VertexBuffer
     */
     ID3D11Buffer* VertexBuffer = nullptr;
 

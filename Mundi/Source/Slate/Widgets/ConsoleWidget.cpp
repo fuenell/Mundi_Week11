@@ -1,9 +1,11 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "ConsoleWidget.h"
 #include "ObjectFactory.h"
 #include "GlobalConsole.h"
 #include "StatsOverlayD2D.h"
 #include "USlateManager.h"
+#include "WindowsCrashReporter.h"
+
 #include <windows.h>
 #include <cstdarg>
 #include <cctype>
@@ -52,6 +54,7 @@ void UConsoleWidget::Initialize()
 	HelpCommandList.Add("STAT NONE");
 	HelpCommandList.Add("STAT LIGHT");
 	HelpCommandList.Add("STAT SHADOW");
+	HelpCommandList.Add("CRASH");
 
 	// Add welcome messages
 	AddLog("=== Console Widget Initialized ===");
@@ -357,6 +360,10 @@ void UConsoleWidget::ExecCommand(const char* command_line)
 		UStatsOverlayD2D::Get().SetShowDecal(false);
 		UStatsOverlayD2D::Get().SetShowTileCulling(false);
 		AddLog("STAT: OFF");
+	}
+	else if (Stricmp(command_line, "CRASH") == 0)
+	{
+		FWindowsCrashReporter::MakeRandomCrash();
 	}
 	else
 	{

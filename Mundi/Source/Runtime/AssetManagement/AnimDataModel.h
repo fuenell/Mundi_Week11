@@ -3,7 +3,7 @@
 #include "Vector.h"
 #include "Name.h"
 #include "Object.h"
-#include "../Animation/AnimCurveTypes.h"
+#include "AnimCurveTypes.h"
 
 struct FFrameRate
 {

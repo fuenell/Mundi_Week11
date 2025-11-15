@@ -1348,13 +1348,7 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
     }
 
     // 16. UAnimDataModel에 총 키 개수 할당
-	int32 TotalKeyCount = 0;
-    for (const FBoneAnimationTrack& Track : AnimData->GetBoneAnimationTracks())
-    {
-        TotalKeyCount += Track.InternalTrack.PosKeys.Num();
-        TotalKeyCount += Track.InternalTrack.RotKeys.Num();
-        TotalKeyCount += Track.InternalTrack.ScaleKeys.Num();
-    }
+	int32 TotalKeyCount = AnimData->GetNumberOfFrames() + 1; // UE가 이렇게 계산함
     AnimData->SetNumberOfKeys(TotalKeyCount);
 
 	// 결과 로그	출력

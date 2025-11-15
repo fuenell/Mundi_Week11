@@ -55,6 +55,10 @@ void UFbxLoader::PreLoad()
           {
              ProcessedFiles.insert(WPathStr);
              FbxLoader.LoadFbxMesh(PathStr);
+
+			 // for test
+			 FbxLoader.LoadAnimationFromFbx(PathStr);
+
              ++LoadedCount;
           }
        }
@@ -353,7 +357,6 @@ FSkeletalMeshData* UFbxLoader::LoadFbxMeshAsset(const FString& FilePath)
 
     return MeshData;
 }
-
 
 void UFbxLoader::LoadMeshFromNode(FbxNode* InNode,
 	FSkeletalMeshData& MeshData,
@@ -1215,7 +1218,7 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
         return nullptr;
     }
 
-    // 3. 씬 생성 및 임포트
+    // 3. 씬 임포트
     FbxScene* Scene = FbxScene::Create(SdkManager, "AnimScene");
     if (!Importer->Import(Scene))
     {
@@ -1225,7 +1228,7 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
     }
     Importer->Destroy();
 
-    // 4. 좌표계 변환 (Unreal Engine 좌표계로)
+    // 4. 씬의 좌표계 변환 (Unreal Engine 좌표계로)
     FbxAxisSystem UnrealImportAxis(FbxAxisSystem::eZAxis, FbxAxisSystem::eParityEven, FbxAxisSystem::eLeftHanded);
     FbxAxisSystem SourceSetup = Scene->GetGlobalSettings().GetAxisSystem();
     FbxSystemUnit::m.ConvertScene(Scene);
@@ -1236,17 +1239,16 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
         UnrealImportAxis.DeepConvertScene(Scene);
     }
 
-    // 5. AnimStack 확인
+    // 5. AnimStack 개수 확인
     int32 AnimStackCount = Scene->GetSrcObjectCount<FbxAnimStack>();
     if (AnimStackCount == 0)
     {
         UE_LOG("No animation (AnimStack) found in FBX file: %s", NormalizedPath.c_str());
         return nullptr;
     }
-
     UE_LOG("Found %d AnimStack(s) in FBX file", AnimStackCount);
 
-    // 6. 요청한 AnimStack 가져오기
+    // 6. 인자로 들어온 인덱스(디폴트 0)에 해당하는 AnimStack 가져오기
     if (AnimStackIndex < 0 || AnimStackIndex >= AnimStackCount)
     {
         UE_LOG("Invalid AnimStackIndex %d (valid range: 0-%d). Using index 0.", AnimStackIndex, AnimStackCount - 1);
@@ -1259,48 +1261,45 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
         UE_LOG("Failed to get AnimStack at index %d", AnimStackIndex);
         return nullptr;
     }
-
     UE_LOG("Using AnimStack: '%s'", AnimStack->GetName());
 
     // 7. AnimStack을 현재 씬에 적용
     Scene->SetCurrentAnimationStack(AnimStack);
 
-    // 8. 타임라인 정보 추출
+	// 8. 리턴할 UAnimDataModel 생성
+	UAnimDataModel* AnimData = NewObject<UAnimDataModel>();
+
+    // 9. UAnimDataModel에 Duration, FrameRate 설정
     FbxTakeInfo* TakeInfo = Scene->GetTakeInfo(AnimStack->GetName());
     FbxTime StartTime = TakeInfo ? TakeInfo->mLocalTimeSpan.GetStart() : AnimStack->GetLocalTimeSpan().GetStart();
     FbxTime EndTime = TakeInfo ? TakeInfo->mLocalTimeSpan.GetStop() : AnimStack->GetLocalTimeSpan().GetStop();
     FbxTime Duration = EndTime - StartTime;
 
-    // 9. 프레임 레이트 가져오기
     FbxTime::EMode TimeMode = Scene->GetGlobalSettings().GetTimeMode();
     double FrameRateDouble = FbxTime::GetFrameRate(TimeMode);
-    
-    UE_LOG("Animation timeline - Start: %.2fs, End: %.2fs, Duration: %.2fs, FrameRate: %.2f fps",
-           StartTime.GetSecondDouble(), EndTime.GetSecondDouble(), Duration.GetSecondDouble(), FrameRateDouble);
 
-    // 10. UAnimDataModel 생성 및 기본 정보 설정
-    UAnimDataModel* AnimData = NewObject<UAnimDataModel>();
     AnimData->SetPlayLength(static_cast<float>(Duration.GetSecondDouble()));
     AnimData->SetFrameRate(static_cast<int32>(FrameRateDouble), 1);
-    
-    // 프레임 수 계산
+
+	UE_LOG("Animation timeline - Start: %.2fs, End: %.2fs, Duration: %.2fs, FrameRate: %.2f fps",
+		StartTime.GetSecondDouble(), EndTime.GetSecondDouble(), Duration.GetSecondDouble(), FrameRateDouble);
+
+	// 10. UAnimDataModel에 Frame 수 설정
     int32 NumFrames = static_cast<int32>(Duration.GetFrameCount(TimeMode));
     AnimData->SetNumberOfFrames(NumFrames);
 
-    // 11. 모든 AnimLayer 가져오기
+    // 11. AnimLayer 개수 확인
     int32 AnimLayerCount = AnimStack->GetMemberCount<FbxAnimLayer>();
     if (AnimLayerCount == 0)
     {
         UE_LOG("No AnimLayer found in AnimStack");
         return nullptr;
     }
-
     UE_LOG("Found %d AnimLayer(s) in AnimStack", AnimLayerCount);
 
-    // 12. 본 인덱스 맵 생성 (스켈레톤 구조 파악)
+	// 12. 본 인덱스 맵 생성: 각 본에 해당하는 애니메이션 트랙을 UAnimDataModel에 추가하기 위함
     TMap<FbxNode*, int32> BoneToIndex;
     FbxNode* RootNode = Scene->GetRootNode();
-    
     FSkeletalMeshData TempMeshData;
     if (RootNode)
     {
@@ -1309,16 +1308,21 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
             LoadSkeletonFromNode(RootNode->GetChild(Index), TempMeshData, -1, BoneToIndex);
         }
     }
-
     UE_LOG("Found %d bones in skeleton", BoneToIndex.Num());
 
     // 13. 프레임 간격 계산
     FbxTime FrameTime;
     FrameTime.SetTime(0, 0, 0, 1, 0, TimeMode);
 
-    // 14. 모든 AnimLayer를 순회하며 데이터 추출
-    int32 TotalKeyCount = 0;
-    
+	// 14. UAnimDataModel에 애니메이션 트랙 데이터 할당
+	for (auto& BonePair : BoneToIndex)
+	{
+		FbxNode* BoneNode = BonePair.first;
+
+		ExtractBoneAnimation(BoneNode, StartTime, EndTime, FrameTime, AnimData);
+	}
+
+	// 15. UAnimDataModel에 커브 데이터 할당
     for (int32 LayerIndex = 0; LayerIndex < AnimLayerCount; ++LayerIndex)
     {
         FbxAnimLayer* AnimLayer = AnimStack->GetMember<FbxAnimLayer>(LayerIndex);
@@ -1330,31 +1334,21 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
 
         UE_LOG("Processing AnimLayer %d: '%s'", LayerIndex, AnimLayer->GetName());
 
-        // 14-1. 각 본에 대한 애니메이션 데이터 추출
+        // 14-1. 각 본에 대한 커브 데이터 추출
         for (auto& BonePair : BoneToIndex)
         {
             FbxNode* BoneNode = BonePair.first;
             
-            if (LayerIndex == 0)
-            {
-                // 첫 번째 레이어는 기본 트랙으로 추가
-                ExtractBoneAnimation(BoneNode, AnimLayer, BoneToIndex, StartTime, EndTime, FrameTime, AnimData);
-            }
-            else
-            {
-                // 추가 레이어는 블렌딩하여 처리
-                ExtractBoneAnimationAdditiveLayer(BoneNode, AnimLayer, BoneToIndex, StartTime, EndTime, FrameTime, AnimData, LayerIndex);
-            }
-            
-            // 커브 데이터 추출 (모든 레이어에서)
+            // 커브 데이터 추출
             ExtractAnimationCurves(BoneNode, AnimLayer, AnimData, LayerIndex);
         }
 
         // 14-2. 추가적인 Float Curve 추출 (Morph Target, Custom Attributes 등)
-        ExtractFloatCurves(Scene, AnimLayer, AnimData, LayerIndex);
+        ExtractAllFloatCurves(Scene, AnimLayer, AnimData, LayerIndex);
     }
 
-    // 15. 총 키 개수 계산
+    // 16. UAnimDataModel에 총 키 개수 할당
+	int32 TotalKeyCount = 0;
     for (const FBoneAnimationTrack& Track : AnimData->GetBoneAnimationTracks())
     {
         TotalKeyCount += Track.InternalTrack.PosKeys.Num();
@@ -1363,6 +1357,7 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
     }
     AnimData->SetNumberOfKeys(TotalKeyCount);
 
+	// 결과 로그	출력
     UE_LOG("Successfully loaded animation from %s", NormalizedPath.c_str());
     UE_LOG("  - Duration: %.2fs", AnimData->GetPlayLength());
     UE_LOG("  - Frames: %d", AnimData->GetNumberOfFrames());
@@ -1379,12 +1374,11 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
 //====================================================================================
 // 본 애니메이션 추출 (기본 레이어)
 //====================================================================================
-void UFbxLoader::ExtractBoneAnimation(FbxNode* InNode, FbxAnimLayer* InAnimLayer, 
-                                      const TMap<FbxNode*, int32>& BoneToIndex,
+void UFbxLoader::ExtractBoneAnimation(FbxNode* InNode,
                                       FbxTime StartTime, FbxTime EndTime, FbxTime FrameTime,
                                       UAnimDataModel* OutAnimData)
 {
-    if (!InNode || !InAnimLayer || !OutAnimData)
+    if (!InNode || !OutAnimData)
         return;
 
     // 본 트랙 생성
@@ -1431,110 +1425,6 @@ void UFbxLoader::ExtractBoneAnimation(FbxNode* InNode, FbxAnimLayer* InAnimLayer
 
     // 트랙을 AnimDataModel에 추가
     OutAnimData->AddBoneTrack(BoneTrack);
-}
-
-//====================================================================================
-// 본 애니메이션 추출 (추가 레이어 - Additive 블렌딩)
-//====================================================================================
-void UFbxLoader::ExtractBoneAnimationAdditiveLayer(FbxNode* InNode, FbxAnimLayer* InAnimLayer, 
-                                                   const TMap<FbxNode*, int32>& BoneToIndex,
-                                                   FbxTime StartTime, FbxTime EndTime, FbxTime FrameTime,
-                                                   UAnimDataModel* OutAnimData, int32 LayerIndex)
-{
-    if (!InNode || !InAnimLayer || !OutAnimData)
-        return;
-
-    // 기존 본 트랙 찾기
-    FName BoneName = FName(InNode->GetName());
-    FBoneAnimationTrack* ExistingTrack = nullptr;
-    
-    // Public API를 통해 트랙 접근
-    const TArray<FBoneAnimationTrack>& AllTracks = OutAnimData->GetBoneAnimationTracks();
-    for (int32 i = 0; i < AllTracks.Num(); ++i)
-    {
-        if (AllTracks[i].Name == BoneName)
-        {
-            // const_cast를 사용하여 수정 가능하게 변경 (비권장이지만 여기서는 필요)
-            ExistingTrack = const_cast<FBoneAnimationTrack*>(&AllTracks[i]);
-            break;
-        }
-    }
-
-    // 새 레이어 트랙 데이터 추출
-    FBoneAnimationTrack NewLayerTrack;
-    NewLayerTrack.Name = BoneName;
-
-    FbxTime CurrentTime = StartTime;
-    while (CurrentTime <= EndTime)
-    {
-        FbxAMatrix LocalTransform = InNode->EvaluateLocalTransform(CurrentTime);
-
-        // Translation
-        FbxVector4 Translation = LocalTransform.GetT();
-        NewLayerTrack.InternalTrack.PosKeys.Add(FVector(
-            static_cast<float>(Translation[0]),
-            static_cast<float>(Translation[1]),
-            static_cast<float>(Translation[2])
-        ));
-
-        // Rotation
-        FbxQuaternion Rotation = LocalTransform.GetQ();
-        NewLayerTrack.InternalTrack.RotKeys.Add(FQuat(
-            static_cast<float>(Rotation[0]),
-            static_cast<float>(Rotation[1]),
-            static_cast<float>(Rotation[2]),
-            static_cast<float>(Rotation[3])
-        ));
-
-        // Scale
-        FbxVector4 Scale = LocalTransform.GetS();
-        NewLayerTrack.InternalTrack.ScaleKeys.Add(FVector(
-            static_cast<float>(Scale[0]),
-            static_cast<float>(Scale[1]),
-            static_cast<float>(Scale[2])
-        ));
-
-        CurrentTime += FrameTime;
-    }
-
-    if (ExistingTrack)
-    {
-        // 기존 트랙과 블렌딩
-        BlendAnimationTracks(*ExistingTrack, NewLayerTrack);
-    }
-    else
-    {
-        // 기존 트랙이 없으면 새로 추가
-        OutAnimData->AddBoneTrack(NewLayerTrack);
-    }
-}
-
-//====================================================================================
-// 애니메이션 트랙 블렌딩
-//====================================================================================
-void UFbxLoader::BlendAnimationTracks(FBoneAnimationTrack& BaseTrack, const FBoneAnimationTrack& AdditiveTrack)
-{
-    // Position 블렌딩 (Additive)
-    int32 PosKeyCount = FMath::Min(BaseTrack.InternalTrack.PosKeys.Num(), AdditiveTrack.InternalTrack.PosKeys.Num());
-    for (int32 i = 0; i < PosKeyCount; ++i)
-    {
-        BaseTrack.InternalTrack.PosKeys[i] += AdditiveTrack.InternalTrack.PosKeys[i];
-    }
-
-    // Rotation 블렌딩 (Quaternion 곱셈)
-    int32 RotKeyCount = FMath::Min(BaseTrack.InternalTrack.RotKeys.Num(), AdditiveTrack.InternalTrack.RotKeys.Num());
-    for (int32 i = 0; i < RotKeyCount; ++i)
-    {
-        BaseTrack.InternalTrack.RotKeys[i] = BaseTrack.InternalTrack.RotKeys[i] * AdditiveTrack.InternalTrack.RotKeys[i];
-        BaseTrack.InternalTrack.RotKeys[i].Normalize();
-    }
-
-    // Scale 블렌딩 (Multiplicative)
-    int32 ScaleKeyCount = FMath::Min(BaseTrack.InternalTrack.ScaleKeys.Num(), AdditiveTrack.InternalTrack.ScaleKeys.Num());
-    for (int32 i = 0; i < ScaleKeyCount; ++i)
-    {
-        BaseTrack.InternalTrack.ScaleKeys[i] = BaseTrack.InternalTrack.ScaleKeys[i] * AdditiveTrack.InternalTrack.ScaleKeys[i];
-    }
 }
 
 //====================================================================================
@@ -1711,7 +1601,7 @@ void UFbxLoader::ExtractFloatCurveFromFbx(FbxAnimCurve* FbxCurve, FFloatCurve& O
 //====================================================================================
 // Float Curve 추출 (Custom Properties & Morph Targets)
 //====================================================================================
-void UFbxLoader::ExtractFloatCurves(FbxScene* Scene, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex)
+void UFbxLoader::ExtractAllFloatCurves(FbxScene* Scene, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex)
 {
     if (!Scene || !InAnimLayer || !OutAnimData)
         return;
@@ -1719,11 +1609,11 @@ void UFbxLoader::ExtractFloatCurves(FbxScene* Scene, FbxAnimLayer* InAnimLayer, 
     FbxNode* RootNode = Scene->GetRootNode();
     if (RootNode)
     {
-        ExtractFloatCurvesRecursive(RootNode, InAnimLayer, OutAnimData, LayerIndex);
+        ExtractAllFloatCurvesRecursive(RootNode, InAnimLayer, OutAnimData, LayerIndex);
     }
 }
 
-void UFbxLoader::ExtractFloatCurvesRecursive(FbxNode* InNode, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex)
+void UFbxLoader::ExtractAllFloatCurvesRecursive(FbxNode* InNode, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex)
 {
     if (!InNode || !InAnimLayer || !OutAnimData)
         return;
@@ -1762,7 +1652,7 @@ void UFbxLoader::ExtractFloatCurvesRecursive(FbxNode* InNode, FbxAnimLayer* InAn
     // 자식 노드 재귀 처리
     for (int i = 0; i < InNode->GetChildCount(); ++i)
     {
-        ExtractFloatCurvesRecursive(InNode->GetChild(i), InAnimLayer, OutAnimData, LayerIndex);
+        ExtractAllFloatCurvesRecursive(InNode->GetChild(i), InAnimLayer, OutAnimData, LayerIndex);
     }
 }
 

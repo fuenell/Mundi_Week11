@@ -44,9 +44,8 @@ private:
 	void EnsureSingleRootBone(FSkeletalMeshData& MeshData);
 
 	// 애니메이션 추출 관련 함수들
-	void ExtractBoneAnimation(FbxNode* InNode, FbxAnimLayer* InAnimLayer, const TMap<FbxNode*, int32>& BoneToIndex, 
-	                          FbxTime StartTime, FbxTime EndTime, FbxTime FrameTime, 
-	                          UAnimDataModel* OutAnimData);
+	void ExtractBoneAnimation(FbxNode* InNode, FbxTime StartTime, FbxTime EndTime, FbxTime FrameTime,
+		UAnimDataModel* OutAnimData);
 
 	void ExtractBoneAnimationAdditiveLayer(FbxNode* InNode, FbxAnimLayer* InAnimLayer, 
 	                                       const TMap<FbxNode*, int32>& BoneToIndex,
@@ -62,9 +61,9 @@ private:
 	
 	void ExtractFloatCurveFromFbx(FbxAnimCurve* FbxCurve, FFloatCurve& OutFloatCurve);
 	
-	void ExtractFloatCurves(FbxScene* Scene, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex = 0);
+	void ExtractAllFloatCurves(FbxScene* Scene, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex = 0);
 	
-	void ExtractFloatCurvesRecursive(FbxNode* InNode, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex = 0);
+	void ExtractAllFloatCurvesRecursive(FbxNode* InNode, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex = 0);
 	
 	void ExtractMorphTargetCurves(FbxMesh* Mesh, FbxNode* InNode, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex = 0);
 

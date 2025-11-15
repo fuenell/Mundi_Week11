@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "SelectionManager.h"
 #include "Picking.h"
 #include "CameraActor.h"
@@ -145,7 +145,7 @@ bool UWorld::TryLoadLastUsedLevel()
 	JSON LevelJsonData;
 	if (FJsonSerializer::LoadJsonFromFile(LevelJsonData, LastUsedLevelPath))
 	{
-		//NewLevel->Serialize(true, LevelJsonData);
+		NewLevel->Serialize(true, LevelJsonData);
 	}
 	else
 	{

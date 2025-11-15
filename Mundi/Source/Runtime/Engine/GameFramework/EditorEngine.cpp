@@ -1,9 +1,10 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "EditorEngine.h"
 #include "USlateManager.h"
 #include "SelectionManager.h"
 #include "FAudioDevice.h"
 #include "FbxLoader.h"
+#include "WindowsCrashReporter.h"
 #include <ObjManager.h>
 
 
@@ -326,6 +327,8 @@ void UEditorEngine::MainLoop()
         // Shader Hot Reloading - Call AFTER render to avoid mid-frame resource conflicts
         // This ensures all GPU commands are submitted before we check for shader updates
         UResourceManager::GetInstance().CheckAndReloadShaders(DeltaSeconds);
+
+		FWindowsCrashReporter::Tick(DeltaSeconds);
     }
 }
 

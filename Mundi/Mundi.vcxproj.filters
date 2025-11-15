@@ -3,6 +3,9 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Misc\WindowsCrashReporter.cpp">
+      <Filter>Source\Runtime\Core\Misc</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Runtime\AssetManagement\AnimDataModel.cpp">
       <Filter>Source\Runtime\AssetManagement</Filter>
     </ClCompile>
@@ -630,6 +633,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Source\Runtime\Core\Misc\WindowsCrashReporter.h">
+      <Filter>Source\Runtime\Core\Misc</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Editor\FbxLoader.h">
       <Filter>Source\Editor</Filter>
     </ClInclude>

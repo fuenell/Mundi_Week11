@@ -454,3 +454,6 @@ GEMINI.md
 
 # Generated Files
 /Mundi/Generated/
+
+# 덤프 파일
+*.dmp

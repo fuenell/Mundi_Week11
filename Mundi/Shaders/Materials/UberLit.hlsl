@@ -159,15 +159,32 @@ PS_INPUT mainVS(VS_INPUT Input)
 
 		if (BoneWeight > 0.0f)
 		{
+			// Position
 			const float4x4 SkinMatrix = g_SkinningMatrices[BoneIndex];
 			float4 TransformedPosition = mul(float4(Input.Position, 1.0f), SkinMatrix);
 			BlendedPosition += TransformedPosition * BoneWeight;
+
+			// Normal
+			const float4x4 SkinNormalMatrix = g_SkinningNormalMatrices[BoneIndex];
+			float4 TransformedNormal = mul(float4(Input.Normal, 0.0f), SkinNormalMatrix);
+			BlendedNormal += TransformedNormal * BoneWeight;
+
+			// Tangent
+			float4 TransformedTangent = mul(Input.Tangent, SkinMatrix);
+			BlendedTangent += TransformedTangent * BoneWeight;
 		}
+	}
+
+	// Normalize Tangent
+	float3 BlendedTangent3 = BlendedTangent.xyz;
+	if (dot(BlendedTangent3, BlendedTangent3) > 1e-12)
+	{
+		BlendedTangent3 = normalize(BlendedTangent3);
 	}
 
 	Input.Position = BlendedPosition.xyz;
 	Input.Normal = BlendedNormal.xyz;
-	Input.Tangent = BlendedTangent;
+	Input.Tangent = float4(BlendedTangent3, Input.Tangent.w);
 #endif
 
     // 위치를 월드 공간으로 먼저 변환

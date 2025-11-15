@@ -95,8 +95,9 @@ Texture2D<float2> g_VSMShadowAtlas : register(t10);
 TextureCubeArray<float2> g_VSMShadowCube : register(t11);   // TODO: 지금은 전달 안 되고, 안 쓰는 중
 
 #if USE_GPU_SKINNING
-StructuredBuffer<float4x4> g_SkinningMatrices : register(GPU_SKINNING_BUFFER_REGISTER);
-StructuredBuffer<float4x4> g_SkinningNormalMatrices : register(GPU_SKINNING_NORMAL_BUFFER_REGISTER);
+typedef row_major float4x4 FRowMajorMatrix;
+StructuredBuffer<FRowMajorMatrix> g_SkinningMatrices : register(GPU_SKINNING_BUFFER_REGISTER);
+StructuredBuffer<FRowMajorMatrix> g_SkinningNormalMatrices : register(GPU_SKINNING_NORMAL_BUFFER_REGISTER);
 #endif
 
 SamplerState g_Sample : register(s0);

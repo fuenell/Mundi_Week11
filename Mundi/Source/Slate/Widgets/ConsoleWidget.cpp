@@ -42,6 +42,15 @@ namespace
 			}
 		}
 	}
+
+	void ApplySkinningModeAllWorlds(ESkinningMode NewMode)
+	{
+		const TArray<FWorldContext>& Contexts = GEngine.GetWorldContexts();
+		for (const FWorldContext& Context : Contexts)
+		{
+			ApplySkinningMode(Context.World, NewMode);
+		}
+	}
 }
 
 IMPLEMENT_CLASS(UConsoleWidget)
@@ -399,28 +408,13 @@ void UConsoleWidget::ExecCommand(const char* command_line)
 	}
 	else if (Stricmp(command_line, "SKINNING CPU") == 0)
 	{
-		if (UWorld* World = GEngine.GetDefaultWorld())
-		{
-			ApplySkinningMode(World, ESkinningMode::CPU);
-			AddLog("Switched to CPU Skinning.");
-		}
-		else
-		{
-			AddLog("World not available. Unable to switch skinning mode.");
-		}
-		
+		ApplySkinningModeAllWorlds(ESkinningMode::CPU);
+		AddLog("Switched to CPU Skinning.");
 	}
 	else if (Stricmp(command_line, "SKINNING GPU") == 0)
 	{
-		if (UWorld* World = GEngine.GetDefaultWorld())
-		{
-			ApplySkinningMode(World, ESkinningMode::GPU);
-			AddLog("Switched to GPU Skinning.");
-		}
-		else
-		{
-			AddLog("World not available. Unable to switch skinning mode.");
-		}
+		ApplySkinningModeAllWorlds(ESkinningMode::GPU);
+		AddLog("Switched to GPU Skinning.");
 	}
 	else if (Stricmp(command_line, "CRASH") == 0)
 	{

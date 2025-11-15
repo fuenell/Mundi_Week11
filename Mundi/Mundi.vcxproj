@@ -356,6 +356,7 @@
     <ClCompile Include="Source\Editor\ObjManager.cpp" />
     <ClCompile Include="Source\Editor\PlatformProcess.cpp" />
     <ClCompile Include="Source\Editor\SelectionManager.cpp" />
+    <ClCompile Include="Source\Runtime\AssetManagement\AnimDataModel.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\DynamicMesh.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\Line.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\LineDynamicMesh.cpp" />

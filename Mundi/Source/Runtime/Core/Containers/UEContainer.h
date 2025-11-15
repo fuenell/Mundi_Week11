@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 /** UE5 스타일 기본 타입 정의 */
 typedef int int32;

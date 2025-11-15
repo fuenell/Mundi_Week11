@@ -115,6 +115,10 @@ struct VS_INPUT
     float2 TexCoord : TEXCOORD0;
     float4 Tangent : TANGENT0;
     float4 Color : COLOR;
+#if USE_GPU_SKINNING
+    uint4 BoneIndices : BLENDINDICES0;
+    float4 BoneWeights : BLENDWEIGHT0;
+#endif
 };
 
 struct PS_INPUT

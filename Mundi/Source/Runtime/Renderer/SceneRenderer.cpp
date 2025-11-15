@@ -92,7 +92,7 @@ void FSceneRenderer::Render()
 	TIME_PROFILE(ShadowMapPass)
 	RenderShadowMaps();
 	TIME_PROFILE_END(ShadowMapPass)
-	
+
 	// ViewMode에 따라 렌더링 경로 결정
 	if (View->RenderSettings->GetViewMode() == EViewMode::VMI_Lit_Phong ||
 		View->RenderSettings->GetViewMode() == EViewMode::VMI_Lit_Gouraud ||
@@ -120,7 +120,7 @@ void FSceneRenderer::Render()
 	{
 		RenderSceneDepthPath();
 	}
-	
+
 	if (!World->bPie)
 	{
 		//그리드와 디버그용 Primitive는 Post Processing 적용하지 않음.
@@ -339,7 +339,7 @@ void FSceneRenderer::RenderShadowMaps()
 		{
 			ID3D11ShaderResourceView* NullSRV[2] = { nullptr, nullptr };
 			RHIDevice->GetDeviceContext()->PSSetShaderResources(9, 2, NullSRV);
-			
+
 			float ClearColor[] = {1.0f, 1.0f, 0.0f, 0.0f};
 			EShadowAATechnique ShadowAAType = World->GetRenderSettings().GetShadowAATechnique();
 			switch (ShadowAAType)
@@ -352,7 +352,7 @@ void FSceneRenderer::RenderShadowMaps()
 					RHIDevice->OMSetCustomRenderTargets(1, &VSMAtlasRTV2D, AtlasDSV2D);
 					RHIDevice->GetDeviceContext()->ClearRenderTargetView(VSMAtlasRTV2D, ClearColor);
 					break;
-				}				
+				}
 			default:
 				RHIDevice->OMSetCustomRenderTargets(0, nullptr, AtlasDSV2D);
 				break;
@@ -443,7 +443,7 @@ void FSceneRenderer::RenderShadowMaps()
 	//RHIDevice->RSSetViewport(); // 메인 뷰포트로 복구
 	// 4. 저장해둔 'OriginVP'로 뷰포트를 복구합니다. (이때는 주소(&)가 필요 없음)
 	RHIDevice->GetDeviceContext()->RSSetViewports(1, &OriginVP);
-	
+
 	// ViewProjBufferType 복구 (라이트 시점 Override 일 경우 마지막 라이트 시점으로 설정됨)
 	RHIDevice->SetAndUpdateConstantBuffer(ViewProjBufferType(OriginViewProjBuffer));
 }
@@ -467,7 +467,7 @@ void FSceneRenderer::RenderShadowDepthPass(FShadowRenderRequest& ShadowRequest, 
 	// 2. 파이프라인 설정
 	RHIDevice->GetDeviceContext()->IASetInputLayout(ShaderVariant->InputLayout);
 	RHIDevice->GetDeviceContext()->VSSetShader(ShaderVariant->VertexShader, nullptr, 0);
-	
+
     EShadowAATechnique ShadowAAType = World->GetRenderSettings().GetShadowAATechnique();
 	switch (ShadowAAType)
 	{
@@ -480,7 +480,7 @@ void FSceneRenderer::RenderShadowDepthPass(FShadowRenderRequest& ShadowRequest, 
 	default:
 		RHIDevice->GetDeviceContext()->PSSetShader(nullptr, nullptr, 0);
 		break;
-	}	
+	}
 
 	// 3. 라이트의 View-Projection 행렬을 메인 ViewProj 버퍼에 설정
 	FMatrix WorldLocation = {};
@@ -952,7 +952,7 @@ void FSceneRenderer::RenderDecalPass()
 			// 기즈모에 데칼 입히면 안되므로 에디팅이 안되는 Component는 데칼 그리지 않음
 			if (!SMC || !SMC->IsEditable())
 				continue;
-			
+
 			AActor* Owner = SMC->GetOwner();
 			if (!Owner || !Owner->IsActorVisible())
 				continue;
@@ -1017,7 +1017,7 @@ void FSceneRenderer::RenderPostProcessingPasses()
 			PostProcessModifiers.Add(FogPostProc);
 		}
 	}
-	
+
 	PostProcessModifiers.Sort([](const FPostProcessModifier& LHS, const FPostProcessModifier& RHS)
 	{
 		if (LHS.Priority == RHS.Priority)
@@ -1177,7 +1177,7 @@ void FSceneRenderer::RenderDebugPass()
 	{
 		if (!LineComponent || LineComponent->IsAlwaysOnTop())
 			continue;
-		
+
         if (World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Grid))
 		{
 			LineComponent->CollectLineBatches(OwnerRenderer);
@@ -1191,7 +1191,7 @@ void FSceneRenderer::RenderDebugPass()
 	{
 		if (!LineComponent || !LineComponent->IsAlwaysOnTop())
 			continue;
-		
+
 		LineComponent->CollectLineBatches(OwnerRenderer);
 	}
 	OwnerRenderer->EndLineBatchAlwaysOnTop(FMatrix::Identity());
@@ -1290,6 +1290,9 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 	ID3D11Buffer* CurrentIndexBuffer = nullptr;
 	UINT CurrentVertexStride = 0;
 	D3D11_PRIMITIVE_TOPOLOGY CurrentTopology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+	ID3D11ShaderResourceView* CurrentSkinningSRV = nullptr;
+	ESkinningMode CurrentSkinningMode = ESkinningMode::CPU;
+	constexpr UINT SkinningSrvSlot = 12; // UberLit.hlsl에서 StructuredBuffer를 바인딩하는 슬롯
 
 	// 기본 샘플러 미리 가져오기 (루프 내 반복 호출 방지)
 	ID3D11SamplerState* DefaultSampler = RHIDevice->GetSamplerState(RHI_Sampler_Index::Default);
@@ -1372,7 +1375,7 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 					}
 				}
 			}
-			
+
 			// --- RHI 상태 업데이트 ---
 			// 1. 텍스처(SRV) 바인딩
 			ID3D11ShaderResourceView* Srvs[2] = { DiffuseTextureSRV, NormalTextureSRV };
@@ -1380,7 +1383,7 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 
 			// 2. 샘플러 바인딩
 			ID3D11SamplerState* Samplers[4] = { DefaultSampler, DefaultSampler, ShadowSampler, VSMSampler };
-			RHIDevice->GetDeviceContext()->PSSetSamplers(0, 4, Samplers);			
+			RHIDevice->GetDeviceContext()->PSSetSamplers(0, 4, Samplers);
 
 			// 3. 재질 CBuffer 바인딩
 			RHIDevice->SetAndUpdateConstantBuffer(PixelConst);
@@ -1413,12 +1416,43 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 			CurrentTopology = Batch.PrimitiveTopology;
 		}
 
+		// GPU 스키닝 리소스 바인딩
+		// 각 컴포넌트가 자신의 StructuredBuffer를 갖고 있으므로,
+		// Batch.SkinningMode가 GPU이고 SRV가 유효한 경우에만 VS 리소스를 교체
+		const bool bUsesGpuSkinning = (Batch.SkinningMode == ESkinningMode::GPU && Batch.SkinningMatrixSRV);
+		if (bUsesGpuSkinning)
+		{
+			// GPU 스키닝 배치: 다른 컴포넌트의 버퍼일 수 있으므로 SRV가 바뀌면 즉시 교체
+			if (CurrentSkinningMode != ESkinningMode::GPU || CurrentSkinningSRV != Batch.SkinningMatrixSRV)
+			{
+				ID3D11ShaderResourceView* VsSrvs[1] = { Batch.SkinningMatrixSRV };
+				RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningSrvSlot, 1, VsSrvs);
+				CurrentSkinningSRV = Batch.SkinningMatrixSRV;
+				CurrentSkinningMode = ESkinningMode::GPU;
+			}
+		}
+		else if (CurrentSkinningMode == ESkinningMode::GPU)
+		{
+			// CPU 배치로 돌아가면 VS에 남아 있는 SRV를 즉시 해제
+			ID3D11ShaderResourceView* nullSrv[1] = { nullptr };
+			RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningSrvSlot, 1, nullSrv);
+			CurrentSkinningSRV = nullptr;
+			CurrentSkinningMode = ESkinningMode::CPU;
+		}
+
 		// 4. 오브젝트별 상수 버퍼 설정 (매번 변경)
 		RHIDevice->SetAndUpdateConstantBuffer(ModelBufferType(Batch.WorldMatrix, Batch.WorldMatrix.InverseAffine().Transpose()));
 		RHIDevice->SetAndUpdateConstantBuffer(ColorBufferType(Batch.InstanceColor, Batch.ObjectID));
 
 		// 5. 드로우 콜 실행
 		RHIDevice->GetDeviceContext()->DrawIndexed(Batch.IndexCount, Batch.StartIndex, Batch.BaseVertexIndex);
+	}
+
+	// 한 배치라도 GPU 모드를 사용했다면, 다음 패스를 위해 VS slot을 정리
+	if (CurrentSkinningMode == ESkinningMode::GPU)
+	{
+		ID3D11ShaderResourceView* nullSrv[1] = { nullptr };
+		RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningSrvSlot, 1, nullSrv);
 	}
 
 	// 루프 종료 후 리스트 비우기 (옵션)

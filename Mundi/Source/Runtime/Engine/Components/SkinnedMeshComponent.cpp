@@ -289,6 +289,32 @@ void USkinnedMeshComponent::UpdateSkinningMatrices(const TArray<FMatrix>& InSkin
 	FinalSkinningMatrices = InSkinningMatrices;
 	FinalSkinningNormalMatrices = InSkinningNormalMatrices;
 	bSkinningMatricesDirty = true;
+
+	const UWorld* World = GetWorld();
+	if (!World || World->GetRenderSettings().GetSkinningMode() != ESkinningMode::GPU)
+	{
+		return;
+	}
+
+	if (!SkinningMatrixBuffer || FinalSkinningMatrices.IsEmpty())
+	{
+		return;
+	}
+
+	const uint32 BoneCount = static_cast<uint32>(FinalSkinningMatrices.Num());
+	if (BoneCount > SkinningMatrixCount)
+	{
+		UE_LOG("USkinnedMeshComponent: Structured buffer 크기가 부족합니다. 스켈레톤 본 개수가 예상 외로 변경되었을 수 있습니다.");
+		return;
+	}
+
+	if (D3D11RHI* RHIDevice = GEngine.GetRHIDevice())
+	{
+		RHIDevice->UpdateStructuredBuffer(
+			SkinningMatrixBuffer,
+			FinalSkinningMatrices.data(),
+			sizeof(FMatrix) * BoneCount);
+	}
 }
 
 FVector USkinnedMeshComponent::SkinVertexPosition(const FSkinnedVertex& InVertex) const

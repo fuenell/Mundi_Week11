@@ -66,7 +66,7 @@ struct FMeshBatchElement
 	// 스키닝 모드 및 GPU 스키닝 리소스
 	ESkinningMode SkinningMode = ESkinningMode::CPU;
 	ID3D11ShaderResourceView* SkinningMatrixSRV = nullptr;
-	uint32 SkinningMatrixOffset = 0;
+	uint32 SkinningMatrixOffset = 0; // NOTE: 여러 SkinnedMeshComponent가 하나의 큰 StructuredBuffer로 구현된 스키닝 행렬 풀을 공유하도록 확장하게 되면 활용할 것
 	uint32 SkinningMatrixCount = 0;
 
 	// --- 기본 생성자 ---

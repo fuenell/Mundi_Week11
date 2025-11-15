@@ -57,7 +57,7 @@ void UFbxLoader::PreLoad()
              FbxLoader.LoadFbxMesh(PathStr);
 
 			 // for test
-			 FbxLoader.LoadAnimationFromFbx(PathStr);
+			 //FbxLoader.LoadAnimationFromFbx(PathStr);
 
              ++LoadedCount;
           }

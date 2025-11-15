@@ -2601,6 +2601,9 @@
     <ClInclude Include="Generated\AStaticMeshActor.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimCurveTypes.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ThirdParty\Include\DirectXTex\DirectXTex.inl">
@@ -2933,6 +2936,9 @@
     </Filter>
     <Filter Include="Shaders\Utility">
       <UniqueIdentifier>{6304be50-a9b4-4a8e-9074-88bf4bb571bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Animation">
+      <UniqueIdentifier>{a68a947f-1d3f-4276-b401-8094aadb0ed9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

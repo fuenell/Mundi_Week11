@@ -614,6 +614,9 @@
     <ClInclude Include="Source\Editor\ObjManager.h" />
     <ClInclude Include="Source\Editor\PlatformProcess.h" />
     <ClInclude Include="Source\Editor\SelectionManager.h" />
+    <ClInclude Include="Source\Runtime\Animation\AnimCurveTypes.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
     <ClInclude Include="Source\Runtime\AssetManagement\AnimDataModel.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

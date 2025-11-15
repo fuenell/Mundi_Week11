@@ -1291,8 +1291,10 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 	UINT CurrentVertexStride = 0;
 	D3D11_PRIMITIVE_TOPOLOGY CurrentTopology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	ID3D11ShaderResourceView* CurrentSkinningSRV = nullptr;
+	ID3D11ShaderResourceView* CurrentSkinningNormalSRV = nullptr;
 	ESkinningMode CurrentSkinningMode = ESkinningMode::CPU;
 	constexpr UINT SkinningSrvSlot = 12; // UberLit.hlsl에서 StructuredBuffer를 바인딩하는 슬롯
+	constexpr UINT SkinningNormalSrvSlot = 13;
 
 	// 기본 샘플러 미리 가져오기 (루프 내 반복 호출 방지)
 	ID3D11SamplerState* DefaultSampler = RHIDevice->GetSamplerState(RHI_Sampler_Index::Default);
@@ -1419,15 +1421,21 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 		// GPU 스키닝 리소스 바인딩
 		// 각 컴포넌트가 자신의 StructuredBuffer를 갖고 있으므로,
 		// Batch.SkinningMode가 GPU이고 SRV가 유효한 경우에만 VS 리소스를 교체
-		const bool bUsesGpuSkinning = (Batch.SkinningMode == ESkinningMode::GPU && Batch.SkinningMatrixSRV);
+		const bool bUsesGpuSkinning =
+			(Batch.SkinningMode == ESkinningMode::GPU && Batch.SkinningMatrixSRV && Batch.SkinningNormalMatrixSRV);
 		if (bUsesGpuSkinning)
 		{
 			// GPU 스키닝 배치: 다른 컴포넌트의 버퍼일 수 있으므로 SRV가 바뀌면 즉시 교체
-			if (CurrentSkinningMode != ESkinningMode::GPU || CurrentSkinningSRV != Batch.SkinningMatrixSRV)
+			if (CurrentSkinningMode != ESkinningMode::GPU ||
+				CurrentSkinningSRV != Batch.SkinningMatrixSRV ||
+				CurrentSkinningNormalSRV != Batch.SkinningNormalMatrixSRV)
 			{
-				ID3D11ShaderResourceView* VsSrvs[1] = { Batch.SkinningMatrixSRV };
-				RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningSrvSlot, 1, VsSrvs);
+				ID3D11ShaderResourceView* MatrixSrv[1] = { Batch.SkinningMatrixSRV };
+				ID3D11ShaderResourceView* NormalSrv[1] = { Batch.SkinningNormalMatrixSRV };
+				RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningSrvSlot, 1, MatrixSrv);
+				RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningNormalSrvSlot, 1, NormalSrv);
 				CurrentSkinningSRV = Batch.SkinningMatrixSRV;
+				CurrentSkinningNormalSRV = Batch.SkinningNormalMatrixSRV;
 				CurrentSkinningMode = ESkinningMode::GPU;
 			}
 		}
@@ -1436,7 +1444,9 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 			// CPU 배치로 돌아가면 VS에 남아 있는 SRV를 즉시 해제
 			ID3D11ShaderResourceView* nullSrv[1] = { nullptr };
 			RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningSrvSlot, 1, nullSrv);
+			RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningNormalSrvSlot, 1, nullSrv);
 			CurrentSkinningSRV = nullptr;
+			CurrentSkinningNormalSRV = nullptr;
 			CurrentSkinningMode = ESkinningMode::CPU;
 		}
 
@@ -1453,6 +1463,7 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 	{
 		ID3D11ShaderResourceView* nullSrv[1] = { nullptr };
 		RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningSrvSlot, 1, nullSrv);
+		RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningNormalSrvSlot, 1, nullSrv);
 	}
 
 	// 루프 종료 후 리스트 비우기 (옵션)

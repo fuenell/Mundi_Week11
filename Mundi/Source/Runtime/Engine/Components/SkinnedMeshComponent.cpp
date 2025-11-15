@@ -142,6 +142,7 @@ void USkinnedMeshComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMes
 			BatchElement.VertexBuffer = SkeletalMesh->GetVertexBuffer();
 			BatchElement.VertexStride = sizeof(FSkinnedVertex);
 			BatchElement.SkinningMatrixSRV = SkinningMatrixSRV;
+			BatchElement.SkinningNormalMatrixSRV = SkinningNormalMatrixSRV;
 			BatchElement.SkinningMatrixOffset = SkinningMatrixOffset;
 			BatchElement.SkinningMatrixCount = SkinningMatrixCount;
 		}
@@ -150,6 +151,7 @@ void USkinnedMeshComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMes
 			BatchElement.VertexBuffer = VertexBuffer;
 			BatchElement.VertexStride = SkeletalMesh->GetVertexStride();
 			BatchElement.SkinningMatrixSRV = nullptr;
+			BatchElement.SkinningNormalMatrixSRV = nullptr;
 			BatchElement.SkinningMatrixOffset = 0;
 			BatchElement.SkinningMatrixCount = 0;
 		}
@@ -296,7 +298,7 @@ void USkinnedMeshComponent::UpdateSkinningMatrices(const TArray<FMatrix>& InSkin
 		return;
 	}
 
-	if (!SkinningMatrixBuffer || FinalSkinningMatrices.IsEmpty())
+	if (!SkinningMatrixBuffer || !SkinningNormalMatrixBuffer || FinalSkinningMatrices.IsEmpty() || FinalSkinningNormalMatrices.IsEmpty())
 	{
 		return;
 	}
@@ -313,6 +315,10 @@ void USkinnedMeshComponent::UpdateSkinningMatrices(const TArray<FMatrix>& InSkin
 		RHIDevice->UpdateStructuredBuffer(
 			SkinningMatrixBuffer,
 			FinalSkinningMatrices.data(),
+			sizeof(FMatrix) * BoneCount);
+		RHIDevice->UpdateStructuredBuffer(
+			SkinningNormalMatrixBuffer,
+			FinalSkinningNormalMatrices.data(),
 			sizeof(FMatrix) * BoneCount);
 	}
 }
@@ -402,6 +408,12 @@ void USkinnedMeshComponent::CreateSkinningMatrixResources(uint32 InBoneCount)
 	hr = RHIDevice->CreateStructuredBufferSRV(SkinningMatrixBuffer, &SkinningMatrixSRV);
 	assert(SUCCEEDED(hr));
 
+	hr = RHIDevice->CreateStructuredBuffer(sizeof(FMatrix), InBoneCount, nullptr, &SkinningNormalMatrixBuffer);
+	assert(SUCCEEDED(hr));
+
+	hr = RHIDevice->CreateStructuredBufferSRV(SkinningNormalMatrixBuffer, &SkinningNormalMatrixSRV);
+	assert(SUCCEEDED(hr));
+
 	SkinningMatrixCount = InBoneCount;
 	SkinningMatrixOffset = 0;
 }
@@ -413,11 +425,21 @@ void USkinnedMeshComponent::ReleaseSkinningMatrixResources()
 		SkinningMatrixSRV->Release();
 		SkinningMatrixSRV = nullptr;
 	}
+	if (SkinningNormalMatrixSRV)
+	{
+		SkinningNormalMatrixSRV->Release();
+		SkinningNormalMatrixSRV = nullptr;
+	}
 
 	if (SkinningMatrixBuffer)
 	{
 		SkinningMatrixBuffer->Release();
 		SkinningMatrixBuffer = nullptr;
+	}
+	if (SkinningNormalMatrixBuffer)
+	{
+		SkinningNormalMatrixBuffer->Release();
+		SkinningNormalMatrixBuffer = nullptr;
 	}
 
 	SkinningMatrixCount = 0;

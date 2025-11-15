@@ -15,6 +15,7 @@
 #endif
 
 #define GPU_SKINNING_BUFFER_REGISTER t12
+#define GPU_SKINNING_NORMAL_BUFFER_REGISTER t13
 
 // --- Material 구조체 (OBJ 머티리얼 정보) ---
 // 주의: SPECULAR_COLOR 매크로에서 사용하므로 include 전에 정의 필요
@@ -95,6 +96,7 @@ TextureCubeArray<float2> g_VSMShadowCube : register(t11);   // TODO: 지금은 �
 
 #if USE_GPU_SKINNING
 StructuredBuffer<float4x4> g_SkinningMatrices : register(GPU_SKINNING_BUFFER_REGISTER);
+StructuredBuffer<float4x4> g_SkinningNormalMatrices : register(GPU_SKINNING_NORMAL_BUFFER_REGISTER);
 #endif
 
 SamplerState g_Sample : register(s0);
@@ -143,6 +145,30 @@ struct PS_OUTPUT
 PS_INPUT mainVS(VS_INPUT Input)
 {
     PS_INPUT Out;
+
+	// GPU SKinning
+#if USE_GPU_SKINNING
+	float4 BlendedPosition = {0.0f, 0.0f, 0.0f, 0.0f};
+	float4 BlendedNormal = {0.0f, 0.0f, 0.0f, 0.0f};
+	float4 BlendedTangent = {0.0f, 0.0f, 0.0f, 0.0f};
+
+	for (int Idx = 0; Idx < 4; ++Idx)
+	{
+		uint BoneIndex = Input.BoneIndices[Idx];
+		float BoneWeight = Input.BoneWeights[Idx];
+
+		if (BoneWeight > 0.0f)
+		{
+			const float4x4 SkinMatrix = g_SkinningMatrices[BoneIndex];
+			float4 TransformedPosition = mul(float4(Input.Position, 1.0f), SkinMatrix);
+			BlendedPosition += TransformedPosition * BoneWeight;
+		}
+	}
+
+	Input.Position = BlendedPosition.xyz;
+	Input.Normal = BlendedNormal.xyz;
+	Input.Tangent = BlendedTangent;
+#endif
 
     // 위치를 월드 공간으로 먼저 변환
     float4 worldPos = mul(float4(Input.Position, 1.0f), WorldMatrix);

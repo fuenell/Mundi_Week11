@@ -80,6 +80,8 @@ private:
 	*/
     ID3D11Buffer* SkinningMatrixBuffer = nullptr;
     ID3D11ShaderResourceView* SkinningMatrixSRV = nullptr;
+    ID3D11Buffer* SkinningNormalMatrixBuffer = nullptr;
+    ID3D11ShaderResourceView* SkinningNormalMatrixSRV = nullptr;
     uint32 SkinningMatrixCount = 0;  // 현재 컴포넌트의 본 수
     uint32 SkinningMatrixOffset = 0; // 행렬 풀을 공유하는 구조로 확장할 경우 오프셋으로 활용
 };

@@ -125,6 +125,10 @@ void USkinnedMeshComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMes
 		{
 			ShaderMacros.Append(MaterialToUse->GetShaderMacros());
 		}
+		if (SkinningModeToUse == ESkinningMode::GPU)
+		{
+			ShaderMacros.Add(FShaderMacro("USE_GPU_SKINNING", "1"));
+		}
 		FShaderVariant* ShaderVariant = ShaderToUse->GetOrCompileShaderVariant(ShaderMacros);
 
 		if (ShaderVariant)

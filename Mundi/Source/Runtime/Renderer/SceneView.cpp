@@ -124,11 +124,5 @@ TArray<FShaderMacro> FSceneView::CreateViewShaderMacros()
 		ShaderMacros.Add(FShaderMacro("SHADOW_AA_TECHNIQUE", "0")); // 0 = Hard Shadow (AA 끔)
 	}
 
-	// Skinning Mode 설정
-	if (RenderSettings && RenderSettings->GetSkinningMode() == ESkinningMode::GPU)
-	{
-		ShaderMacros.Add(FShaderMacro("USE_GPU_SKINNING", "1"));
-	}
-
 	return ShaderMacros;
 }

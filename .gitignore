@@ -446,14 +446,11 @@ GEMINI.md
 .env
 
 # Untracked Data Files
-/Mundi/Data/untracked/**
 /Mundi/DerivedDataCache/**
+**/[Uu]ntracked/**
 
 # Python Embedded
 /Mundi/ThirdParty/Python/
 
 # Generated Files
 /Mundi/Generated/
-
-# Untracked Documents
-/Docs/Untracked/

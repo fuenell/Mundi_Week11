@@ -1077,17 +1077,6 @@ bool UPropertyRenderer::RenderSkeletalMeshProperty(const FProperty& Prop, void* 
 		}
 	}
 
-	// Play Default Animation 버튼 추가
-	ImGui::SameLine();
-	if (ImGui::Button("Play Default Animation"))
-	{
-		UObject* Object = static_cast<UObject*>(Instance);
-		if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(Object))
-		{
-			SkeletalMeshComponent->PlayDefaultAnimation();
-		}
-	}
-
 	ImGui::SetNextItemWidth(240);
 	if (ImGui::Combo(Prop.Name, &SelectedIdx, &ItemsGetter, (void*)&CachedSkeletalMeshItems, static_cast<int>(CachedSkeletalMeshItems.size())))
 	{

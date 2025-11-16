@@ -12,5 +12,5 @@ public:
 	virtual ~UAnimationAsset() override = default;
 
 private:
-	FSkeleton* Skeleton = nullptr;
+	FSkeleton* Skeleton = nullptr; // TODO: 지금 이걸 전혀 안 쓰고 있음. 뭔가 수정 필요
 };

@@ -2,12 +2,13 @@
 #include "SkinnedMeshComponent.h"
 #include "USkeletalMeshComponent.generated.h"
 
+// TODO: UE에 있는 것 일단 그대로 가져옴. 추후 이 엔진에 맞춰 수정 가능
 enum class EAnimationMode : int
 {
-	AnimationBlueprint,
-	AnimationSingleNode,
+	AnimationBlueprint, // 블루프린트 기반 애니메이션 (미구현)
+	AnimationSingleNode, // 단일 애니메이션 에셋 재생: 보통 UAnimSingleNodeInstancex타입의 에셋 사용
 	// This is custom type, engine leaves AnimInstance as it is
-	AnimationCustomMode,
+	AnimationCustomMode, // 가장 저수준으로 애니메이션을 조작하는 모드 (미구현)
 };
 
 class UAnimationAsset;
@@ -67,6 +68,8 @@ public:
 	class UAnimSingleNodeInstance* GetSingleNodeInstance() const;
 
 	void SetAnimationMode(EAnimationMode InAnimationMode, bool bForceInitAnimScriptInstance = true);
+
+	// 단일 애니메이션 재생 관련 함수들
 	void SetAnimation(UAnimationAsset* NewAnimToPlay);
 	void Play(bool bLooping);
 
@@ -77,6 +80,9 @@ public:
 	 */
 	void PlayAnimation(UAnimationAsset* NewAnimToPlay, bool bLooping);
 
+	/**
+	 * @brief 현재 SkeletalMesh가 기본적으로 가진 단일 애니메이션을 재생
+	 */
 	void PlayDefaultAnimation();
 
 protected:
@@ -85,8 +91,12 @@ protected:
 	 */
 	void ClearAnimScriptInstance();
 
+	/**
+	 * @brief AnimScriptInstance을 여러 조건(ex: AnimationMode)에 따라 초기화
+	 */
 	bool InitializeAnimScriptInstance();
 
+// Editor Section
 protected:
     /**
      * @brief 각 뼈의 부모 기준 로컬 트랜스폼
@@ -106,9 +116,7 @@ protected:
 
 // Animation Section
 protected:
-	/**
-	 * @brief 이 컴포넌트에 연결된 애니메이션 인스턴스
-	 */
+	// 이 컴포넌트에 연결된 애니메이션 인스턴스
 	class UAnimInstance* AnimScriptInstance;
 
 	bool bEnableAnimation = true;

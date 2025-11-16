@@ -4,6 +4,7 @@
 class UAnimationAsset;
 struct FPoseContext;
 
+// 단일 애니메이션 에셋을 재생하는 애니메이션 인스턴스
 class UAnimSingleNodeInstance : public UAnimInstance
 {
 public:
@@ -20,7 +21,7 @@ public:
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
 protected:
-	UAnimationAsset* CurrentAsset = nullptr;
+	UAnimationAsset* CurrentAsset = nullptr; // 재생할 애니메이션. 현재는 UAnimSequence 타입만 할당됨
 
 	bool bIsPlaying = false;
 	bool bLooping = true;

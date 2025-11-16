@@ -70,20 +70,13 @@ void UAnimSequence::GetAnimationPose(FPoseContext& OutPoseData, const FAnimExtra
 	for (const FBoneAnimationTrack& Track : AnimTracks)
 	{
 		// 스켈레톤에서 해당 본의 인덱스 찾기
-		int32 BoneIndex = -1;
-		for (int32 i = 0; i < NumBones; ++i)
-		{
-			if (Skeleton->Bones[i].Name == Track.Name)
-			{
-				BoneIndex = i;
-				break;
-			}
-		}
-
-		if (BoneIndex == -1)
+		const FString& TrackNameStr = Track.Name.ToString();
+		const int32* BoneIndexPtr = Skeleton->BoneNameToIndex.Find(TrackNameStr);
+		if (BoneIndexPtr == nullptr)
 		{
 			continue; // 스켈레톤에 해당 본이 없음
 		}
+		const int32 BoneIndex = *BoneIndexPtr;
 
 		const FRawAnimSequenceTrack& RawTrack = Track.InternalTrack;
 

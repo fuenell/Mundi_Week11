@@ -77,6 +77,8 @@ public:
 	 */
 	void PlayAnimation(UAnimationAsset* NewAnimToPlay, bool bLooping);
 
+	void PlayDefaultAnimation();
+
 protected:
 	/**
 	 * @brief 현재 애니메이션 인스턴스를 정리

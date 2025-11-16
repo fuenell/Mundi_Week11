@@ -20,6 +20,13 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
     // 애니메이션 활성화 시 AnimScriptInstance 업데이트
     if (bEnableAnimation && AnimScriptInstance)
     {
+		// for test
+		if (!bIsInitialized)
+		{
+			PlayDefaultAnimation();
+			bIsInitialized = true;
+		}
+
         FPoseContext OutPose;
         AnimScriptInstance->EvaluateAnimationPose(DeltaTime, OutPose);
 
@@ -252,6 +259,17 @@ void USkeletalMeshComponent::PlayAnimation(UAnimationAsset* NewAnimToPlay, bool 
 	Play(bLooping);
 }
 
+void USkeletalMeshComponent::PlayDefaultAnimation()
+{
+	if (UAnimSingleNodeInstance* SingleNodeInstance = GetSingleNodeInstance())
+	{
+		if (UAnimationAsset* DefaultAnimAsset = SingleNodeInstance->GetCurrentAnimationAsset())
+		{
+			PlayAnimation(DefaultAnimAsset, true);
+		}
+	}
+}
+
 void USkeletalMeshComponent::ForceRecomputePose()
 {
     if (!SkeletalMesh) { return; } 
@@ -332,6 +350,7 @@ bool USkeletalMeshComponent::InitializeAnimScriptInstance()
 		if (AnimScriptInstance)
 		{
 			//AnimScriptInstance->InitializeAnimation();
+			AnimScriptInstance->SetSkeleton(SkeletalMesh->GetSkeletonMutable());
 			return true;
 		}
 		else
@@ -339,5 +358,6 @@ bool USkeletalMeshComponent::InitializeAnimScriptInstance()
 			return false;
 		}
 	}
+	AnimScriptInstance->SetSkeleton(SkeletalMesh->GetSkeletonMutable());
 	return true;
 }

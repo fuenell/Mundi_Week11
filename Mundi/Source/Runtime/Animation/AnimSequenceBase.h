@@ -14,7 +14,7 @@ public:
 	// ResouceManager에서 호출됨
 	void Load(const FString& InFilePath, class ID3D11Device* InDevice);
 
-	virtual void GetAnimationPose(FPoseContext& OutPoseData, const FAnimExtractContext& ExtractionContext) const = 0;
+	virtual void GetAnimationPose(FPoseContext& OutPoseData, const FAnimExtractContext& ExtractionContext) const {} // 순수 가상함수로 구현?
 
 	UAnimDataModel* GetDataModel() const
 	{

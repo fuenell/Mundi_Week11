@@ -18,6 +18,8 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) {}
 
 	void EvaluateAnimationPose(float DeltaSeconds, FPoseContext& OutFinalPose);
+
+	void SetSkeleton(FSkeleton* InSkeleton) { Skeleton = InSkeleton; }
 protected:
 	FPoseContext FinalPose;
 

@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "PropertyRenderer.h"
 #include "ImGui/imgui.h"
 #include "Vector.h"
@@ -1074,6 +1074,17 @@ bool UPropertyRenderer::RenderSkeletalMeshProperty(const FProperty& Prop, void* 
 		else
 		{
 			USlateManager::GetInstance().CloseSkeletalMeshViewer();
+		}
+	}
+
+	// Play Default Animation 버튼 추가
+	ImGui::SameLine();
+	if (ImGui::Button("Play Default Animation"))
+	{
+		UObject* Object = static_cast<UObject*>(Instance);
+		if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(Object))
+		{
+			SkeletalMeshComponent->PlayDefaultAnimation();
 		}
 	}
 

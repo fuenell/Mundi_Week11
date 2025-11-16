@@ -14,6 +14,7 @@ public:
     const FSkeletalMeshData* GetSkeletalMeshData() const { return Data; }
     const FString& GetPathFileName() const { static const FString EmptyString; if (Data) return Data->PathFileName; return EmptyString; }
     const FSkeleton* GetSkeleton() const { return Data ? &Data->Skeleton : nullptr; }
+	FSkeleton* GetSkeletonMutable() const { return Data ? &Data->Skeleton : nullptr; }
     uint32 GetBoneCount() const { return Data ? Data->Skeleton.Bones.Num() : 0; }
     
     ID3D11Buffer* GetVertexBuffer() const { return VertexBuffer; }

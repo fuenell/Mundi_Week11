@@ -3,6 +3,8 @@
 #include "MeshBatchElement.h"
 #include "SceneView.h"
 #include "D3D11RHI.h"
+#include "VertexData.h"
+#include "World.h"
 
 USkinnedMeshComponent::USkinnedMeshComponent() : SkeletalMesh(nullptr)
 {
@@ -43,14 +45,68 @@ void USkinnedMeshComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle
 void USkinnedMeshComponent::DuplicateSubObjects()
 {
 	Super::DuplicateSubObjects();
+	if (!SkeletalMesh)
+	{
+		return;
+	}
+
 	SkeletalMesh->CreateVertexBuffer(&VertexBuffer, ESkinningMode::CPU);
+
+	// 얕은 복사된 GPU 리소스 포인터는 원본 컴포넌트를 가리키고 있으므로,
+	// 새 버퍼를 만들기 전에 참조를 끊어 원본이 해제되지 않도록 한다.
+	SkinningMatrixBuffer = nullptr;
+	SkinningMatrixSRV = nullptr;
+	SkinningNormalMatrixBuffer = nullptr;
+	SkinningNormalMatrixSRV = nullptr;
+	SkinningMatrixCount = 0;
+	SkinningMatrixOffset = 0;
+
+	const uint32 BoneCount = SkeletalMesh->GetBoneCount();
+	if (BoneCount == 0)
+	{
+		return;
+	}
+
+	CreateSkinningMatrixResources(BoneCount);
+
+	// 원본으로부터 얕게 복사된 스키닝 행렬 데이터를 새 버퍼에 업로드하여
+	// PIE 복사본이 독립적인 GPU 리소스를 갖도록 만든다.
+	if (!FinalSkinningMatrices.IsEmpty() &&
+		!FinalSkinningNormalMatrices.IsEmpty() &&
+		SkinningMatrixBuffer && SkinningNormalMatrixBuffer)
+	{
+		const uint32 MatrixCount = FMath::Min<uint32>(BoneCount, FinalSkinningMatrices.Num());
+		const uint32 NormalMatrixCount = FMath::Min<uint32>(BoneCount, FinalSkinningNormalMatrices.Num());
+
+		if (D3D11RHI* RHIDevice = GEngine.GetRHIDevice())
+		{
+			if (MatrixCount > 0)
+			{
+				RHIDevice->UpdateStructuredBuffer(
+					SkinningMatrixBuffer,
+					FinalSkinningMatrices.data(),
+					sizeof(FMatrix) * MatrixCount);
+			}
+
+			if (NormalMatrixCount > 0)
+			{
+				RHIDevice->UpdateStructuredBuffer(
+					SkinningNormalMatrixBuffer,
+					FinalSkinningNormalMatrices.data(),
+					sizeof(FMatrix) * NormalMatrixCount);
+			}
+		}
+	}
 }
 
 void USkinnedMeshComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View)
 {
 	if (!SkeletalMesh || !SkeletalMesh->GetSkeletalMeshData()) { return; }
 
-	if (bSkinningMatricesDirty)
+	const ESkinningMode SkinningModeToUse =
+		(View && View->RenderSettings) ? View->RenderSettings->GetSkinningMode() : ESkinningMode::CPU;
+
+	if (SkinningModeToUse == ESkinningMode::CPU && bSkinningMatricesDirty)
 	{
 		bSkinningMatricesDirty = false;
 		SkeletalMesh->UpdateVertexBuffer(SkinnedVertices, VertexBuffer);
@@ -120,6 +176,10 @@ void USkinnedMeshComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMes
 		{
 			ShaderMacros.Append(MaterialToUse->GetShaderMacros());
 		}
+		if (SkinningModeToUse == ESkinningMode::GPU)
+		{
+			ShaderMacros.Add(FShaderMacro("USE_GPU_SKINNING", "1"));
+		}
 		FShaderVariant* ShaderVariant = ShaderToUse->GetOrCompileShaderVariant(ShaderMacros);
 
 		if (ShaderVariant)
@@ -131,9 +191,26 @@ void USkinnedMeshComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMes
 		
 		BatchElement.Material = MaterialToUse;
 		
-		BatchElement.VertexBuffer = VertexBuffer;
+		BatchElement.SkinningMode = SkinningModeToUse;
+		if (SkinningModeToUse == ESkinningMode::GPU)
+		{
+			BatchElement.VertexBuffer = SkeletalMesh->GetVertexBuffer();
+			BatchElement.VertexStride = sizeof(FSkinnedVertex);
+			BatchElement.SkinningMatrixSRV = SkinningMatrixSRV;
+			BatchElement.SkinningNormalMatrixSRV = SkinningNormalMatrixSRV;
+			BatchElement.SkinningMatrixOffset = SkinningMatrixOffset;
+			BatchElement.SkinningMatrixCount = SkinningMatrixCount;
+		}
+		else
+		{
+			BatchElement.VertexBuffer = VertexBuffer;
+			BatchElement.VertexStride = SkeletalMesh->GetVertexStride();
+			BatchElement.SkinningMatrixSRV = nullptr;
+			BatchElement.SkinningNormalMatrixSRV = nullptr;
+			BatchElement.SkinningMatrixOffset = 0;
+			BatchElement.SkinningMatrixCount = 0;
+		}
 		BatchElement.IndexBuffer = SkeletalMesh->GetIndexBuffer();
-		BatchElement.VertexStride = SkeletalMesh->GetVertexStride();
 		
 		BatchElement.IndexCount = IndexCount;
 		BatchElement.StartIndex = StartIndex;
@@ -239,6 +316,13 @@ void USkinnedMeshComponent::SetSkeletalMesh(const FString& PathFileName)
 void USkinnedMeshComponent::PerformCpuSkinning()
 {
 	if (!SkeletalMesh || FinalSkinningMatrices.IsEmpty()) { return; }
+	const UWorld* World = GetWorld();
+	const ESkinningMode CurrentSkinningMode =
+		(World ? World->GetRenderSettings().GetSkinningMode() : ESkinningMode::CPU);
+	if (CurrentSkinningMode != ESkinningMode::CPU)
+	{
+		return;
+	}
 	if (!bSkinningMatricesDirty) { return; }
 	
 	const TArray<FSkinnedVertex>& SrcVertices = SkeletalMesh->GetSkeletalMeshData()->Vertices;
@@ -262,6 +346,36 @@ void USkinnedMeshComponent::UpdateSkinningMatrices(const TArray<FMatrix>& InSkin
 	FinalSkinningMatrices = InSkinningMatrices;
 	FinalSkinningNormalMatrices = InSkinningNormalMatrices;
 	bSkinningMatricesDirty = true;
+
+	const UWorld* World = GetWorld();
+	if (!World || World->GetRenderSettings().GetSkinningMode() != ESkinningMode::GPU)
+	{
+		return;
+	}
+
+	if (!SkinningMatrixBuffer || !SkinningNormalMatrixBuffer || FinalSkinningMatrices.IsEmpty() || FinalSkinningNormalMatrices.IsEmpty())
+	{
+		return;
+	}
+
+	const uint32 BoneCount = static_cast<uint32>(FinalSkinningMatrices.Num());
+	if (BoneCount > SkinningMatrixCount)
+	{
+		UE_LOG("USkinnedMeshComponent: Structured buffer 크기가 부족합니다. 스켈레톤 본 개수가 예상 외로 변경되었을 수 있습니다.");
+		return;
+	}
+
+	if (D3D11RHI* RHIDevice = GEngine.GetRHIDevice())
+	{
+		RHIDevice->UpdateStructuredBuffer(
+			SkinningMatrixBuffer,
+			FinalSkinningMatrices.data(),
+			sizeof(FMatrix) * BoneCount);
+		RHIDevice->UpdateStructuredBuffer(
+			SkinningNormalMatrixBuffer,
+			FinalSkinningNormalMatrices.data(),
+			sizeof(FMatrix) * BoneCount);
+	}
 }
 
 FVector USkinnedMeshComponent::SkinVertexPosition(const FSkinnedVertex& InVertex) const
@@ -349,6 +463,12 @@ void USkinnedMeshComponent::CreateSkinningMatrixResources(uint32 InBoneCount)
 	hr = RHIDevice->CreateStructuredBufferSRV(SkinningMatrixBuffer, &SkinningMatrixSRV);
 	assert(SUCCEEDED(hr));
 
+	hr = RHIDevice->CreateStructuredBuffer(sizeof(FMatrix), InBoneCount, nullptr, &SkinningNormalMatrixBuffer);
+	assert(SUCCEEDED(hr));
+
+	hr = RHIDevice->CreateStructuredBufferSRV(SkinningNormalMatrixBuffer, &SkinningNormalMatrixSRV);
+	assert(SUCCEEDED(hr));
+
 	SkinningMatrixCount = InBoneCount;
 	SkinningMatrixOffset = 0;
 }
@@ -360,11 +480,21 @@ void USkinnedMeshComponent::ReleaseSkinningMatrixResources()
 		SkinningMatrixSRV->Release();
 		SkinningMatrixSRV = nullptr;
 	}
+	if (SkinningNormalMatrixSRV)
+	{
+		SkinningNormalMatrixSRV->Release();
+		SkinningNormalMatrixSRV = nullptr;
+	}
 
 	if (SkinningMatrixBuffer)
 	{
 		SkinningMatrixBuffer->Release();
 		SkinningMatrixBuffer = nullptr;
+	}
+	if (SkinningNormalMatrixBuffer)
+	{
+		SkinningNormalMatrixBuffer->Release();
+		SkinningNormalMatrixBuffer = nullptr;
 	}
 
 	SkinningMatrixCount = 0;

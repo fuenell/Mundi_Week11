@@ -204,10 +204,27 @@ bool UShader::CompileVariantInternal(ID3D11Device* InDevice, const FString& InSh
 	// --- 1. D3D_SHADER_MACRO* 형태로 변환 ---
 	TArray<D3D_SHADER_MACRO> Defines;
 	TArray<TPair<FString, FString>> MacroStrings; // 포인터 유효성 유지를 위한 저장소
-	MacroStrings.reserve(InMacros.Num());
+
+	// 동일한 이름의 매크로가 중복으로 넘어올 수 있으므로, 가장 마지막 항목이 우선하도록 정리한다.
+	TMap<FName, FName> UniqueMacroMap;
 	for (const FShaderMacro& Macro : InMacros)
 	{
-		MacroStrings.emplace_back(Macro.Name.ToString(), Macro.Definition.ToString());
+		UniqueMacroMap[Macro.Name] = Macro.Definition;
+	}
+
+	TArray<FName> SortedMacroNames = UniqueMacroMap.GetKeys();
+	SortedMacroNames.Sort([](const FName& A, const FName& B)
+		{
+			return A.ComparisonIndex < B.ComparisonIndex;
+		});
+
+	MacroStrings.reserve(SortedMacroNames.Num());
+	Defines.reserve(SortedMacroNames.Num() + 1);
+
+	for (const FName& MacroName : SortedMacroNames)
+	{
+		const FName& MacroDefinition = UniqueMacroMap[MacroName];
+		 MacroStrings.emplace_back(MacroName.ToString(), MacroDefinition.ToString());
 		Defines.push_back({ MacroStrings.back().first.c_str(), MacroStrings.back().second.c_str() });
 	}
 	Defines.push_back({ NULL, NULL }); // 배열의 끝을 알리는 NULL 터미네이터
@@ -237,7 +254,7 @@ bool UShader::CompileVariantInternal(ID3D11Device* InDevice, const FString& InSh
 		{
 			Hr = InDevice->CreateVertexShader(OutVariant.VSBlob->GetBufferPointer(), OutVariant.VSBlob->GetBufferSize(), nullptr, &OutVariant.VertexShader);
 			assert(SUCCEEDED(Hr));
-			CreateInputLayout(InDevice, InShaderPath, OutVariant); // OutVariant 전달
+			CreateInputLayout(InDevice, InShaderPath, OutVariant, InMacros); // OutVariant 전달
 		}
 	}
 	else if (EndsWith(InShaderPath, "_PS.hlsl"))
@@ -258,7 +275,7 @@ bool UShader::CompileVariantInternal(ID3D11Device* InDevice, const FString& InSh
 		{
 			Hr = InDevice->CreateVertexShader(OutVariant.VSBlob->GetBufferPointer(), OutVariant.VSBlob->GetBufferSize(), nullptr, &OutVariant.VertexShader);
 			assert(SUCCEEDED(Hr));
-			CreateInputLayout(InDevice, InShaderPath, OutVariant);
+			CreateInputLayout(InDevice, InShaderPath, OutVariant, InMacros);
 		}
 		if (bPsCompiled)
 		{
@@ -310,9 +327,28 @@ ID3D11PixelShader* UShader::GetPixelShader(const TArray<FShaderMacro>& InMacros)
 	return nullptr;
 }
 
-void UShader::CreateInputLayout(ID3D11Device* Device, const FString& InShaderPath, FShaderVariant& InOutVariant)
+void UShader::CreateInputLayout(ID3D11Device* Device, const FString& InShaderPath, FShaderVariant& InOutVariant, const TArray<FShaderMacro>& InMacros)
 {
-	TArray<D3D11_INPUT_ELEMENT_DESC> descArray = UResourceManager::GetInstance().GetProperInputLayout(InShaderPath);
+	bool bUseGpuSkinning = false;
+	for (const FShaderMacro& Macro : InMacros)
+	{
+		if (Macro.Name == FName("USE_GPU_SKINNING"))
+		{
+			bUseGpuSkinning = (Macro.Definition != FName("0"));
+			if (bUseGpuSkinning)
+			{
+				break;
+			}
+		}
+	}
+
+	FString LayoutKey = InShaderPath;
+	if (bUseGpuSkinning)
+	{
+		LayoutKey += "|GPU";
+	}
+
+	TArray<D3D11_INPUT_ELEMENT_DESC> descArray = UResourceManager::GetInstance().GetProperInputLayout(LayoutKey);
 	const D3D11_INPUT_ELEMENT_DESC* layout = descArray.data();
 	uint32 layoutCount = static_cast<uint32>(descArray.size());
 

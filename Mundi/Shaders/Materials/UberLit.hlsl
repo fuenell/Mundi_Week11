@@ -15,6 +15,7 @@
 #endif
 
 #define GPU_SKINNING_BUFFER_REGISTER t12
+#define GPU_SKINNING_NORMAL_BUFFER_REGISTER t13
 
 // --- Material 구조체 (OBJ 머티리얼 정보) ---
 // 주의: SPECULAR_COLOR 매크로에서 사용하므로 include 전에 정의 필요
@@ -94,7 +95,9 @@ Texture2D<float2> g_VSMShadowAtlas : register(t10);
 TextureCubeArray<float2> g_VSMShadowCube : register(t11);   // TODO: 지금은 전달 안 되고, 안 쓰는 중
 
 #if USE_GPU_SKINNING
-StructuredBuffer<float4x4> g_SkinningMatrices : register(GPU_SKINNING_BUFFER_REGISTER);
+typedef row_major float4x4 FRowMajorMatrix;
+StructuredBuffer<FRowMajorMatrix> g_SkinningMatrices : register(GPU_SKINNING_BUFFER_REGISTER);
+StructuredBuffer<FRowMajorMatrix> g_SkinningNormalMatrices : register(GPU_SKINNING_NORMAL_BUFFER_REGISTER);
 #endif
 
 SamplerState g_Sample : register(s0);
@@ -115,6 +118,10 @@ struct VS_INPUT
     float2 TexCoord : TEXCOORD0;
     float4 Tangent : TANGENT0;
     float4 Color : COLOR;
+#if USE_GPU_SKINNING
+    uint4 BoneIndices : BLENDINDICES0;
+    float4 BoneWeights : BLENDWEIGHT0;
+#endif
 };
 
 struct PS_INPUT
@@ -139,11 +146,52 @@ struct PS_OUTPUT
 PS_INPUT mainVS(VS_INPUT Input)
 {
     PS_INPUT Out;
-    
+
+	// GPU SKinning
+#if USE_GPU_SKINNING
+	float4 BlendedPosition = {0.0f, 0.0f, 0.0f, 0.0f};
+	float4 BlendedNormal = {0.0f, 0.0f, 0.0f, 0.0f};
+	float4 BlendedTangent = {0.0f, 0.0f, 0.0f, 0.0f};
+
+	for (int Idx = 0; Idx < 4; ++Idx)
+	{
+		uint BoneIndex = Input.BoneIndices[Idx];
+		float BoneWeight = Input.BoneWeights[Idx];
+
+		if (BoneWeight > 0.0f)
+		{
+			// Position
+			const float4x4 SkinMatrix = g_SkinningMatrices[BoneIndex];
+			float4 TransformedPosition = mul(float4(Input.Position, 1.0f), SkinMatrix);
+			BlendedPosition += TransformedPosition * BoneWeight;
+
+			// Normal
+			const float4x4 SkinNormalMatrix = g_SkinningNormalMatrices[BoneIndex];
+			float4 TransformedNormal = mul(float4(Input.Normal, 0.0f), SkinNormalMatrix);
+			BlendedNormal += TransformedNormal * BoneWeight;
+
+			// Tangent
+			float4 TransformedTangent = mul(Input.Tangent, SkinMatrix);
+			BlendedTangent += TransformedTangent * BoneWeight;
+		}
+	}
+
+	// Normalize Tangent
+	float3 BlendedTangent3 = BlendedTangent.xyz;
+	if (dot(BlendedTangent3, BlendedTangent3) > 1e-12)
+	{
+		BlendedTangent3 = normalize(BlendedTangent3);
+	}
+
+	Input.Position = BlendedPosition.xyz;
+	Input.Normal = BlendedNormal.xyz;
+	Input.Tangent = float4(BlendedTangent3, Input.Tangent.w);
+#endif
+
     // 위치를 월드 공간으로 먼저 변환
     float4 worldPos = mul(float4(Input.Position, 1.0f), WorldMatrix);
     Out.WorldPos = worldPos.xyz;
-    
+
     // 뷰 공간으로 변환
     float4 viewPos = mul(worldPos, ViewMatrix);
 
@@ -243,7 +291,7 @@ PS_OUTPUT mainPS(PS_INPUT Input)
 {
     PS_OUTPUT Output;
     Output.UUID = UUID;
-    
+
     //CSM 구간 시각화
     float3 Color[2] =
     {
@@ -271,24 +319,24 @@ PS_OUTPUT mainPS(PS_INPUT Input)
     //{
     //    uv += UVScrollSpeed * UVScrollTime;
     //}
-    
+
 
 #ifdef VIEWMODE_WORLD_NORMAL
     // World Normal 시각화: Normal 벡터를 색상으로 변환
     // Normal 범위: -1~1 → 색상 범위: 0~1
     float3 normalColor = Input.Normal * 0.5 + 0.5;
-    
+
     if(bHasNormalTexture)
     {
         normalColor = g_NormalTexColor.Sample(g_Sample2, uv);
         normalColor = normalColor * 2.0f - 1.0f;
         normalColor = normalize(mul(normalColor, Input.TBN));
     }
-    
+
     Output.Color = float4(normalColor, 1.0);
     return Output;
 #endif
-    
+
     // 텍스처 샘플링 (머트리얼 색상은 Gouraud는 VS에서 적용됨)
     float4 texColor = g_DiffuseTexColor.Sample(g_Sample, uv);
 
@@ -299,16 +347,16 @@ PS_OUTPUT mainPS(PS_INPUT Input)
     // Gouraud Shading: 조명이 이미 버텍스 셸이더에서 계산됨 (그림자 제외)
     // Pixel Shader에서 그림자 팩터만 계산해서 곱함
     float4 finalPixel = Input.Color;
-    
+
     // 그림자 팩터 계산 (모든 라이트 통합)
     float shadowFactor = 1.0f;
-    
+
     // Directional Light 그림자
     if (DirectionalLight.bCastShadows)
     {
         shadowFactor *= CalculateSpotLightShadowFactor(Input.WorldPos, DirectionalLight.Cascades[0], g_ShadowAtlas2D, g_ShadowSample);
     }
-    
+
     // Point Light 그림자
     for (int i = 0; i < PointLightCount; i++)
     {
@@ -318,7 +366,7 @@ PS_OUTPUT mainPS(PS_INPUT Input)
                 Input.WorldPos, Input.Normal, g_PointLightList[i], 16, g_ShadowAtlasCube, g_ShadowSample);
         }
     }
-    
+
     // Spot Light 그림자
     for (int j = 0; j < SpotLightCount; j++)
     {
@@ -328,7 +376,7 @@ PS_OUTPUT mainPS(PS_INPUT Input)
                 Input.WorldPos, g_SpotLightList[j].ShadowData, g_ShadowAtlas2D, g_ShadowSample);
         }
     }
-    
+
     // 그림자 적용 (VS에서 계산된 조명)
     finalPixel.rgb *= shadowFactor;
 
@@ -507,8 +555,8 @@ PS_OUTPUT mainPS(PS_INPUT Input)
 
     // Directional light (diffuse + specular)
     float3 DirectionalLightColor = CalculateDirectionalLight(DirectionalLight, Input.WorldPos, ViewPos.xyz, normal, viewDir, baseColor, true, specPower, g_ShadowAtlas2D, g_ShadowSample);
-   
-    
+
+
     litColor += DirectionalLightColor;
 
     // 타일 기반 라이트 컬링 적용 (활성화된 경우)
@@ -548,7 +596,7 @@ PS_OUTPUT mainPS(PS_INPUT Input)
         {
             litColor += CalculatePointLight(g_PointLightList[i], Input.WorldPos, normal, viewDir, baseColor, true, specPower, g_ShadowAtlasCube, g_ShadowSample);
         }
-        
+
         [loop]
         for (int j = 0; j < SpotLightCount; j++)
         {
@@ -570,7 +618,7 @@ PS_OUTPUT mainPS(PS_INPUT Input)
     {
         finalAlpha *= (1.0f - Material.Transparency);
     }
-    
+
     Output.Color = float4(litColor, finalAlpha);
     Output.Color.rgb = (1 - CascadeAreaDebugBlendValue) * Output.Color.rgb + CascadeAreaDebugBlendValue * CascadeAreaDebugColor;
     return Output;
@@ -602,7 +650,7 @@ PS_OUTPUT mainPS(PS_INPUT Input)
     {
         finalPixel.a *= (1.0f - Material.Transparency);
     }
-    
+
     Output.Color = finalPixel;
     return Output;
 #endif

@@ -35,11 +35,11 @@ public:
      */
     FTransform GetBoneWorldTransform(int32 BoneIndex);
 
+	/**
+	 * @brief CurrentLocalSpacePose의 변경사항을 ComponentSpace -> FinalMatrices 계산까지 모두 수행
+	 */
+	void ForceRecomputePose();
 protected:
-    /**
-     * @brief CurrentLocalSpacePose의 변경사항을 ComponentSpace -> FinalMatrices 계산까지 모두 수행
-     */
-    void ForceRecomputePose();
 
     /**
      * @brief CurrentLocalSpacePose를 기반으로 CurrentComponentSpacePose 채우기

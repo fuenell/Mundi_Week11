@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "pch.h"
 
 // Per-world render settings (view mode + show flags)
@@ -40,9 +40,14 @@ public:
     void SetShadowAATechnique(EShadowAATechnique In) { ShadowAATechnique = In; }
     EShadowAATechnique GetShadowAATechnique() const { return ShadowAATechnique; }
 
+	// Skinning Mode
+	void SetSkinningMode(ESkinningMode In) { SkinningMode = In; }
+	ESkinningMode GetSkinningMode() const { return SkinningMode; }
+
 private:
     EEngineShowFlags ShowFlags = EEngineShowFlags::SF_DefaultEnabled;
     EViewMode ViewMode = EViewMode::VMI_Lit_Phong;
+	ESkinningMode SkinningMode = ESkinningMode::CPU;
 
     // FXAA parameters
     float FXAAEdgeThresholdMin = 0.0833f;   // 엣지 감지 최소 휘도 차이 (권장: 0.0833)

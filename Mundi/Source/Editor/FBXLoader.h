@@ -23,6 +23,9 @@ public:
 	USkeletalMesh* LoadFbxMesh(const FString& FilePath);
 	FSkeletalMeshData* LoadFbxMeshAsset(const FString& FilePath);
 
+	// Mixamo용 애니메이션 로드 (AnimStack이 2개 이상인 경우, AnimStackIndex를 마지막 인덱스로 고정)
+	UAnimDataModel* LoadAnimationMixamo(const FString& FilePath);
+
 	// 애니메이션 추출 함수
 	UAnimDataModel* LoadAnimationFromFbx(const FString& FilePath, int32 AnimStackIndex = 0);
 

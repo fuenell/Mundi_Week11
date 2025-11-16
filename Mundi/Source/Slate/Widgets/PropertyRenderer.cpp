@@ -263,6 +263,14 @@ void UPropertyRenderer::RenderProperties(const TArray<FProperty>& Properties, UO
 		}
 	}
 
+	// NOTE: 프로퍼티 DisplayPriority가 구현되어 있지 않아서 임시로 Materials 카테고리를 가장 아래에 출력하도록 이동
+	if (int32* IndexPtr = CategoryIndexMap.Find("Materials"))
+	{
+		TPair<FString, TArray<const FProperty*>> MaterialsCategory = CategorizedProps[*IndexPtr];
+		CategorizedProps.RemoveAt(*IndexPtr);
+		CategorizedProps.Add(MaterialsCategory);
+	}
+
 	// 5. TArray를 순회하면 '삽입 순서'가 완벽하게 보장됩니다.
 	// (순서를 뒤집고 싶다면 여기서 CategorizedProps.rbegin() / rend() 사용)
 	for (auto& Pair : CategorizedProps)

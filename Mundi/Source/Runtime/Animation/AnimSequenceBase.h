@@ -11,6 +11,9 @@ public:
 	UAnimSequenceBase() = default;
 	virtual ~UAnimSequenceBase() override = default;
 
+	// ResouceManager에서 호출됨
+	void Load(const FString& InFilePath, class ID3D11Device* InDevice);
+
 	UAnimDataModel* GetDataModel() const
 	{
 		return DataModel;

@@ -2,6 +2,8 @@
 #include "AnimSingleNodeInstance.h"
 #include "AnimationAsset.h"
 
+IMPLEMENT_CLASS(UAnimSingleNodeInstance)
+
 void UAnimSingleNodeInstance::SetAnimationAsset(UAnimationAsset* NewAsset, bool bIsLooping, float InPlayRate)
 {
 	if (NewAsset != CurrentAsset)

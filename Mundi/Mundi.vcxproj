@@ -356,9 +356,19 @@
     <ClCompile Include="Source\Editor\ObjManager.cpp" />
     <ClCompile Include="Source\Editor\PlatformProcess.cpp" />
     <ClCompile Include="Source\Editor\SelectionManager.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\AnimationAsset.cpp">
+      <DeploymentContent>false</DeploymentContent>
+    </ClCompile>
     <ClCompile Include="Source\Runtime\Animation\AnimDataModel.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimInstance.cpp">
+      <DeploymentContent>false</DeploymentContent>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimSequence.cpp">
+      <DeploymentContent>false</DeploymentContent>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimSequenceBase.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimSingleNodeInstance.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\DynamicMesh.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\Line.cpp" />

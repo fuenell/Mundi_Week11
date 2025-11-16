@@ -2,6 +2,7 @@
 #include "SkeletalMeshComponent.h"
 #include "AnimSingleNodeInstance.h"
 #include "AnimationAsset.h"
+#include "AnimSequence.h"
 
 USkeletalMeshComponent::USkeletalMeshComponent()
 {
@@ -76,7 +77,29 @@ void USkeletalMeshComponent::SetSkeletalMesh(const FString& PathFileName)
             CurrentLocalSpacePose[i] = FTransform(LocalBindMatrix); 
         }
         
-        ForceRecomputePose(); 
+        ForceRecomputePose();
+
+		if (bEnableAnimation)
+		{
+			bool bInitialized = InitializeAnimScriptInstance();
+			if (bInitialized)
+			{
+				if (AnimationMode == EAnimationMode::AnimationSingleNode)
+				{
+					UAnimSingleNodeInstance* SingleNodeInstance = GetSingleNodeInstance();
+					if (SingleNodeInstance)
+					{
+						UAnimSequence* DefaultAnimAsset = UResourceManager::GetInstance().Load<UAnimSequence>(PathFileName);
+						SingleNodeInstance->SetAnimationAsset(DefaultAnimAsset, true);
+					}
+				}
+				// TODO: 다른 모드일 경우 처리 필요
+			}
+			else
+			{
+				UE_LOG("SetSkeletalMesh: Failed to initialize AnimScriptInstance");
+			}
+		}
     }
     else
     {
@@ -299,6 +322,10 @@ bool USkeletalMeshComponent::InitializeAnimScriptInstance()
 			//AnimScriptInstance->InitializeAnimation();
 			return true;
 		}
+		else
+		{
+			return false;
+		}
 	}
-	return false;
+	return true;
 }

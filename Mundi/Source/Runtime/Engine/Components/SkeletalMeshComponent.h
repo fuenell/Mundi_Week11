@@ -10,6 +10,8 @@ enum class EAnimationMode : int
 	AnimationCustomMode,
 };
 
+class UAnimationAsset;
+
 UCLASS(DisplayName="스켈레탈 메시 컴포넌트", Description="스켈레탈 메시를 렌더링하는 컴포넌트입니다")
 class USkeletalMeshComponent : public USkinnedMeshComponent
 {
@@ -73,7 +75,7 @@ public:
 	 * @param NewAnimToPlay 재생할 애니메이션 에셋
 	 * @param bLooping 애니메이션 반복 재생 여부
 	 */
-	void PlayAnimation(class UAnimationAsset* NewAnimToPlay, bool bLooping);
+	void PlayAnimation(UAnimationAsset* NewAnimToPlay, bool bLooping);
 
 protected:
 	/**
@@ -115,4 +117,6 @@ private:
     float TestTime = 0;
     bool bIsInitialized = false;
     FTransform TestBoneBasePose;
+
+	bool bPlayingAnimation = false;
 };

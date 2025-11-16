@@ -3,10 +3,10 @@
 
 struct FSkeleton;
 
-class UAnimationAsset : public UObject
+class UAnimationAsset : public UResourceBase
 {
 public:
-	DECLARE_CLASS(UAnimationAsset, UObject)
+	DECLARE_CLASS(UAnimationAsset, UResourceBase)
 
 	UAnimationAsset() = default;
 	virtual ~UAnimationAsset() override = default;

@@ -3,38 +3,14 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Misc\WindowsCrashReporter.cpp">
-      <Filter>Source\Runtime\Core\Misc</Filter>
+    <ClCompile Include="Source\Runtime\Animation\AnimSequenceBase.cpp">
+      <Filter>Source\Runtime\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Editor\FbxLoader.cpp">
-      <Filter>Source\Editor</Filter>
+    <ClCompile Include="Source\Runtime\Animation\AnimSingleNodeInstance.cpp">
+      <Filter>Source\Runtime\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Editor\ObjManager.cpp">
-      <Filter>Source\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\PlatformProcess.cpp">
-      <Filter>Source\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\SelectionManager.cpp">
-      <Filter>Source\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Clipboard\ClipboardManager.cpp">
-      <Filter>Source\Editor\Clipboard</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Gizmo\GizmoActor.cpp">
-      <Filter>Source\Editor\Gizmo</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Gizmo\GizmoArrowComponent.cpp">
-      <Filter>Source\Editor\Gizmo</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Gizmo\GizmoRotateComponent.cpp">
-      <Filter>Source\Editor\Gizmo</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Gizmo\GizmoScaleComponent.cpp">
-      <Filter>Source\Editor\Gizmo</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\Grid\GridActor.cpp">
-      <Filter>Source\Editor\Grid</Filter>
+    <ClCompile Include="Source\Runtime\Animation\AnimDataModel.cpp">
+      <Filter>Source\Runtime\Animation</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\AssetManagement\DynamicMesh.cpp">
       <Filter>Source\Runtime\AssetManagement</Filter>
@@ -76,6 +52,9 @@
       <Filter>Source\Runtime\Core\Misc</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Core\Misc\VertexData.cpp">
+      <Filter>Source\Runtime\Core\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Misc\WindowsCrashReporter.cpp">
       <Filter>Source\Runtime\Core\Misc</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Core\Object\Actor.cpp">
@@ -390,6 +369,36 @@
     <ClCompile Include="Source\Runtime\RHI\RHIDevice.cpp">
       <Filter>Source\Runtime\RHI</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\FbxLoader.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ObjManager.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\PlatformProcess.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\SelectionManager.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Clipboard\ClipboardManager.cpp">
+      <Filter>Source\Editor\Clipboard</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Gizmo\GizmoActor.cpp">
+      <Filter>Source\Editor\Gizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Gizmo\GizmoArrowComponent.cpp">
+      <Filter>Source\Editor\Gizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Gizmo\GizmoRotateComponent.cpp">
+      <Filter>Source\Editor\Gizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Gizmo\GizmoScaleComponent.cpp">
+      <Filter>Source\Editor\Gizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Grid\GridActor.cpp">
+      <Filter>Source\Editor\Grid</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Slate\GlobalConsole.cpp">
       <Filter>Source\Slate</Filter>
     </ClCompile>
@@ -627,51 +636,41 @@
     <ClCompile Include="Generated\AStaticMeshActor.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\AnimDataModel.cpp">
+    <ClCompile Include="Source\Runtime\Animation\AnimSequence.cpp">
       <Filter>Source\Runtime\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\AnimSingleNodeInstance.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\AnimationAsset.cpp">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimInstance.cpp">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Source\Runtime\Core\Misc\WindowsCrashReporter.h">
-      <Filter>Source\Runtime\Core\Misc</Filter>
+    <ClInclude Include="Source\Runtime\Animation\AnimationAsset.h">
+      <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Editor\FbxLoader.h">
-      <Filter>Source\Editor</Filter>
+    <ClInclude Include="Source\Runtime\Animation\AnimCurveTypes.h">
+      <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Editor\ImGuiConsole.h">
-      <Filter>Source\Editor</Filter>
+    <ClInclude Include="Source\Runtime\Animation\AnimDataModel.h">
+      <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Editor\ObjManager.h">
-      <Filter>Source\Editor</Filter>
+    <ClInclude Include="Source\Runtime\Animation\AnimInstance.h">
+      <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Editor\PlatformProcess.h">
-      <Filter>Source\Editor</Filter>
+    <ClInclude Include="Source\Runtime\Animation\AnimSequence.h">
+      <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Editor\SelectionManager.h">
-      <Filter>Source\Editor</Filter>
+    <ClInclude Include="Source\Runtime\Animation\AnimSequenceBase.h">
+      <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Editor\Clipboard\ClipboardManager.h">
-      <Filter>Source\Editor\Clipboard</Filter>
+    <ClInclude Include="Source\Runtime\Animation\AnimSingleNodeInstance.h">
+      <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Editor\Gizmo\GizmoActor.h">
-      <Filter>Source\Editor\Gizmo</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Gizmo\GizmoArrowComponent.h">
-      <Filter>Source\Editor\Gizmo</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Gizmo\GizmoRotateComponent.h">
-      <Filter>Source\Editor\Gizmo</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Gizmo\GizmoScaleComponent.h">
-      <Filter>Source\Editor\Gizmo</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Grid\Grid.h">
-      <Filter>Source\Editor\Grid</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\Grid\GridActor.h">
-      <Filter>Source\Editor\Grid</Filter>
+    <ClInclude Include="Source\Runtime\Animation\AnimTypes.h">
+      <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\AssetManagement\Cube.h">
       <Filter>Source\Runtime\AssetManagement</Filter>
@@ -749,6 +748,9 @@
       <Filter>Source\Runtime\Core\Misc</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Core\Misc\WindowsBinWriter.h">
+      <Filter>Source\Runtime\Core\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Misc\WindowsCrashReporter.h">
       <Filter>Source\Runtime\Core\Misc</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Core\Object\Actor.h">
@@ -1087,8 +1089,41 @@
     <ClInclude Include="Source\Runtime\RHI\SwapGuard.h">
       <Filter>Source\Runtime\RHI</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\AnimCurveTypes.h">
-      <Filter>Source\Runtime\Animation</Filter>
+    <ClInclude Include="Source\Editor\FbxLoader.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ImGuiConsole.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ObjManager.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\PlatformProcess.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\SelectionManager.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Clipboard\ClipboardManager.h">
+      <Filter>Source\Editor\Clipboard</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Gizmo\GizmoActor.h">
+      <Filter>Source\Editor\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Gizmo\GizmoArrowComponent.h">
+      <Filter>Source\Editor\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Gizmo\GizmoRotateComponent.h">
+      <Filter>Source\Editor\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Gizmo\GizmoScaleComponent.h">
+      <Filter>Source\Editor\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Grid\Grid.h">
+      <Filter>Source\Editor\Grid</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Grid\GridActor.h">
+      <Filter>Source\Editor\Grid</Filter>
     </ClInclude>
     <ClInclude Include="Source\Slate\GlobalConsole.h">
       <Filter>Source\Slate</Filter>
@@ -2611,27 +2646,6 @@
     <ClInclude Include="Generated\AStaticMeshActor.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\AnimationAsset.h">
-      <Filter>Source\Runtime\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\AnimDataModel.h">
-      <Filter>Source\Runtime\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\AnimSequenceBase.h">
-      <Filter>Source\Runtime\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\AnimTypes.h">
-      <Filter>Source\Runtime\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\AnimSequence.h">
-      <Filter>Source\Runtime\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\AnimInstance.h">
-      <Filter>Source\Runtime\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\AnimSingleNodeInstance.h">
-      <Filter>Source\Runtime\Animation</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ThirdParty\Include\DirectXTex\DirectXTex.inl">
@@ -2747,226 +2761,226 @@
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
-      <UniqueIdentifier>{4cef249d-cfb4-47a4-984e-67e2bd1fe37b}</UniqueIdentifier>
+      <UniqueIdentifier>{bf561936-b331-4a6d-b4cc-7066e00742be}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime">
-      <UniqueIdentifier>{f8b70a5f-ac53-4323-afee-f26b4d85835f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\AssetManagement">
-      <UniqueIdentifier>{ce7c2256-3864-4362-bb87-722ad28e9c1c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Editor">
-      <UniqueIdentifier>{0b6cb4c1-706d-4007-b1da-4a1fbb126b22}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Editor\Clipboard">
-      <UniqueIdentifier>{e1df313e-045d-4726-b48d-c54ea99eafcd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Editor\Gizmo">
-      <UniqueIdentifier>{caa5f47c-4d41-4549-a545-356c7b56df98}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Editor\Grid">
-      <UniqueIdentifier>{9bfeae27-fead-49db-846e-fdb80b18c1ea}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Core">
-      <UniqueIdentifier>{65841c53-a040-4546-adc1-83e9ce742a40}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Core\Misc">
-      <UniqueIdentifier>{140fd97b-334f-44ff-92f5-4d646186f66a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Core\Object">
-      <UniqueIdentifier>{dae6b97a-50ce-4e23-b6a3-0f4c227dbaf3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Core\Math">
-      <UniqueIdentifier>{ee49bb19-e76d-4e49-9a1e-c80833cba053}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Core\Containers">
-      <UniqueIdentifier>{48971bdd-0015-4715-9a66-80a76c89d3c3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Core\Memory">
-      <UniqueIdentifier>{34ec8b40-d8e6-4701-ac71-39c3bb71d58f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine">
-      <UniqueIdentifier>{5dceda89-8e1a-4d18-aa50-d03c93de9f7a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Components">
-      <UniqueIdentifier>{93e74c90-1eb2-4a19-a201-b20c769f73e4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\GameFramework">
-      <UniqueIdentifier>{5b650e01-ac5e-445d-a02c-4eb1c1edd91d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\GameFramework\Camera">
-      <UniqueIdentifier>{991b0d8a-38e8-45a3-99a4-4ae0277b2823}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Scripting">
-      <UniqueIdentifier>{59a7ff05-a7de-4e78-bd44-dfb9dc965b5c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\SkeletalViewer">
-      <UniqueIdentifier>{d1e9bb72-9359-4014-9d03-0944437d6ac1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Audio">
-      <UniqueIdentifier>{c2db91df-6c7d-4d34-b993-0ccd1d66940f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Collision">
-      <UniqueIdentifier>{dab5299e-3ad2-46e1-95b4-11a90a280d3e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Spatial">
-      <UniqueIdentifier>{5326d408-ad17-4b9a-a48c-7c69aa0f3ee0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Renderer">
-      <UniqueIdentifier>{e55652b7-1021-40b7-9976-7717cdf2c32c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Renderer\PostProcessing">
-      <UniqueIdentifier>{c7982b81-fea6-4cb4-8bec-aa03f3133c15}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\InputCore">
-      <UniqueIdentifier>{5fe59afe-db21-4263-ab83-fce054cb0fd6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\RHI">
-      <UniqueIdentifier>{95c44294-0c35-4dc8-a54d-eca8ace1d546}</UniqueIdentifier>
+      <UniqueIdentifier>{8db4224c-61ea-4662-9756-7e1d5c4326e4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Runtime\Animation">
-      <UniqueIdentifier>{99de42c6-7877-426e-a34d-42bc6d90d951}</UniqueIdentifier>
+      <UniqueIdentifier>{8d99fa72-2b98-41cf-8caa-31eca5ab871e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\AssetManagement">
+      <UniqueIdentifier>{2db1a2bd-dd9a-4577-8de9-40ab8e44f107}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Core">
+      <UniqueIdentifier>{95eac554-9102-451e-aeb2-286fca2cfd45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Core\Misc">
+      <UniqueIdentifier>{02cac31e-f358-486d-beab-a14d18efa65d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Core\Object">
+      <UniqueIdentifier>{617f0ae7-8ee0-4a2f-85d2-8bdddb2c1248}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Core\Math">
+      <UniqueIdentifier>{b57a1871-62df-4e2c-920e-8206b94094fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Core\Containers">
+      <UniqueIdentifier>{c668bc6e-01ba-4e6c-9c1d-b86b385e2224}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Core\Memory">
+      <UniqueIdentifier>{cfd482a8-0524-4ed1-a876-90dd43c916f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine">
+      <UniqueIdentifier>{ec42ff6f-4c53-4ec8-9754-59a8ba99c62a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Components">
+      <UniqueIdentifier>{c7ee9176-520f-43bf-b41e-86382659bd32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\GameFramework">
+      <UniqueIdentifier>{28f08a26-8c31-4b95-9e1f-f536ed4f2054}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\GameFramework\Camera">
+      <UniqueIdentifier>{44d0cdfb-6714-463f-9dd6-1fb186edca19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Scripting">
+      <UniqueIdentifier>{b6617498-58b8-46e1-a971-2b64fe0d52e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\SkeletalViewer">
+      <UniqueIdentifier>{336a82cf-6f4b-4661-8feb-134d3b2aefc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Audio">
+      <UniqueIdentifier>{e1a0bd72-5003-4cc3-93e4-b8940fb73726}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Collision">
+      <UniqueIdentifier>{45d91cdf-2649-4164-942c-d36d7fd75cf9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Spatial">
+      <UniqueIdentifier>{3cb44baa-cc05-4423-9333-b1297b95c8e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Renderer">
+      <UniqueIdentifier>{88a42464-f240-4326-ae2f-bb962f2c7d6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Renderer\PostProcessing">
+      <UniqueIdentifier>{a2c5561c-e693-4dab-aa4b-e1f9e1521669}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\InputCore">
+      <UniqueIdentifier>{05fbb797-267c-4bfb-b82d-ce6185b26d8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\RHI">
+      <UniqueIdentifier>{91e06906-4626-4902-8d3f-3d129d3b49f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{8be7a056-ae97-4a01-ba4a-31111de2fad9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Clipboard">
+      <UniqueIdentifier>{93d12228-d3df-4eb8-8b28-f7de6c08d5f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Gizmo">
+      <UniqueIdentifier>{5135d8ed-f5d6-4294-89e9-47f6de58b4c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Grid">
+      <UniqueIdentifier>{a170d85c-f104-4aca-98d0-01fd45359b44}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Slate">
-      <UniqueIdentifier>{b44edbe1-f1fb-449e-9e55-8097aab736cb}</UniqueIdentifier>
+      <UniqueIdentifier>{db1b99c0-9aa1-4662-acb3-8af81277d5f6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Slate\Windows">
-      <UniqueIdentifier>{9df4d3e0-d811-41f9-8f64-843a4bb5e422}</UniqueIdentifier>
+      <UniqueIdentifier>{2de28069-1498-423e-a3b6-f228511c3f94}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Slate\Widgets">
-      <UniqueIdentifier>{42f914b6-8aeb-4993-a8b3-f276e5403af0}</UniqueIdentifier>
+      <UniqueIdentifier>{c7fe7231-e49b-482d-b4fb-c37d028b2379}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Slate\Factory">
-      <UniqueIdentifier>{68abaaa6-91b6-43da-a0ca-8ca4eac21d1c}</UniqueIdentifier>
+      <UniqueIdentifier>{a553bad4-f47d-4af5-82ce-a29d91fadef1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Slate\ImGui">
-      <UniqueIdentifier>{5d442bed-7ef6-41b4-9fc6-149f46f462af}</UniqueIdentifier>
+      <UniqueIdentifier>{559c3cfc-4601-4704-bc68-da077f550d4f}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty">
-      <UniqueIdentifier>{d181c794-2ea2-42ff-955b-818322bc8d96}</UniqueIdentifier>
+      <UniqueIdentifier>{8900ce45-a5dc-4429-acf8-b1202fc51ea4}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include">
-      <UniqueIdentifier>{bb8f3703-cd44-4c9f-9f72-78a736c452be}</UniqueIdentifier>
+      <UniqueIdentifier>{7c446e97-7a6c-408d-a655-2739ac2b711c}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\DirectXTex">
-      <UniqueIdentifier>{06e89650-1ff8-4f09-bda0-166de20d2e84}</UniqueIdentifier>
+      <UniqueIdentifier>{d163c5ad-0a27-46df-8f15-bbd0dfd91582}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\DirectXTK">
-      <UniqueIdentifier>{ce2aa2f2-24cb-4de1-af77-0ecea5134c88}</UniqueIdentifier>
+      <UniqueIdentifier>{2a46afec-4c78-4434-b36c-e8ca35469947}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX">
-      <UniqueIdentifier>{ce35b032-a480-465e-aebc-ad46ca530705}</UniqueIdentifier>
+      <UniqueIdentifier>{606653f6-0533-432b-abee-ab1c78f9c6f3}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk">
-      <UniqueIdentifier>{cd67d554-79ec-407d-9b47-3ff0b7a3edbc}</UniqueIdentifier>
+      <UniqueIdentifier>{0f7a1a6f-e08a-4855-8901-67de92c8f82b}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\core">
-      <UniqueIdentifier>{88d71576-5a3a-4c86-b65b-67e90661ec78}</UniqueIdentifier>
+      <UniqueIdentifier>{82a2a9fc-85fc-486f-a38a-14444795e4e3}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\core\arch">
-      <UniqueIdentifier>{577516c7-ac2f-4695-a2a9-3975818fc23b}</UniqueIdentifier>
+      <UniqueIdentifier>{35a1a28f-7998-4753-91d6-08bd67f5b661}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\core\base">
-      <UniqueIdentifier>{1555968a-7aa3-438e-9b1c-72e77083ea65}</UniqueIdentifier>
+      <UniqueIdentifier>{9b58689c-4db1-4409-9a7d-613ffb1886aa}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\core\math">
-      <UniqueIdentifier>{aa7c6ae7-2684-4040-ac70-9c89cb345882}</UniqueIdentifier>
+      <UniqueIdentifier>{c35712a8-c199-4356-8149-0c27df8a1f82}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\core\sync">
-      <UniqueIdentifier>{5bcbb4f7-126e-498b-ac80-96fc9b3bcb47}</UniqueIdentifier>
+      <UniqueIdentifier>{093d6075-367f-4d2c-a61d-9ab517bf061e}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\fileio">
-      <UniqueIdentifier>{1f3fa2d8-66b7-4899-a526-d69b1172f1f4}</UniqueIdentifier>
+      <UniqueIdentifier>{fa5efffb-2a5b-4a8a-89aa-c10a761d4821}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\fileio\collada">
-      <UniqueIdentifier>{cdcdbbe6-6a79-43e6-901c-eb40d81718c1}</UniqueIdentifier>
+      <UniqueIdentifier>{4a9fbeee-aa91-4082-9f84-6e6a2ee76310}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\fileio\fbx">
-      <UniqueIdentifier>{62b561b9-9703-4e5c-8a22-027b12598927}</UniqueIdentifier>
+      <UniqueIdentifier>{89c76729-fd2a-44d4-bad9-e58879911ce6}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\scene">
-      <UniqueIdentifier>{7666767f-915a-4244-8e13-82fa098bd97e}</UniqueIdentifier>
+      <UniqueIdentifier>{9cd3451f-addf-4144-8b9d-2148dda7714e}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\scene\animation">
-      <UniqueIdentifier>{570ea56c-39b9-4b6a-9f9d-3c0d0bc9afb9}</UniqueIdentifier>
+      <UniqueIdentifier>{56406678-6e1c-477e-b57e-56c10cf61cd0}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\scene\constraint">
-      <UniqueIdentifier>{1aadd049-7ed0-4294-afb6-db001fec1362}</UniqueIdentifier>
+      <UniqueIdentifier>{ac752ae9-3566-442c-a220-38ee5311d049}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\scene\geometry">
-      <UniqueIdentifier>{3e3cae7b-a46d-4a7d-8648-b46f86638ad9}</UniqueIdentifier>
+      <UniqueIdentifier>{b92450dc-8f79-4c03-b7cb-ac27200f0ed6}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\scene\shading">
-      <UniqueIdentifier>{8fa9ec79-c30e-433a-ba3b-ad89f1b49701}</UniqueIdentifier>
+      <UniqueIdentifier>{909e6a01-b64f-4434-a258-72abb783c7e1}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\fbxsdk\utils">
-      <UniqueIdentifier>{37453ffe-6afe-47ea-aeac-f73a80838595}</UniqueIdentifier>
+      <UniqueIdentifier>{c72a708a-0e6e-429c-8293-62ff2ffc0c6a}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\libxml2">
-      <UniqueIdentifier>{5609bf11-62e0-4ab5-a629-e995c4112444}</UniqueIdentifier>
+      <UniqueIdentifier>{2d79aff2-eb64-4f65-b982-d79e3d47a506}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\FBX\libxml2\libxml">
-      <UniqueIdentifier>{8a00fa08-ab3f-46f8-9bfd-831c67e19505}</UniqueIdentifier>
+      <UniqueIdentifier>{017a9a2a-5094-40af-88f8-3f58d3b204da}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\ImGui">
-      <UniqueIdentifier>{10e69d76-2aba-4cd2-9a6c-07299c771eea}</UniqueIdentifier>
+      <UniqueIdentifier>{b8922fa5-e0d6-4ef3-a2ad-cdbb6e97c88f}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\Lua">
-      <UniqueIdentifier>{92f46832-0b9f-42e0-a0be-d30afa152c15}</UniqueIdentifier>
+      <UniqueIdentifier>{0cc9d245-8d0f-4d62-93dc-4f6e3f138e17}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\nlohmann">
-      <UniqueIdentifier>{1b0d648f-fb2e-45aa-9161-635b4078aa64}</UniqueIdentifier>
+      <UniqueIdentifier>{557e539c-92a5-4ecf-a3c6-69d54efb2572}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\sol">
-      <UniqueIdentifier>{81c3e28e-9bc2-4a76-a4fd-5058f5b0a70b}</UniqueIdentifier>
+      <UniqueIdentifier>{14ebf235-1dbf-4e45-91bb-0694e247d47a}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\sol\compatibility">
-      <UniqueIdentifier>{243d8c22-fb66-46f0-9c92-8dc510bd88b1}</UniqueIdentifier>
+      <UniqueIdentifier>{57d25e97-af48-4715-bbde-9d52c0de04ee}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\sol\detail">
-      <UniqueIdentifier>{ea86c18d-7adc-4085-a733-9ac8b4b5b08c}</UniqueIdentifier>
+      <UniqueIdentifier>{5a0ab592-76b6-44b4-80e0-73864b573c6d}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\sol\stack">
-      <UniqueIdentifier>{185f8280-daa9-42fc-862d-6af7aca53085}</UniqueIdentifier>
+      <UniqueIdentifier>{4cf84ed4-c688-44a1-8f2c-770d83f36bfc}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\sol\stack\detail">
-      <UniqueIdentifier>{d5b2fb32-0d82-4b80-895d-4d84c6d1c4d2}</UniqueIdentifier>
+      <UniqueIdentifier>{270f2644-37cf-41b7-b644-2f1e1972f01f}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\Include\sol\utility">
-      <UniqueIdentifier>{4e636b46-8e8b-4d68-962e-87862e3f0be1}</UniqueIdentifier>
+      <UniqueIdentifier>{a9ff4fce-84df-49ae-9229-1b3c79ae6d50}</UniqueIdentifier>
     </Filter>
     <Filter Include="Tools">
-      <UniqueIdentifier>{8dfde903-a1fc-4903-97a7-492eeb5193b7}</UniqueIdentifier>
+      <UniqueIdentifier>{44d06d37-e705-438b-9c2f-7c45f8baf5a0}</UniqueIdentifier>
     </Filter>
     <Filter Include="Tools\CodeGenerator">
-      <UniqueIdentifier>{adf63dd1-4b31-430c-8e21-2a31066310e9}</UniqueIdentifier>
+      <UniqueIdentifier>{88e4d53f-1265-4dd0-8b84-034dd6e0f1c0}</UniqueIdentifier>
     </Filter>
     <Filter Include="Generated">
-      <UniqueIdentifier>{e89366f9-3bd5-4dde-8ff1-bc00a251c444}</UniqueIdentifier>
+      <UniqueIdentifier>{e379fd6c-aff6-4195-9ff2-30521bcaeed1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders">
-      <UniqueIdentifier>{4ac2a298-b311-4c8f-bf61-a0081bbea82b}</UniqueIdentifier>
+      <UniqueIdentifier>{973919ee-8cc6-4f7f-9880-5350db54e2d7}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\Common">
-      <UniqueIdentifier>{45dcfd2f-c1dd-4d01-b742-f7f320212ee3}</UniqueIdentifier>
+      <UniqueIdentifier>{0b70d91a-e84e-472d-8ce5-2ad0caa800e4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\Effects">
-      <UniqueIdentifier>{e36270df-e015-454e-84aa-326e571a0c12}</UniqueIdentifier>
+      <UniqueIdentifier>{20801416-0d41-473d-b996-824dc31bf7cc}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\Materials">
-      <UniqueIdentifier>{6ceb16ac-261e-4308-95d6-36c6aba3ed3d}</UniqueIdentifier>
+      <UniqueIdentifier>{5ba776ee-6b90-4aaa-8b21-0d255176789f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\PostProcess">
-      <UniqueIdentifier>{28458307-dfa4-48aa-be2e-a5d78c47879a}</UniqueIdentifier>
+      <UniqueIdentifier>{3b5b9b4c-1940-4a14-9d13-764a021502c3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\Shadows">
-      <UniqueIdentifier>{5cd672b8-29d3-4b6d-b559-47d8ec1a708a}</UniqueIdentifier>
+      <UniqueIdentifier>{c47d6d06-27b3-4db3-9fa1-019751ff3ed3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\UI">
-      <UniqueIdentifier>{f4d6b741-1227-4be8-9370-54248b62f41f}</UniqueIdentifier>
+      <UniqueIdentifier>{4771659a-42a3-44ab-96e6-bb8ae41cf075}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\Utility">
-      <UniqueIdentifier>{71e87aae-dbff-4620-ac90-3fe1d76b460c}</UniqueIdentifier>
+      <UniqueIdentifier>{14dc90e0-d0d1-404f-a773-6cfa7b201e7e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

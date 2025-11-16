@@ -39,6 +39,18 @@ public:
 	 * @brief CurrentLocalSpacePose의 변경사항을 ComponentSpace -> FinalMatrices 계산까지 모두 수행
 	 */
 	void ForceRecomputePose();
+    
+// Animation Section
+public:
+	void SetAnimationMode(EAnimationMode::Type InAnimationMode, bool bForceInitAnimScriptInstance);
+
+	/**
+	 * @brief 단일 애니메이션 재생 시작
+	 * @param NewAnimToPlay 재생할 애니메이션 에셋
+	 * @param bLooping 애니메이션 반복 재생 여부
+	 */
+	void PlayAnimation(class UAnimationAsset* NewAnimToPlay, bool bLooping);
+
 protected:
 
     /**
@@ -72,6 +84,8 @@ protected:
 	 * @brief 이 컴포넌트에 연결된 애니메이션 인스턴스
 	 */
 	class UAnimInstance* AnimInstance;
+
+	bool bEnableAnimation = true;
 
 // FOR TEST!!!
 private:

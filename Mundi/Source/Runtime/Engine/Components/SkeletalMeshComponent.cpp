@@ -128,6 +128,19 @@ FTransform USkeletalMeshComponent::GetBoneWorldTransform(int32 BoneIndex)
     return GetWorldTransform(); // 실패 시 컴포넌트 위치 반환
 }
 
+void USkeletalMeshComponent::PlayAnimation(UAnimationAsset* NewAnimToPlay, bool bLooping)
+{
+	if (!bEnableAnimation)
+	{
+		UE_LOG("PlayAnimation: Animation is currently disabled");
+		return;
+	}
+
+	SetAnimationMode(EAnimationMode::AnimationSingleNode);
+	SetAnimation(NewAnimToPlay);
+	Play(bLooping);
+}
+
 void USkeletalMeshComponent::ForceRecomputePose()
 {
     if (!SkeletalMesh) { return; } 

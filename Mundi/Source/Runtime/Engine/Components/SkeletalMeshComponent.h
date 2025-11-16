@@ -2,6 +2,17 @@
 #include "SkinnedMeshComponent.h"
 #include "USkeletalMeshComponent.generated.h"
 
+// TODO: UE에 있는 것 일단 그대로 가져옴. 추후 이 엔진에 맞춰 수정 가능
+enum class EAnimationMode : int
+{
+	AnimationBlueprint, // 블루프린트 기반 애니메이션 (미구현)
+	AnimationSingleNode, // 단일 애니메이션 에셋 재생: 보통 UAnimSingleNodeInstancex타입의 에셋 사용
+	// This is custom type, engine leaves AnimInstance as it is
+	AnimationCustomMode, // 가장 저수준으로 애니메이션을 조작하는 모드 (미구현)
+};
+
+class UAnimationAsset;
+
 UCLASS(DisplayName="스켈레탈 메시 컴포넌트", Description="스켈레탈 메시를 렌더링하는 컴포넌트입니다")
 class USkeletalMeshComponent : public USkinnedMeshComponent
 {
@@ -39,18 +50,53 @@ public:
 	 * @brief CurrentLocalSpacePose의 변경사항을 ComponentSpace -> FinalMatrices 계산까지 모두 수행
 	 */
 	void ForceRecomputePose();
+
 protected:
 
-    /**
-     * @brief CurrentLocalSpacePose를 기반으로 CurrentComponentSpacePose 채우기
-     */
-    void UpdateComponentSpaceTransforms();
+	/**
+	 * @brief CurrentLocalSpacePose를 기반으로 CurrentComponentSpacePose 채우기
+	 */
+	void UpdateComponentSpaceTransforms();
 
-    /**
-     * @brief CurrentComponentSpacePose를 기반으로 TempFinalSkinningMatrices 채우기
-     */
-    void UpdateFinalSkinningMatrices();
+	/**
+	 * @brief CurrentComponentSpacePose를 기반으로 TempFinalSkinningMatrices 채우기
+	 */
+	void UpdateFinalSkinningMatrices();
+    
+// Animation Section
+public:
+	class UAnimSingleNodeInstance* GetSingleNodeInstance() const;
 
+	void SetAnimationMode(EAnimationMode InAnimationMode, bool bForceInitAnimScriptInstance = true);
+
+	// 단일 애니메이션 재생 관련 함수들
+	void SetAnimation(UAnimationAsset* NewAnimToPlay);
+	void Play(bool bLooping);
+
+	/**
+	 * @brief 단일 애니메이션 재생 시작
+	 * @param NewAnimToPlay 재생할 애니메이션 에셋
+	 * @param bLooping 애니메이션 반복 재생 여부
+	 */
+	void PlayAnimation(UAnimationAsset* NewAnimToPlay, bool bLooping);
+
+	/**
+	 * @brief 현재 SkeletalMesh가 기본적으로 가진 단일 애니메이션을 재생
+	 */
+	void PlayDefaultAnimation();
+
+protected:
+	/**
+	 * @brief 현재 애니메이션 인스턴스를 정리
+	 */
+	void ClearAnimScriptInstance();
+
+	/**
+	 * @brief AnimScriptInstance을 여러 조건(ex: AnimationMode)에 따라 초기화
+	 */
+	bool InitializeAnimScriptInstance();
+
+// Editor Section
 protected:
     /**
      * @brief 각 뼈의 부모 기준 로컬 트랜스폼
@@ -68,14 +114,19 @@ protected:
     TArray<FMatrix> TempFinalSkinningMatrices;
     TArray<FMatrix> TempFinalSkinningNormalMatrices;
 
-	/**
-	 * @brief 이 컴포넌트에 연결된 애니메이션 인스턴스
-	 */
-	class UAnimInstance* AnimInstance;
+// Animation Section
+protected:
+	// 이 컴포넌트에 연결된 애니메이션 인스턴스
+	class UAnimInstance* AnimScriptInstance;
+
+	bool bEnableAnimation = true;
+	EAnimationMode AnimationMode = EAnimationMode::AnimationSingleNode;
 
 // FOR TEST!!!
 private:
     float TestTime = 0;
     bool bIsInitialized = false;
     FTransform TestBoneBasePose;
+
+	bool bPlayingAnimation = false;
 };

@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "SkeletalMeshComponent.h"
+#include "AnimSingleNodeInstance.h"
+#include "AnimationAsset.h"
+#include "AnimSequence.h"
 
 USkeletalMeshComponent::USkeletalMeshComponent()
 {
@@ -11,13 +14,36 @@ USkeletalMeshComponent::USkeletalMeshComponent()
 void USkeletalMeshComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
-    //// FOR TEST ////
-    if (!SkeletalMesh) { return; } // 부모의 SkeletalMesh 확인
+    
+    if (!SkeletalMesh) { return; }
 
-    // 1. 테스트할 뼈 인덱스 (모델에 따라 1, 5, 10 등 바꿔보세요)
+    // 애니메이션 활성화 시 AnimScriptInstance 업데이트
+    if (bEnableAnimation && AnimScriptInstance)
+    {
+		// for test
+		if (!bIsInitialized)
+		{
+			PlayDefaultAnimation();
+			bIsInitialized = true;
+		}
+
+        FPoseContext OutPose;
+        AnimScriptInstance->EvaluateAnimationPose(DeltaTime, OutPose);
+
+        // 애니메이션에서 계산된 포즈를 CurrentLocalSpacePose에 적용
+        if (OutPose.LocalTransforms.Num() == CurrentLocalSpacePose.Num())
+        {
+            CurrentLocalSpacePose = OutPose.LocalTransforms;
+            ForceRecomputePose();
+        }
+    }
+    
+    //// FOR TEST ////
+    // 아래 테스트 코드는 주석 처리하거나 제거하세요
+    // 애니메이션 시스템과 충돌할 수 있습니다
+    /*
     constexpr int32 TEST_BONE_INDEX = 2;
     
-    // 3. 테스트 시간 누적
     if (!bIsInitialized)
     {
         TestBoneBasePose = CurrentLocalSpacePose[TEST_BONE_INDEX];
@@ -25,19 +51,15 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
     }
     TestTime += DeltaTime;
 
-    // 4. sin 함수를 이용해 -1 ~ +1 사이를 왕복하는 회전값 생성
-    // (예: Y축(Yaw)을 기준으로 1초에 1라디안(약 57도)씩 왕복)
     float Angle = sinf(TestTime * 2.f);
     FQuat TestRotation = FQuat::FromAxisAngle(FVector(1.f, 0.f, 0.f), Angle);
     TestRotation.Normalize();
 
-    // 5. [중요] 원본 T-Pose에 테스트 회전을 누적
     FTransform NewLocalPose = TestBoneBasePose;
     NewLocalPose.Rotation = TestRotation * TestBoneBasePose.Rotation;
     
-    // 6. [핵심] 기즈모가 하듯이, 뼈의 로컬 트랜스폼을 강제 설정
-    // (이 함수는 내부적으로 ForceRecomputePose()를 호출함)
     SetBoneLocalTransform(TEST_BONE_INDEX, NewLocalPose);
+    */
     //// FOR TEST ////
 }
 
@@ -74,7 +96,29 @@ void USkeletalMeshComponent::SetSkeletalMesh(const FString& PathFileName)
             CurrentLocalSpacePose[i] = FTransform(LocalBindMatrix); 
         }
         
-        ForceRecomputePose(); 
+        ForceRecomputePose();
+
+		if (bEnableAnimation)
+		{
+			bool bInitialized = InitializeAnimScriptInstance();
+			if (bInitialized)
+			{
+				if (AnimationMode == EAnimationMode::AnimationSingleNode)
+				{
+					UAnimSingleNodeInstance* SingleNodeInstance = GetSingleNodeInstance();
+					if (SingleNodeInstance)
+					{
+						UAnimSequence* DefaultAnimAsset = UResourceManager::GetInstance().Load<UAnimSequence>(PathFileName);
+						SingleNodeInstance->SetAnimationAsset(DefaultAnimAsset, true);
+					}
+				}
+				// TODO: 다른 모드일 경우 처리 필요
+			}
+			else
+			{
+				UE_LOG("SetSkeletalMesh: Failed to initialize AnimScriptInstance");
+			}
+		}
     }
     else
     {
@@ -128,6 +172,104 @@ FTransform USkeletalMeshComponent::GetBoneWorldTransform(int32 BoneIndex)
     return GetWorldTransform(); // 실패 시 컴포넌트 위치 반환
 }
 
+UAnimSingleNodeInstance* USkeletalMeshComponent::GetSingleNodeInstance() const
+{
+	return Cast<class UAnimSingleNodeInstance>(AnimScriptInstance);
+}
+
+void USkeletalMeshComponent::SetAnimationMode(EAnimationMode InAnimationMode, bool bForceInitAnimScriptInstance)
+{
+	if (!bEnableAnimation)
+	{
+		UE_LOG("SetAnimationMode: Animation is currently disabled");
+		return;
+	}
+
+	const bool bNeedChange = AnimationMode != InAnimationMode;
+	if (bNeedChange)
+	{
+		AnimationMode = InAnimationMode;
+		ClearAnimScriptInstance();
+	}
+
+	// 아래는 UE의 주석
+	// when mode is swapped, make sure to reinitialize
+	// even if it was same mode, this was due to users who wants to use BP construction script to do this
+	// if you use it in the construction script, it gets serialized, but it never instantiate. 
+	if (GetSkeletalMesh() != nullptr && (bNeedChange || (AnimationMode == EAnimationMode::AnimationBlueprint && bForceInitAnimScriptInstance)))
+	{
+		bool bInitialized = InitializeAnimScriptInstance();
+		if(!bInitialized)
+		{
+			UE_LOG("SetAnimationMode: Failed to initialize AnimScriptInstance");
+		}
+	}
+}
+
+void USkeletalMeshComponent::SetAnimation(UAnimationAsset* NewAnimToPlay)
+{
+	if (!bEnableAnimation)
+	{
+		UE_LOG("SetAnimation: Animation is currently disabled");
+		return;
+	}
+
+	UAnimSingleNodeInstance* SingleNodeInstance = GetSingleNodeInstance();
+	if (SingleNodeInstance)
+	{
+		SingleNodeInstance->SetAnimationAsset(NewAnimToPlay, false);
+		SingleNodeInstance->SetPlaying(false);
+	}
+	else if (AnimScriptInstance != nullptr)
+	{
+		UE_LOG("Currently in Animation Blueprint mode. Please change AnimationMode to Use Animation Asset");
+	}
+}
+
+void USkeletalMeshComponent::Play(bool bLooping)
+{
+	if (!bEnableAnimation)
+	{
+		UE_LOG("Play: Animation is currently disabled");
+		return;
+	}
+
+	UAnimSingleNodeInstance* SingleNodeInstance = GetSingleNodeInstance();
+	if (SingleNodeInstance)
+	{
+		SingleNodeInstance->SetPlaying(true);
+		SingleNodeInstance->SetLooping(bLooping);
+	}
+	else if (AnimScriptInstance != nullptr)
+	{
+		UE_LOG("Currently in Animation Blueprint mode. Please change AnimationMode to Use Animation Asset");
+	}
+}
+
+void USkeletalMeshComponent::PlayAnimation(UAnimationAsset* NewAnimToPlay, bool bLooping)
+{
+	if (!bEnableAnimation)
+	{
+		UE_LOG("PlayAnimation: Animation is currently disabled");
+		return;
+	}
+
+	SetAnimationMode(EAnimationMode::AnimationSingleNode);
+	SetAnimation(NewAnimToPlay);
+	Play(bLooping);
+}
+
+void USkeletalMeshComponent::PlayDefaultAnimation()
+{
+	if (UAnimSingleNodeInstance* SingleNodeInstance = GetSingleNodeInstance())
+	{
+		if (UAnimationAsset* DefaultAnimAsset = SingleNodeInstance->GetCurrentAnimationAsset())
+		{
+			PlayAnimation(DefaultAnimAsset, true);
+		}
+	}
+}
+
 void USkeletalMeshComponent::ForceRecomputePose()
 {
     if (!SkeletalMesh) { return; } 
@@ -175,4 +317,47 @@ void USkeletalMeshComponent::UpdateFinalSkinningMatrices()
         TempFinalSkinningMatrices[BoneIndex] = InvBindPose * ComponentPoseMatrix;
         TempFinalSkinningNormalMatrices[BoneIndex] = TempFinalSkinningMatrices[BoneIndex].Inverse().Transpose();
     }
+}
+
+void USkeletalMeshComponent::ClearAnimScriptInstance()
+{
+	if (AnimScriptInstance)
+	{
+		// Clean up the existing animation instance
+		DeleteObject(AnimScriptInstance);
+		AnimScriptInstance = nullptr;
+	}
+}
+
+bool USkeletalMeshComponent::InitializeAnimScriptInstance()
+{
+	if (AnimScriptInstance == nullptr)
+	{
+		switch (AnimationMode)
+		{
+		case EAnimationMode::AnimationBlueprint:
+			break;
+		case EAnimationMode::AnimationSingleNode:
+			AnimScriptInstance = NewObject<UAnimSingleNodeInstance>();
+			break;
+		case EAnimationMode::AnimationCustomMode:
+			break;
+		default:
+			assert(false, "Unknown AnimationMode");
+			break;
+		}
+
+		if (AnimScriptInstance)
+		{
+			//AnimScriptInstance->InitializeAnimation();
+			AnimScriptInstance->SetSkeleton(SkeletalMesh->GetSkeletonMutable());
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	AnimScriptInstance->SetSkeleton(SkeletalMesh->GetSkeletonMutable());
+	return true;
 }

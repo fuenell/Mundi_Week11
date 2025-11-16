@@ -1196,6 +1196,60 @@ void UFbxLoader::EnsureSingleRootBone(FSkeletalMeshData& MeshData)
 	}
 }
 
+UAnimDataModel* UFbxLoader::LoadAnimationMixamo(const FString& FilePath)
+{
+	// TODO: 코드 중복이 많아 함수화 필요
+
+	// 1. 경로 정규화
+	FString NormalizedPath = NormalizePath(FilePath);
+	FWideString WNormalizedPath = UTF8ToWide(NormalizedPath);
+	std::filesystem::path FbxPath(WNormalizedPath);
+	FString FbxPathAcp = UTF8ToACP(NormalizedPath);
+	CurrentFbxBaseDir = NormalizePath(WideToUTF8(FbxPath.parent_path().wstring()));
+
+	UE_LOG("Loading animation from FBX: %s", NormalizedPath.c_str());
+
+	// 2. FBX 임포터 생성 및 초기화
+	FbxImporter* Importer = FbxImporter::Create(SdkManager, "AnimImporter");
+	if (!Importer->Initialize(FbxPathAcp.c_str(), -1, SdkManager->GetIOSettings()))
+	{
+		UE_LOG("Failed to initialize FBX Importer for animation: %s", Importer->GetStatus().GetErrorString());
+		return nullptr;
+	}
+
+	// 3. 씬 임포트
+	FbxScene* Scene = FbxScene::Create(SdkManager, "AnimScene");
+	if (!Importer->Import(Scene))
+	{
+		UE_LOG("Failed to import FBX scene for animation");
+		Importer->Destroy();
+		return nullptr;
+	}
+	Importer->Destroy();
+
+	// 4. 씬의 좌표계 변환 (Unreal Engine 좌표계로)
+	FbxAxisSystem UnrealImportAxis(FbxAxisSystem::eZAxis, FbxAxisSystem::eParityEven, FbxAxisSystem::eLeftHanded);
+	FbxAxisSystem SourceSetup = Scene->GetGlobalSettings().GetAxisSystem();
+	FbxSystemUnit::m.ConvertScene(Scene);
+
+	if (SourceSetup != UnrealImportAxis)
+	{
+		UE_LOG("Converting FBX axis system to Unreal coordinate system");
+		UnrealImportAxis.DeepConvertScene(Scene);
+	}
+
+	// 5. AnimStack 개수 확인
+	int32 AnimStackCount = Scene->GetSrcObjectCount<FbxAnimStack>();
+	if (AnimStackCount == 0)
+	{
+		UE_LOG("No animation (AnimStack) found in FBX file: %s", NormalizedPath.c_str());
+		return nullptr;
+	}
+	UE_LOG("Found %d AnimStack(s) in FBX file", AnimStackCount);
+
+	return LoadAnimationFromFbx(FilePath, AnimStackCount - 1);
+}
+
 //====================================================================================
 // 애니메이션 추출 메인 함수
 //====================================================================================

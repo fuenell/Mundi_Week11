@@ -123,6 +123,7 @@ void UStaticMeshComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMesh
 		BatchElement.WorldMatrix = GetWorldMatrix();
 		BatchElement.ObjectID = InternalIndex;
 		BatchElement.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		BatchElement.PrimitiveTypeID = GetPrimitiveTypeId();
 
 		OutMeshBatchElements.Add(BatchElement);
 	}

@@ -18,6 +18,7 @@ class USkeletalMeshComponent : public USkinnedMeshComponent
 {
 public:
     GENERATED_REFLECTION_BODY()
+    REGISTER_PRIMITIVE_COMPONENT(USkeletalMeshComponent)
     
     USkeletalMeshComponent();
     ~USkeletalMeshComponent() override = default;

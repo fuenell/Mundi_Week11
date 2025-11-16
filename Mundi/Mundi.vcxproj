@@ -478,6 +478,7 @@
     <ClCompile Include="Source\Runtime\Renderer\PostProcessing\HeightFogPass.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\PostProcessing\PostProcessing.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\PostProcessing\VignettePass.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\PrimitiveTypeRegistry.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\QuadManager.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\Renderer.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\RenderManager.cpp" />
@@ -772,11 +773,13 @@
     <ClInclude Include="Source\Runtime\Renderer\LightManager.h" />
     <ClInclude Include="Source\Runtime\Renderer\Material.h" />
     <ClInclude Include="Source\Runtime\Renderer\MeshBatchElement.h" />
+    <ClInclude Include="Source\Runtime\Renderer\MeshStats.h" />
     <ClInclude Include="Source\Runtime\Renderer\PostProcessing\FadeInOutPass.h" />
     <ClInclude Include="Source\Runtime\Renderer\PostProcessing\GammaPass.h" />
     <ClInclude Include="Source\Runtime\Renderer\PostProcessing\HeightFogPass.h" />
     <ClInclude Include="Source\Runtime\Renderer\PostProcessing\PostProcessing.h" />
     <ClInclude Include="Source\Runtime\Renderer\PostProcessing\VignettePass.h" />
+    <ClInclude Include="Source\Runtime\Renderer\PrimitiveTypeRegistry.h" />
     <ClInclude Include="Source\Runtime\Renderer\QuadManager.h" />
     <ClInclude Include="Source\Runtime\Renderer\Renderer.h" />
     <ClInclude Include="Source\Runtime\Renderer\RenderManager.h" />

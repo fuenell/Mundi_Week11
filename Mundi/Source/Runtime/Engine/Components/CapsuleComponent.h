@@ -9,6 +9,7 @@ class UCapsuleComponent : public UShapeComponent
 public:
 
 	GENERATED_REFLECTION_BODY();
+	REGISTER_PRIMITIVE_COMPONENT(UCapsuleComponent)
 
 	UCapsuleComponent();
 	void OnRegister(UWorld* World) override;

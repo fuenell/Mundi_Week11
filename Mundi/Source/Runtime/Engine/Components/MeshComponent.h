@@ -8,6 +8,7 @@ class UMeshComponent : public UPrimitiveComponent
 {
 public:
     GENERATED_REFLECTION_BODY()
+    REGISTER_PRIMITIVE_COMPONENT(UMeshComponent)
 
     UMeshComponent();
 

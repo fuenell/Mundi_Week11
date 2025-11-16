@@ -1,8 +1,9 @@
-﻿#pragma once
+#pragma once
 #include "Property.h"
 #include "Color.h"
 #include "StaticMesh.h"
 #include "Texture.h"
+#include "PrimitiveTypeRegistry.h"
 #include <type_traits>
 
 // ===== 타입 자동 감지 템플릿 =====
@@ -316,3 +317,20 @@ struct TPropertyTypeTraits
 	InVariableName->SetEditability(false);\
 	InVariableName->SetHiddenInGame(true);
 
+
+/**
+ * @brief 프리미티브 컴포넌트 파생 클래스에 타입 ID 등록 헬퍼를 제공하는 매크로
+ * @note: 해당 매크로는 public 영역에 삽입해야 합니다. 
+ */
+#define REGISTER_PRIMITIVE_COMPONENT(ThisClass) \
+	static uint16 GetPrimitiveTypeIdStatic() \
+	{ \
+		return PrimitiveTypeId; \
+	} \
+	virtual uint16 GetPrimitiveTypeId() const \
+	{ \
+		return ThisClass::GetPrimitiveTypeIdStatic(); \
+	} \
+private: \
+	inline static const uint16 PrimitiveTypeId = FPrimitiveTypeRegistry::GetInstance().RegisterType(ThisClass::StaticClass()); \
+public:

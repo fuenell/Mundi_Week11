@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "SceneComponent.h"
 #include "Material.h"
@@ -23,6 +23,7 @@ class UPrimitiveComponent :public USceneComponent
 public:
 
     GENERATED_REFLECTION_BODY();
+    REGISTER_PRIMITIVE_COMPONENT(UPrimitiveComponent)
 
     UPrimitiveComponent();
     virtual ~UPrimitiveComponent() = default;

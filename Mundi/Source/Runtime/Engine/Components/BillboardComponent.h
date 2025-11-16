@@ -15,6 +15,7 @@ class UBillboardComponent : public UPrimitiveComponent
 public:
 
     GENERATED_REFLECTION_BODY()
+    REGISTER_PRIMITIVE_COMPONENT(UBillboardComponent)
 
     UBillboardComponent();
     ~UBillboardComponent() override = default;

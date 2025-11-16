@@ -178,6 +178,15 @@ public:
 	ID3D11SamplerState* GetSamplerState(RHI_Sampler_Index SamplerIndex) const;
 	void OMSetRenderTargets(ERTVMode RTVMode);
 
+	// GPU Timer Query
+	HRESULT CreateTimestampQuery(ID3D11Query** ppQuery);
+	HRESULT CreateDisjointQuery(ID3D11Query** ppDisjointQuery);
+
+	// GPU 시간 측정
+	void BeginGPUTimer(ID3D11Query* pTimestampStart, ID3D11Query* pDisjointQuery);
+	void EndGPUTimer(ID3D11Query* pTimestampEnd);
+	double GetGPUTime(ID3D11Query* pTimestampStart, ID3D11Query* pTimestampEnd, ID3D11Query* pDisjointQuery);
+
 public:
 	// getter
 	inline ID3D11Device* GetDevice()

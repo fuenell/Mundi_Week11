@@ -645,6 +645,9 @@
     <ClCompile Include="Source\Runtime\Animation\AnimInstance.cpp">
       <Filter>Source\Runtime\Animation</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Renderer\PrimitiveTypeRegistry.cpp">
+      <Filter>Source\Runtime\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2645,6 +2648,33 @@
     </ClInclude>
     <ClInclude Include="Generated\AStaticMeshActor.generated.h">
       <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimationAsset.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimDataModel.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimSequenceBase.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimTypes.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimSequence.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimInstance.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimSingleNodeInstance.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Renderer\MeshStats.h">
+      <Filter>Source\Runtime\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Renderer\PrimitiveTypeRegistry.h">
+      <Filter>Source\Runtime\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

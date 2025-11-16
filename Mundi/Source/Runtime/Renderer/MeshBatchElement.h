@@ -70,6 +70,9 @@ struct FMeshBatchElement
 	uint32 SkinningMatrixOffset = 0; // NOTE: 여러 SkinnedMeshComponent가 하나의 큰 StructuredBuffer로 구현된 스키닝 행렬 풀을 공유하도록 확장하게 되면 활용할 것
 	uint32 SkinningMatrixCount = 0;
 
+	// 프리미티브 타입 ID. 렌더링 프로파일링에 사용됩니다.
+	uint16 PrimitiveTypeID = std::numeric_limits<uint16>::max();
+
 	// --- 기본 생성자 ---
 	FMeshBatchElement() = default;
 

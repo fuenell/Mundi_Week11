@@ -9,6 +9,7 @@ class USphereComponent : public UShapeComponent
 public:
 
     GENERATED_REFLECTION_BODY();
+    REGISTER_PRIMITIVE_COMPONENT(USphereComponent)
 
     USphereComponent();
     void OnRegister(UWorld* InWorld) override;

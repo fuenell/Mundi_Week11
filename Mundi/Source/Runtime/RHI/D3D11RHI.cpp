@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "StatsOverlayD2D.h"
 #include "Color.h"
 
@@ -1177,7 +1177,7 @@ void D3D11RHI::PrepareShader(UShader* InVertexShader, UShader* InPixelShader)
 }
 
 // ──────────────────────────────────────────────────────
-// Structured Buffer 관련 메서드 (타일 기반 라이트 컬링용)
+// Structured Buffer 관련 메서드 (타일 기반 라이트 컬링 / GPU skinning)
 // ──────────────────────────────────────────────────────
 
 HRESULT D3D11RHI::CreateStructuredBuffer(UINT InElementSize, UINT InElementCount, const void* InInitData, ID3D11Buffer** OutBuffer)
@@ -1231,4 +1231,69 @@ void D3D11RHI::UpdateStructuredBuffer(ID3D11Buffer* InBuffer, const void* InData
         memcpy(mappedResource.pData, InData, InDataSize);
         DeviceContext->Unmap(InBuffer, 0);
     }
+}
+
+// ──────────────────────────────────────────────────────
+// GPU Time Query 관련 메서드
+// ──────────────────────────────────────────────────────
+
+/**
+ * @brief 타임스탬프 쿼리 생성 (타임스탬프 찍는 포스트잇. 시작/끝 각각 하나씩 만들어 사용)
+ */
+HRESULT D3D11RHI::CreateTimestampQuery(ID3D11Query** ppQuery)
+{
+	D3D11_QUERY_DESC queryDesc = {};
+	queryDesc.Query = D3D11_QUERY_TIMESTAMP;
+	return Device->CreateQuery(&queryDesc, ppQuery);
+}
+
+/**
+ * @brief 검증용 쿼리. “이 구간 동안 타이머가 정상이고, 주파수는 이만큼입니다”라는 설명 역할.
+ */
+HRESULT D3D11RHI::CreateDisjointQuery(ID3D11Query** ppDisjointQuery)
+{
+	D3D11_QUERY_DESC queryDesc = {};
+	queryDesc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
+	return Device->CreateQuery(&queryDesc, ppDisjointQuery);
+}
+
+void D3D11RHI::BeginGPUTimer(ID3D11Query* pTimestampStart, ID3D11Query* pDisjointQuery)
+{
+	DeviceContext->Begin(pDisjointQuery);
+	DeviceContext->End(pTimestampStart);
+}
+
+void D3D11RHI::EndGPUTimer(ID3D11Query* pTimestampEnd)
+{
+	DeviceContext->End(pTimestampEnd);
+}
+
+// 사용 흐름: BeginGPUTimer → (GPU 작업) → EndGPUTimer → GetGPUTime
+double D3D11RHI::GetGPUTime(ID3D11Query* pTimestampStart, ID3D11Query* pTimestampEnd, ID3D11Query* pDisjointQuery)
+{
+	DeviceContext->End(pDisjointQuery); // 시간 측정 구간 끝
+
+	// 쿼리 결과 대기
+	while (DeviceContext->GetData(pDisjointQuery, nullptr, 0, 0) == S_FALSE)
+	{
+		// 쿼리 완료 대기
+	}
+
+	D3D11_QUERY_DATA_TIMESTAMP_DISJOINT disjointData;
+	DeviceContext->GetData(pDisjointQuery, &disjointData, sizeof(disjointData), 0);
+
+	if (disjointData.Disjoint)
+	{
+		// GPU 클럭이 불안정하여 신뢰할 수 없음
+		return -1.0;
+	}
+
+	UINT64 startTime, endTime;
+	DeviceContext->GetData(pTimestampStart, &startTime, sizeof(UINT64), 0);
+	DeviceContext->GetData(pTimestampEnd, &endTime, sizeof(UINT64), 0);
+
+	UINT64 elapsedTicks = endTime - startTime;
+	double elapsedSeconds = static_cast<double>(elapsedTicks) / static_cast<double>(disjointData.Frequency);
+
+	return elapsedSeconds * 1000.0; // 밀리초로 변환
 }

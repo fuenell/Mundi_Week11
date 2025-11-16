@@ -8,6 +8,7 @@ class UTextRenderComponent : public UPrimitiveComponent
 public:
 
 	GENERATED_REFLECTION_BODY()
+	REGISTER_PRIMITIVE_COMPONENT(UTextRenderComponent)
 
 	UTextRenderComponent();
 

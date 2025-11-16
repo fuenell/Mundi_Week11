@@ -9,6 +9,7 @@ class UBoxComponent : public UShapeComponent
 public:
 
 	GENERATED_REFLECTION_BODY();
+	REGISTER_PRIMITIVE_COMPONENT(UBoxComponent)
 
 	UBoxComponent(); 
 	void OnRegister(UWorld* InWorld) override;

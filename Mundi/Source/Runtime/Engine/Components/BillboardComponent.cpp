@@ -153,6 +153,7 @@ void UBillboardComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshB
 		Color = LightBase->GetLightColor();
 	}
 	BatchElement.InstanceColor = Color;
+	BatchElement.PrimitiveTypeID = GetPrimitiveTypeId();
 
 	OutMeshBatchElements.Add(BatchElement);
 }

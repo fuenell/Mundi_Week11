@@ -9,6 +9,7 @@ class ULineComponent : public UPrimitiveComponent
 {
 public:
     DECLARE_CLASS(ULineComponent, UPrimitiveComponent)
+    REGISTER_PRIMITIVE_COMPONENT(ULineComponent)
     
     ULineComponent();
     virtual ~ULineComponent() override;

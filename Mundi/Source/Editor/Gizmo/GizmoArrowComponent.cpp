@@ -183,6 +183,7 @@ void UGizmoArrowComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMesh
 			BatchElement.InstanceColor = FLinearColor(GetColor());
 		}
 
+		BatchElement.PrimitiveTypeID = GetPrimitiveTypeId();
 		OutMeshBatchElements.Add(BatchElement);
 	}
 }

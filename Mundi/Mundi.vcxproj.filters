@@ -630,6 +630,7 @@
     <ClCompile Include="Source\Runtime\Animation\AnimDataModel.cpp">
       <Filter>Source\Runtime\Animation</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimSingleNodeInstance.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

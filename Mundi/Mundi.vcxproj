@@ -359,6 +359,7 @@
     <ClCompile Include="Source\Runtime\Animation\AnimDataModel.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimSingleNodeInstance.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\DynamicMesh.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\Line.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\LineDynamicMesh.cpp" />

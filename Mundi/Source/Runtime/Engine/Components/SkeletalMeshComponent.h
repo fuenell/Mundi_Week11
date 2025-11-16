@@ -2,6 +2,14 @@
 #include "SkinnedMeshComponent.h"
 #include "USkeletalMeshComponent.generated.h"
 
+enum class EAnimationMode : int
+{
+	AnimationBlueprint,
+	AnimationSingleNode,
+	// This is custom type, engine leaves AnimInstance as it is
+	AnimationCustomMode,
+};
+
 UCLASS(DisplayName="스켈레탈 메시 컴포넌트", Description="스켈레탈 메시를 렌더링하는 컴포넌트입니다")
 class USkeletalMeshComponent : public USkinnedMeshComponent
 {
@@ -39,10 +47,26 @@ public:
 	 * @brief CurrentLocalSpacePose의 변경사항을 ComponentSpace -> FinalMatrices 계산까지 모두 수행
 	 */
 	void ForceRecomputePose();
+
+protected:
+
+	/**
+	 * @brief CurrentLocalSpacePose를 기반으로 CurrentComponentSpacePose 채우기
+	 */
+	void UpdateComponentSpaceTransforms();
+
+	/**
+	 * @brief CurrentComponentSpacePose를 기반으로 TempFinalSkinningMatrices 채우기
+	 */
+	void UpdateFinalSkinningMatrices();
     
 // Animation Section
 public:
-	void SetAnimationMode(EAnimationMode::Type InAnimationMode, bool bForceInitAnimScriptInstance);
+	class UAnimSingleNodeInstance* GetSingleNodeInstance() const;
+
+	void SetAnimationMode(EAnimationMode InAnimationMode, bool bForceInitAnimScriptInstance = true);
+	void SetAnimation(UAnimationAsset* NewAnimToPlay);
+	void Play(bool bLooping);
 
 	/**
 	 * @brief 단일 애니메이션 재생 시작
@@ -52,16 +76,12 @@ public:
 	void PlayAnimation(class UAnimationAsset* NewAnimToPlay, bool bLooping);
 
 protected:
+	/**
+	 * @brief 현재 애니메이션 인스턴스를 정리
+	 */
+	void ClearAnimScriptInstance();
 
-    /**
-     * @brief CurrentLocalSpacePose를 기반으로 CurrentComponentSpacePose 채우기
-     */
-    void UpdateComponentSpaceTransforms();
-
-    /**
-     * @brief CurrentComponentSpacePose를 기반으로 TempFinalSkinningMatrices 채우기
-     */
-    void UpdateFinalSkinningMatrices();
+	bool InitializeAnimScriptInstance();
 
 protected:
     /**
@@ -80,12 +100,15 @@ protected:
     TArray<FMatrix> TempFinalSkinningMatrices;
     TArray<FMatrix> TempFinalSkinningNormalMatrices;
 
+// Animation Section
+protected:
 	/**
 	 * @brief 이 컴포넌트에 연결된 애니메이션 인스턴스
 	 */
-	class UAnimInstance* AnimInstance;
+	class UAnimInstance* AnimScriptInstance;
 
 	bool bEnableAnimation = true;
+	EAnimationMode AnimationMode = EAnimationMode::AnimationSingleNode;
 
 // FOR TEST!!!
 private:

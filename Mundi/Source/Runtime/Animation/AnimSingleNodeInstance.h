@@ -8,8 +8,16 @@ public:
 	UAnimSingleNodeInstance() = default;
 	virtual ~UAnimSingleNodeInstance() override = default;
 
-	//void SetAnimationAsset(class UAnimationAsset* NewAsset);
+	void SetPlaying(bool bIsPlaying);
+	void SetLooping(bool bIsLooping);
+
+	virtual void SetAnimationAsset(UAnimationAsset* NewAsset, bool bIsLooping = true, float InPlayRate = 1.f);
 	class UAnimationAsset* GetCurrentAnimationAsset() const { return CurrentAsset; }
-private:
+
+protected:
 	class UAnimationAsset* CurrentAsset;
+
+	bool bIsPlaying = false;
+	bool bLooping = true;
+	float PlayRate = 1.f;
 };

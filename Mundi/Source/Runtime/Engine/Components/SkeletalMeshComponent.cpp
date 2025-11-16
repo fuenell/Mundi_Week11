@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "SkeletalMeshComponent.h"
+#include "AnimSingleNodeInstance.h"
+#include "AnimationAsset.h"
 
 USkeletalMeshComponent::USkeletalMeshComponent()
 {
@@ -128,6 +130,80 @@ FTransform USkeletalMeshComponent::GetBoneWorldTransform(int32 BoneIndex)
     return GetWorldTransform(); // 실패 시 컴포넌트 위치 반환
 }
 
+UAnimSingleNodeInstance* USkeletalMeshComponent::GetSingleNodeInstance() const
+{
+	return Cast<class UAnimSingleNodeInstance>(AnimScriptInstance);
+}
+
+void USkeletalMeshComponent::SetAnimationMode(EAnimationMode InAnimationMode, bool bForceInitAnimScriptInstance)
+{
+	if (!bEnableAnimation)
+	{
+		UE_LOG("SetAnimationMode: Animation is currently disabled");
+		return;
+	}
+
+	const bool bNeedChange = AnimationMode != InAnimationMode;
+	if (bNeedChange)
+	{
+		AnimationMode = InAnimationMode;
+		ClearAnimScriptInstance();
+	}
+
+	// 아래는 UE의 주석
+	// when mode is swapped, make sure to reinitialize
+	// even if it was same mode, this was due to users who wants to use BP construction script to do this
+	// if you use it in the construction script, it gets serialized, but it never instantiate. 
+	if (GetSkeletalMesh() != nullptr && (bNeedChange || (AnimationMode == EAnimationMode::AnimationBlueprint && bForceInitAnimScriptInstance)))
+	{
+		bool bInitialized = InitializeAnimScriptInstance();
+		if(!bInitialized)
+		{
+			UE_LOG("SetAnimationMode: Failed to initialize AnimScriptInstance");
+		}
+	}
+}
+
+void USkeletalMeshComponent::SetAnimation(UAnimationAsset* NewAnimToPlay)
+{
+	if (!bEnableAnimation)
+	{
+		UE_LOG("SetAnimation: Animation is currently disabled");
+		return;
+	}
+
+	UAnimSingleNodeInstance* SingleNodeInstance = GetSingleNodeInstance();
+	if (SingleNodeInstance)
+	{
+		SingleNodeInstance->SetAnimationAsset(NewAnimToPlay, false);
+		SingleNodeInstance->SetPlaying(false);
+	}
+	else if (AnimScriptInstance != nullptr)
+	{
+		UE_LOG("Currently in Animation Blueprint mode. Please change AnimationMode to Use Animation Asset");
+	}
+}
+
+void USkeletalMeshComponent::Play(bool bLooping)
+{
+	if (!bEnableAnimation)
+	{
+		UE_LOG("Play: Animation is currently disabled");
+		return;
+	}
+
+	UAnimSingleNodeInstance* SingleNodeInstance = GetSingleNodeInstance();
+	if (SingleNodeInstance)
+	{
+		SingleNodeInstance->SetPlaying(true);
+		SingleNodeInstance->SetLooping(bLooping);
+	}
+	else if (AnimScriptInstance != nullptr)
+	{
+		UE_LOG("Currently in Animation Blueprint mode. Please change AnimationMode to Use Animation Asset");
+	}
+}
+
 void USkeletalMeshComponent::PlayAnimation(UAnimationAsset* NewAnimToPlay, bool bLooping)
 {
 	if (!bEnableAnimation)
@@ -188,4 +264,41 @@ void USkeletalMeshComponent::UpdateFinalSkinningMatrices()
         TempFinalSkinningMatrices[BoneIndex] = InvBindPose * ComponentPoseMatrix;
         TempFinalSkinningNormalMatrices[BoneIndex] = TempFinalSkinningMatrices[BoneIndex].Inverse().Transpose();
     }
+}
+
+void USkeletalMeshComponent::ClearAnimScriptInstance()
+{
+	if (AnimScriptInstance)
+	{
+		// Clean up the existing animation instance
+		DeleteObject(AnimScriptInstance);
+		AnimScriptInstance = nullptr;
+	}
+}
+
+bool USkeletalMeshComponent::InitializeAnimScriptInstance()
+{
+	if (AnimScriptInstance == nullptr)
+	{
+		switch (AnimationMode)
+		{
+		case EAnimationMode::AnimationBlueprint:
+			break;
+		case EAnimationMode::AnimationSingleNode:
+			AnimScriptInstance = NewObject<UAnimSingleNodeInstance>();
+			break;
+		case EAnimationMode::AnimationCustomMode:
+			break;
+		default:
+			assert(false, "Unknown AnimationMode");
+			break;
+		}
+
+		if (AnimScriptInstance)
+		{
+			//AnimScriptInstance->InitializeAnimation();
+			return true;
+		}
+	}
+	return false;
 }

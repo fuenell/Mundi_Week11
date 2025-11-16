@@ -45,7 +45,58 @@ void USkinnedMeshComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle
 void USkinnedMeshComponent::DuplicateSubObjects()
 {
 	Super::DuplicateSubObjects();
+	if (!SkeletalMesh)
+	{
+		return;
+	}
+
 	SkeletalMesh->CreateVertexBuffer(&VertexBuffer, ESkinningMode::CPU);
+
+	// 얕은 복사된 GPU 리소스 포인터는 원본 컴포넌트를 가리키고 있으므로,
+	// 새 버퍼를 만들기 전에 참조를 끊어 원본이 해제되지 않도록 한다.
+	SkinningMatrixBuffer = nullptr;
+	SkinningMatrixSRV = nullptr;
+	SkinningNormalMatrixBuffer = nullptr;
+	SkinningNormalMatrixSRV = nullptr;
+	SkinningMatrixCount = 0;
+	SkinningMatrixOffset = 0;
+
+	const uint32 BoneCount = SkeletalMesh->GetBoneCount();
+	if (BoneCount == 0)
+	{
+		return;
+	}
+
+	CreateSkinningMatrixResources(BoneCount);
+
+	// 원본으로부터 얕게 복사된 스키닝 행렬 데이터를 새 버퍼에 업로드하여
+	// PIE 복사본이 독립적인 GPU 리소스를 갖도록 만든다.
+	if (!FinalSkinningMatrices.IsEmpty() &&
+		!FinalSkinningNormalMatrices.IsEmpty() &&
+		SkinningMatrixBuffer && SkinningNormalMatrixBuffer)
+	{
+		const uint32 MatrixCount = FMath::Min<uint32>(BoneCount, FinalSkinningMatrices.Num());
+		const uint32 NormalMatrixCount = FMath::Min<uint32>(BoneCount, FinalSkinningNormalMatrices.Num());
+
+		if (D3D11RHI* RHIDevice = GEngine.GetRHIDevice())
+		{
+			if (MatrixCount > 0)
+			{
+				RHIDevice->UpdateStructuredBuffer(
+					SkinningMatrixBuffer,
+					FinalSkinningMatrices.data(),
+					sizeof(FMatrix) * MatrixCount);
+			}
+
+			if (NormalMatrixCount > 0)
+			{
+				RHIDevice->UpdateStructuredBuffer(
+					SkinningNormalMatrixBuffer,
+					FinalSkinningNormalMatrices.data(),
+					sizeof(FMatrix) * NormalMatrixCount);
+			}
+		}
+	}
 }
 
 void USkinnedMeshComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View)

@@ -14,13 +14,29 @@ USkeletalMeshComponent::USkeletalMeshComponent()
 void USkeletalMeshComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
-    //// FOR TEST ////
-    if (!SkeletalMesh) { return; } // 부모의 SkeletalMesh 확인
+    
+    if (!SkeletalMesh) { return; }
 
-    // 1. 테스트할 뼈 인덱스 (모델에 따라 1, 5, 10 등 바꿔보세요)
+    // 애니메이션 활성화 시 AnimScriptInstance 업데이트
+    if (bEnableAnimation && AnimScriptInstance)
+    {
+        FPoseContext OutPose;
+        AnimScriptInstance->EvaluateAnimationPose(DeltaTime, OutPose);
+
+        // 애니메이션에서 계산된 포즈를 CurrentLocalSpacePose에 적용
+        if (OutPose.LocalTransforms.Num() == CurrentLocalSpacePose.Num())
+        {
+            CurrentLocalSpacePose = OutPose.LocalTransforms;
+            ForceRecomputePose();
+        }
+    }
+    
+    //// FOR TEST ////
+    // 아래 테스트 코드는 주석 처리하거나 제거하세요
+    // 애니메이션 시스템과 충돌할 수 있습니다
+    /*
     constexpr int32 TEST_BONE_INDEX = 2;
     
-    // 3. 테스트 시간 누적
     if (!bIsInitialized)
     {
         TestBoneBasePose = CurrentLocalSpacePose[TEST_BONE_INDEX];
@@ -28,19 +44,15 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
     }
     TestTime += DeltaTime;
 
-    // 4. sin 함수를 이용해 -1 ~ +1 사이를 왕복하는 회전값 생성
-    // (예: Y축(Yaw)을 기준으로 1초에 1라디안(약 57도)씩 왕복)
     float Angle = sinf(TestTime * 2.f);
     FQuat TestRotation = FQuat::FromAxisAngle(FVector(1.f, 0.f, 0.f), Angle);
     TestRotation.Normalize();
 
-    // 5. [중요] 원본 T-Pose에 테스트 회전을 누적
     FTransform NewLocalPose = TestBoneBasePose;
     NewLocalPose.Rotation = TestRotation * TestBoneBasePose.Rotation;
     
-    // 6. [핵심] 기즈모가 하듯이, 뼈의 로컬 트랜스폼을 강제 설정
-    // (이 함수는 내부적으로 ForceRecomputePose()를 호출함)
     SetBoneLocalTransform(TEST_BONE_INDEX, NewLocalPose);
+    */
     //// FOR TEST ////
 }
 

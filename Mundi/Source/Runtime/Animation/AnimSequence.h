@@ -8,4 +8,6 @@ public:
 	DECLARE_CLASS(UAnimSequence, UAnimSequenceBase)
 	UAnimSequence() = default;
 	virtual ~UAnimSequence() override = default;
+
+	virtual void GetAnimationPose(FPoseContext& OutPoseData, const FAnimExtractContext& ExtractionContext) const override;
 };

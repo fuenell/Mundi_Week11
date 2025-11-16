@@ -5,6 +5,8 @@
 #include "StatsOverlayD2D.h"
 #include "USlateManager.h"
 #include "WindowsCrashReporter.h"
+#include "World.h"
+#include "SkeletalMeshComponent.h"
 
 #include <windows.h>
 #include <cstdarg>
@@ -14,6 +16,42 @@
 
 using std::max;
 using std::min;
+
+namespace
+{
+	// Skinning 모드 전환시 pose를 한 번 재계산해야 GPU 업로드가 제대로 이루어짐.
+	void ApplySkinningMode(UWorld* World, ESkinningMode NewMode)
+	{
+		if (!World)
+		{
+			return;
+		}
+
+		World->GetRenderSettings().SetSkinningMode(NewMode);
+
+		const TArray<AActor*>& Actors = World->GetActors();
+		for (AActor* Actor : Actors)
+		{
+			if (!Actor) { continue; }
+			for (UActorComponent* Component : Actor->GetOwnedComponents())
+			{
+				if (USkeletalMeshComponent* SkelComp = Cast<USkeletalMeshComponent>(Component))
+				{
+					SkelComp->ForceRecomputePose();
+				}
+			}
+		}
+	}
+
+	void ApplySkinningModeAllWorlds(ESkinningMode NewMode)
+	{
+		const TArray<FWorldContext>& Contexts = GEngine.GetWorldContexts();
+		for (const FWorldContext& Context : Contexts)
+		{
+			ApplySkinningMode(Context.World, NewMode);
+		}
+	}
+}
 
 IMPLEMENT_CLASS(UConsoleWidget)
 
@@ -55,6 +93,7 @@ void UConsoleWidget::Initialize()
 	HelpCommandList.Add("STAT LIGHT");
 	HelpCommandList.Add("STAT SHADOW");
 	HelpCommandList.Add("CRASH");
+	HelpCommandList.Add("SKINNING");
 
 	// Add welcome messages
 	AddLog("=== Console Widget Initialized ===");
@@ -360,6 +399,22 @@ void UConsoleWidget::ExecCommand(const char* command_line)
 		UStatsOverlayD2D::Get().SetShowDecal(false);
 		UStatsOverlayD2D::Get().SetShowTileCulling(false);
 		AddLog("STAT: OFF");
+	}
+	else if (Stricmp(command_line, "SKINNING") == 0)
+	{
+		AddLog("Skinning Modes:");
+		AddLog("- SKINNING CPU");
+		AddLog("- SKINNING GPU");
+	}
+	else if (Stricmp(command_line, "SKINNING CPU") == 0)
+	{
+		ApplySkinningModeAllWorlds(ESkinningMode::CPU);
+		AddLog("Switched to CPU Skinning.");
+	}
+	else if (Stricmp(command_line, "SKINNING GPU") == 0)
+	{
+		ApplySkinningModeAllWorlds(ESkinningMode::GPU);
+		AddLog("Switched to GPU Skinning.");
 	}
 	else if (Stricmp(command_line, "CRASH") == 0)
 	{

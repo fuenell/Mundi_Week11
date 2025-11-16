@@ -482,6 +482,16 @@ void UResourceManager::InitShaderILMap()
 	ShaderToInputLayoutMap["Shaders/Materials/Fireball.hlsl"] = layout; // Use same vertex format as UberLit
 	ShaderToInputLayoutMap["Shaders/Shadow/PointLightShadow.hlsl"] = layout;  // Shadow map rendering uses same vertex format
 	ShaderToInputLayoutMap["Shaders/Shadows/DepthOnly_VS.hlsl"] = layout;
+
+    // GPU 스키닝용 입력 레이아웃 (FSkinnedVertex)
+    TArray<D3D11_INPUT_ELEMENT_DESC> gpuSkinningLayout = layout;
+    gpuSkinningLayout.Add({ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, 64, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+    gpuSkinningLayout.Add({ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 80, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+	ShaderToInputLayoutMap["Shaders/Materials/UberLit.hlsl|GPU"] = gpuSkinningLayout;
+    ShaderToInputLayoutMap["Shaders/Materials/Fireball.hlsl|GPU"] = gpuSkinningLayout;
+	ShaderToInputLayoutMap["Shaders/Shadow/PointLightShadow.hlsl|GPU"] = gpuSkinningLayout;
+	ShaderToInputLayoutMap["Shaders/Shadows/DepthOnly_VS.hlsl|GPU"] = gpuSkinningLayout;
+
     layout.clear();
 
     layout.Add({ "WORLDPOSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });

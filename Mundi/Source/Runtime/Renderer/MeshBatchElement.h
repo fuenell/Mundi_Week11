@@ -1,5 +1,6 @@
-﻿#pragma once
+#pragma once
 #include "pch.h"
+#include "Enums.h"
 
 // 전방 선언
 class UShader;
@@ -61,6 +62,13 @@ struct FMeshBatchElement
 	// 기즈모 하이라이트, 빌보드 틴트 등 인스턴스별 색상 오버라이드입니다.
 	// (기본값으로 흰색(1,1,1,1)을 설정하는 것이 일반적입니다.)
 	FLinearColor InstanceColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+	// 스키닝 모드 및 GPU 스키닝 리소스
+	ESkinningMode SkinningMode = ESkinningMode::CPU;
+	ID3D11ShaderResourceView* SkinningMatrixSRV = nullptr;
+	ID3D11ShaderResourceView* SkinningNormalMatrixSRV = nullptr;
+	uint32 SkinningMatrixOffset = 0; // NOTE: 여러 SkinnedMeshComponent가 하나의 큰 StructuredBuffer로 구현된 스키닝 행렬 풀을 공유하도록 확장하게 되면 활용할 것
+	uint32 SkinningMatrixCount = 0;
 
 	// --- 기본 생성자 ---
 	FMeshBatchElement() = default;

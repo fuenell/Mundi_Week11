@@ -14,6 +14,15 @@ void UAnimSingleNodeInstance::SetAnimationAsset(UAnimationAsset* NewAsset, bool 
 	PlayRate = InPlayRate;
 }
 
+void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
+{
+	if (bIsPlaying && CurrentAsset)
+	{
+		// 애니메이션 업데이트 로직 구현 필요
+		// 예: 현재 시간 계산, 애니메이션 프레임 적용 등
+	}
+}
+
 void UAnimSingleNodeInstance::SetPlaying(bool bIsPlaying)
 {
 	bIsPlaying = bIsPlaying;

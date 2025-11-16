@@ -16,6 +16,8 @@ public:
 	virtual void SetAnimationAsset(UAnimationAsset* NewAsset, bool bIsLooping = true, float InPlayRate = 1.f);
 	UAnimationAsset* GetCurrentAnimationAsset() const { return CurrentAsset; }
 
+	void NativeUpdateAnimation(float DeltaSeconds) override;
+
 protected:
 	UAnimationAsset* CurrentAsset;
 

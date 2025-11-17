@@ -32,6 +32,8 @@ void USkeletalMesh::Load(const FString& InFilePath, ID3D11Device* InDevice)
     if (!Data || Data->Vertices.empty() || Data->Indices.empty())
     {
         UE_LOG("ERROR: Failed to load FBX mesh from '%s'", InFilePath.c_str());
+		delete Data;
+		Data = nullptr;
         return;
     }
 

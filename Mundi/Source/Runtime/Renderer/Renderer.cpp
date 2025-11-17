@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "TextRenderComponent.h"
 #include "Shader.h"
 #include "StaticMesh.h"
@@ -31,6 +31,7 @@
 #include "DecalStatManager.h"
 #include "SceneRenderer.h"
 #include "SceneView.h"
+#include "PlatformTime.h"
 
 #include <Windows.h>
 #include "DirectionalLightComponent.h"
@@ -52,6 +53,9 @@ void URenderer::BeginFrame()
 	RHIDevice->IASetPrimitiveTopology();
 
 	RHIDevice->OMSetRenderTargets(ERTVMode::BackBufferWithDepth);
+
+	// 이번 프레임 퍼포먼스 프로파일링을 위해 초기화
+	FScopeCycleCounter::TimeProfileInit();
 
 	// 프레임별 데칼 통계를 추적하기 위해 초기화
 	FDecalStatManager::GetInstance().ResetFrameStats();

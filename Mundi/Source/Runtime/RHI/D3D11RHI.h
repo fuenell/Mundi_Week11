@@ -182,10 +182,14 @@ public:
 	HRESULT CreateTimestampQuery(ID3D11Query** ppQuery);
 	HRESULT CreateDisjointQuery(ID3D11Query** ppDisjointQuery);
 
-	// GPU 시간 측정
-	void BeginGPUTimer(ID3D11Query* pTimestampStart, ID3D11Query* pDisjointQuery);
-	void EndGPUTimer(ID3D11Query* pTimestampEnd);
-	double GetGPUTime(ID3D11Query* pTimestampStart, ID3D11Query* pTimestampEnd, ID3D11Query* pDisjointQuery);
+	// GPU 타임스탬프/디스조인트 쿼리 제어
+	void BeginDisjointQuery(ID3D11Query* pDisjointQuery);
+	void EndDisjointQuery(ID3D11Query* pDisjointQuery);
+	bool GetDisjointQueryData(ID3D11Query* pDisjointQuery, D3D11_QUERY_DATA_TIMESTAMP_DISJOINT& OutData, bool bWaitForResult) const;
+
+	void WriteTimestamp(ID3D11Query* pTimestampQuery);
+	bool GetTimestampData(ID3D11Query* pTimestampQuery, UINT64& OutTimestamp, bool bWaitForResult) const;
+	double CalculateElapsedMilliseconds(UINT64 StartTimestamp, UINT64 EndTimestamp, const D3D11_QUERY_DATA_TIMESTAMP_DISJOINT& DisjointData) const;
 
 public:
 	// getter

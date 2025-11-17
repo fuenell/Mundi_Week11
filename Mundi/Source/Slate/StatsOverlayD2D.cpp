@@ -374,10 +374,39 @@ void UStatsOverlayD2D::Draw()
 		NextY += shadowPanelHeight + Space;
 	}
 
+	if (bShowPrimitives)
+	{
+		constexpr int32 NumPrimitiveKeys = 3;
+		const FString PrimitiveKeys[NumPrimitiveKeys] = {
+			FString("Primitives Total"),
+			FString("UStaticMeshComponent"),
+			FString("USkeletalMeshComponent")
+		};
+
+		const float PrimitivePanelHeight = 40.0f;
+		D2D1_RECT_F HeaderRect = D2D1::RectF(Margin, NextY, Margin + PanelWidth, NextY + PrimitivePanelHeight);
+		DrawTextBlock(D2DContext, TextFormat, L"[Primitive Render Stats]", HeaderRect, BrushBlack, BrushLightGreen);
+		NextY += PrimitivePanelHeight + Space * 0.5f;
+
+		for (const FString& Key : PrimitiveKeys)
+		{
+			if (Key.empty())
+			{
+				continue;
+			}
+
+			const FTimeProfile& Profile = FScopeCycleCounter::GetTimeProfile(Key);
+
+			D2D1_RECT_F StatRect = D2D1::RectF(Margin, NextY, Margin + PanelWidth, NextY + PrimitivePanelHeight);
+			DrawTextBlock(D2DContext, TextFormat, Profile.GetConstWChar_tWithKey(Key), StatRect, BrushBlack, BrushLightGreen);
+			NextY += PrimitivePanelHeight + Space * 0.25f;
+		}
+
+		NextY += Space;
+	}
+
 	D2DContext->EndDraw();
 	D2DContext->SetTarget(nullptr);
-
-	FScopeCycleCounter::TimeProfileInit();
 
 	SafeRelease(TargetBmp);
 	SafeRelease(Surface);
@@ -452,4 +481,14 @@ void UStatsOverlayD2D::SetShowShadow(bool b)
 void UStatsOverlayD2D::ToggleShadow()
 {
 	bShowShadow = !bShowShadow;
+}
+
+void UStatsOverlayD2D::SetShowPrimitives(bool b)
+{
+	bShowPrimitives = b;
+}
+
+void UStatsOverlayD2D::TogglePrimitives()
+{
+	bShowPrimitives = !bShowPrimitives;
 }

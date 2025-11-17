@@ -21,6 +21,7 @@ public:
     void SetShowTileCulling(bool b);
     void SetShowLights(bool b);
     void SetShowShadow(bool b);
+	void SetShowPrimitives(bool b);
     void ToggleFPS();
     void ToggleMemory();
     void TogglePicking();
@@ -28,6 +29,7 @@ public:
     void ToggleTileCulling();
     void ToggleLights();
     void ToggleShadow();
+	void TogglePrimitives();
     bool IsFPSVisible() const { return bShowFPS; }
     bool IsMemoryVisible() const { return bShowMemory; }
     bool IsPickingVisible() const { return bShowPicking; }
@@ -54,6 +56,7 @@ private:
     bool bShowTileCulling = false;
     bool bShowShadow = false;
     bool bShowLights = false;
+	bool bShowPrimitives = false;
 
     ID3D11Device* D3DDevice = nullptr;
     ID3D11DeviceContext* D3DContext = nullptr;

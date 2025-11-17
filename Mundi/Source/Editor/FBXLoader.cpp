@@ -8,6 +8,7 @@
 #include "WindowsBinReader.h"
 #include "WindowsBinWriter.h"
 #include "PathUtils.h"
+#include "AnimSequence.h"
 #include <filesystem>
 
 IMPLEMENT_CLASS(UFbxLoader)
@@ -54,10 +55,67 @@ void UFbxLoader::PreLoad()
           if (ProcessedFiles.find(WPathStr) == ProcessedFiles.end())
           {
              ProcessedFiles.insert(WPathStr);
-             FbxLoader.LoadFbxMesh(PathStr);
+             
+             // FBX 파일 내용 확인
+             bool bHasMesh = false;
+             bool bHasAnimation = false;
+             
+             // FBX 파일을 열어서 내용 확인
+             FString FbxPathAcp = UTF8ToACP(PathStr);
+             FbxImporter* Importer = FbxImporter::Create(FbxLoader.SdkManager, "");
 
-			 // for test
-			 //FbxLoader.LoadAnimationFromFbx(PathStr);
+			 /*if(FbxPathAcp.find("Fall Flat") != FString::npos)
+			 {
+				 UE_LOG("UFbxLoader::Preload: Skip Fall Flat FBX file: %s", PathStr.c_str());
+			 }*/
+
+             if (Importer->Initialize(FbxPathAcp.c_str(), -1, FbxLoader.SdkManager->GetIOSettings()))
+             {
+                FbxScene* Scene = FbxScene::Create(FbxLoader.SdkManager, "TempScene");
+                if (Importer->Import(Scene))
+                {
+                   // 메시 존재 여부 확인
+                   FbxNode* RootNode = Scene->GetRootNode();
+                   if (RootNode)
+                   {
+                       bHasMesh = HasMeshRecursive(RootNode);
+                   }
+                   
+                   // 애니메이션 존재 여부 확인
+                   int32 AnimStackCount = Scene->GetSrcObjectCount<FbxAnimStack>();
+                   if (AnimStackCount > 0)
+                   {
+                      bHasAnimation = true;
+                   }
+                }
+                Scene->Destroy();
+             }
+             Importer->Destroy();
+             
+             // 내용에 따라 적절한 로딩 함수 호출
+             if (bHasMesh && bHasAnimation)
+             {
+                // 메시와 애니메이션 모두 존재
+                FbxLoader.LoadFbxMesh(PathStr);
+				UResourceManager::GetInstance().Load<UAnimSequence>(PathStr); // UResourceManager에 등록 위함
+                UE_LOG("UFbxLoader::Preload: Loaded mesh and animation from %s", PathStr.c_str());
+             }
+             else if (bHasMesh)
+             {
+                // 메시만 존재
+                FbxLoader.LoadFbxMesh(PathStr);
+                UE_LOG("UFbxLoader::Preload: Loaded mesh from %s", PathStr.c_str());
+             }
+             else if (bHasAnimation)
+             {
+                // 애니메이션만 존재
+				 UResourceManager::GetInstance().Load<UAnimSequence>(PathStr); // UResourceManager에 등록 위함
+                UE_LOG("UFbxLoader::Preload: Loaded animation from %s", PathStr.c_str());
+             }
+             else
+             {
+                UE_LOG("UFbxLoader::Preload: No mesh or animation found in %s", PathStr.c_str());
+             }
 
              ++LoadedCount;
           }
@@ -328,6 +386,8 @@ FSkeletalMeshData* UFbxLoader::LoadFbxMeshAsset(const FString& FilePath)
         MeshData->GroupInfos[MaterialIndex].IndexCount = IndexList.Num();
         Count += IndexList.Num();
     }
+
+	Scene->Destroy();
 
 #ifdef USE_OBJ_CACHE
     // 13. 캐시 저장
@@ -1405,6 +1465,8 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
 	int32 TotalKeyCount = AnimData->GetNumberOfFrames() + 1; // UE가 이렇게 계산함
     AnimData->SetNumberOfKeys(TotalKeyCount);
 
+	Scene->Destroy();
+
 	// 결과 로그	출력
     UE_LOG("Successfully loaded animation from %s", NormalizedPath.c_str());
     UE_LOG("  - Duration: %.2fs", AnimData->GetPlayLength());
@@ -1740,5 +1802,32 @@ void UFbxLoader::ExtractMorphTargetCurves(FbxMesh* Mesh, FbxNode* InNode, FbxAni
             }
         }
     }
+}
+
+bool UFbxLoader::HasMeshRecursive(FbxNode* InNode)
+{
+	if (!InNode)
+		return false;
+
+	// 현재 노드에 메시 속성이 있는지 확인
+	for (int i = 0; i < InNode->GetNodeAttributeCount(); ++i)
+	{
+		FbxNodeAttribute* Attribute = InNode->GetNodeAttributeByIndex(i);
+		if (Attribute && Attribute->GetAttributeType() == FbxNodeAttribute::eMesh)
+		{
+			return true;
+		}
+	}
+
+	// 자식 노드에서 메시를 찾기
+	for (int i = 0; i < InNode->GetChildCount(); ++i)
+	{
+		if (HasMeshRecursive(InNode->GetChild(i)))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 

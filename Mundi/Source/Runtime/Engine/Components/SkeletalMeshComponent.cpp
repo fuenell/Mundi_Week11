@@ -196,7 +196,7 @@ void USkeletalMeshComponent::SetAnimationMode(EAnimationMode InAnimationMode, bo
 	// when mode is swapped, make sure to reinitialize
 	// even if it was same mode, this was due to users who wants to use BP construction script to do this
 	// if you use it in the construction script, it gets serialized, but it never instantiate. 
-	if (GetSkeletalMesh() != nullptr && (bNeedChange || (AnimationMode == EAnimationMode::AnimationBlueprint && bForceInitAnimScriptInstance)))
+	if (GetSkeletalMesh() != nullptr && (bNeedChange || (bForceInitAnimScriptInstance)))
 	{
 		bool bInitialized = InitializeAnimScriptInstance();
 		if(!bInitialized)
@@ -335,8 +335,6 @@ bool USkeletalMeshComponent::InitializeAnimScriptInstance()
 	{
 		switch (AnimationMode)
 		{
-		case EAnimationMode::AnimationBlueprint:
-			break;
 		case EAnimationMode::AnimationSingleNode:
 			AnimScriptInstance = NewObject<UAnimSingleNodeInstance>();
 			break;

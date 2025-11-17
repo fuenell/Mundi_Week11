@@ -1,10 +1,11 @@
-﻿#pragma once
+#pragma once
 #include "ObjectFactory.h"
 #include "Object.h"
 #include "Shader.h"
 #include "StaticMesh.h"
 #include "Material.h"
 #include "Texture.h"
+#include "AnimationAsset.h"
 #include "TextureConverter.h"
 #include "DynamicMesh.h"
 #include "../Engine/Audio/Sound.h"
@@ -273,6 +274,8 @@ EResourceType UResourceManager::GetResourceType()
         return EResourceType::Material;
     if (T::StaticClass() == USound::StaticClass())
         return EResourceType::Sound;
+    if (T::StaticClass()->IsChildOf(UAnimationAsset::StaticClass()))
+        return EResourceType::Animation;
 
     return EResourceType::None;
 }

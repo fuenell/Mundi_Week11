@@ -6,6 +6,8 @@
 #include "PrimitiveTypeRegistry.h"
 #include <type_traits>
 
+class UAnimInstance;
+
 // ===== 타입 자동 감지 템플릿 =====
 
 // 기본 타입 감지 템플릿
@@ -28,6 +30,10 @@ struct TPropertyTypeTraits
 			return EPropertyType::FString;
 		else if constexpr (std::is_same_v<T, FName>)
 			return EPropertyType::FName;
+		else if constexpr (std::is_same_v<T, UAnimInstance*>)
+			return EPropertyType::AnimInstance;
+		else if constexpr (std::is_enum_v<T>)
+			return EPropertyType::Enum;
 		else if constexpr (std::is_pointer_v<T>)
 			return EPropertyType::ObjectPtr;  // UObject* 및 파생 타입
 		else if constexpr (std::is_same_v<T, UTexture>)
@@ -37,7 +43,9 @@ struct TPropertyTypeTraits
 		//else if constexpr (std::is_same_v<T, USound>)
 		//	return EPropertyType::Sound;
 		else
+		{
 			return EPropertyType::Struct;
+		}
 	}
 };
 

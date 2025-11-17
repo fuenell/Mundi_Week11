@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Property.h"
 #include "Object.h"
@@ -29,6 +29,7 @@ private:
 	static bool RenderColorProperty(const FProperty& Prop, void* Instance);
 	static bool RenderStringProperty(const FProperty& Prop, void* Instance);
 	static bool RenderNameProperty(const FProperty& Prop, void* Instance);
+	static bool RenderEnumProperty(const FProperty& Prop, void* Instance);
 	static bool RenderObjectPtrProperty(const FProperty& Prop, void* Instance);
 	static bool RenderStructProperty(const FProperty& Prop, void* Instance);
 	static bool RenderTextureProperty(const FProperty& Prop, void* Instance);
@@ -36,6 +37,7 @@ private:
 	static bool RenderSRVProperty(const FProperty& Prop, void* Instance);
 	static bool RenderScriptFileProperty(const FProperty& Prop, void* Instance);
 	static bool RenderCurveProperty(const FProperty& Prop, void* Instance);
+	static bool RenderAnimInstanceProperty(const FProperty& Prop, void* Instance);
 	static bool RenderPointLightCubeShadowMap(class FLightManager* LightManager, class ULightComponent* LightComp, int32 CubeSliceIndex);
 	static bool RenderSpotLightShadowMap(class FLightManager* LightManager, class ULightComponent* LightComp, ID3D11ShaderResourceView* AtlasSRV);
 	static bool RenderSkeletalMeshProperty(const FProperty& Prop, void* Instance);
@@ -71,4 +73,6 @@ private:
 	static TArray<const char*> CachedSoundItems;
 	static TArray<FString> CachedScriptPaths;
 	static TArray<const char*> CachedScriptItems;
+	static TArray<FString> CachedAnimationPaths;
+	static TArray<FString> CachedAnimationItems;
 };

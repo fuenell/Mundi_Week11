@@ -5,7 +5,6 @@
 // TODO: UE에 있는 것 일단 그대로 가져옴. 추후 이 엔진에 맞춰 수정 가능
 enum class EAnimationMode : int
 {
-	AnimationBlueprint, // 블루프린트 기반 애니메이션 (미구현)
 	AnimationSingleNode, // 단일 애니메이션 에셋 재생: 보통 UAnimSingleNodeInstancex타입의 에셋 사용
 	// This is custom type, engine leaves AnimInstance as it is
 	AnimationCustomMode, // 가장 저수준으로 애니메이션을 조작하는 모드 (미구현)
@@ -117,11 +116,14 @@ protected:
 
 // Animation Section
 protected:
-	// 이 컴포넌트에 연결된 애니메이션 인스턴스
-	class UAnimInstance* AnimScriptInstance;
-
 	bool bEnableAnimation = true;
+
+	UPROPERTY(EditAnywhere, Category = "Skeletal Mesh", Tooltip = "애니메이션 재생 모드")
 	EAnimationMode AnimationMode = EAnimationMode::AnimationSingleNode;
+
+	// 이 컴포넌트에 연결된 애니메이션 인스턴스
+	UPROPERTY(EditAnywhere, Category = "Skeletal Mesh", Tooltip = "AnimScriptInstance")
+	class UAnimInstance* AnimScriptInstance;
 
 // FOR TEST!!!
 private:

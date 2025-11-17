@@ -18,6 +18,10 @@
 #include "PlatformProcess.h"
 #include "SkeletalMeshComponent.h"
 #include "USlateManager.h"
+#include "AnimInstance.h"
+#include "AnimSingleNodeInstance.h"
+#include "AnimationAsset.h"
+#include "AnimSequenceBase.h"
 
 // Disable warnings for third-party library
 #pragma warning(push)
@@ -42,6 +46,8 @@ TArray<FString> UPropertyRenderer::CachedSoundPaths;
 TArray<const char*> UPropertyRenderer::CachedSoundItems;
 TArray<FString> UPropertyRenderer::CachedScriptPaths;
 TArray<const char*> UPropertyRenderer::CachedScriptItems;
+TArray<FString> UPropertyRenderer::CachedAnimationPaths;
+TArray<FString> UPropertyRenderer::CachedAnimationItems;
 
 static bool ItemsGetter(void* Data, int Index, const char** CItem)
 {
@@ -93,6 +99,10 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 		bChanged = RenderNameProperty(Property, ObjectInstance);
 		break;
 
+	case EPropertyType::Enum:
+		bChanged = RenderEnumProperty(Property, ObjectInstance);
+		break;
+
 	case EPropertyType::ObjectPtr:
 		bChanged = RenderObjectPtrProperty(Property, ObjectInstance);
 		break;
@@ -127,6 +137,10 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 
 	case EPropertyType::Curve:
 		bChanged = RenderCurveProperty(Property, ObjectInstance);
+		break;
+
+	case EPropertyType::AnimInstance:
+		bChanged = RenderAnimInstanceProperty(Property, ObjectInstance);
 		break;
 
 	case EPropertyType::Array:
@@ -422,6 +436,23 @@ void UPropertyRenderer::CacheResources()
             CachedSoundItems.push_back(path.c_str());
         }
     }
+
+	// 애니메이션
+	if (CachedAnimationPaths.IsEmpty() && CachedAnimationItems.IsEmpty())
+	{
+		CachedAnimationPaths = ResMgr.GetAllFilePaths<UAnimationAsset>();
+
+		for (const FString& Path : CachedAnimationPaths)
+		{
+			// 파일명만 추출해서 표시
+			std::filesystem::path FsPath(Path);
+			CachedAnimationItems.push_back(FsPath.filename().string());
+		}
+
+		// "None" 항목 추가 (인덱스 0)
+		CachedAnimationPaths.Insert("", 0);
+		CachedAnimationItems.Insert("None", 0);
+	}
 }
 
 void UPropertyRenderer::ClearResourcesCache()
@@ -440,6 +471,8 @@ void UPropertyRenderer::ClearResourcesCache()
 	CachedSoundItems.Empty();
 	CachedScriptPaths.Empty();
 	CachedScriptItems.Empty();
+	CachedAnimationPaths.Empty();
+	CachedAnimationItems.Empty();
 }
 
 // ===== 타입별 렌더링 구현 =====
@@ -593,6 +626,81 @@ bool UPropertyRenderer::RenderNameProperty(const FProperty& Prop, void* Instance
 	}
 
 	return bValueWasChanged;
+}
+
+bool UPropertyRenderer::RenderEnumProperty(const FProperty& Prop, void* Instance)
+{
+	// 1. 데이터 포인터 가져오기
+	// (주의: enum class는 보통 uint8 또는 int32입니다. 여기서는 uint8로 가정합니다.)
+	// (만약 int 기반 Enum이라면 int32*로 캐스팅해야 합니다.)
+	uint8* EnumPtr = reinterpret_cast<uint8*>((uint8*)Instance + Prop.Offset);
+	if (!EnumPtr) return false;
+
+	// ImGui::Combo는 int 타입을 사용하므로 변환이 필요합니다.
+	int CurrentValue = static_cast<int>(*EnumPtr);
+	int OriginalValue = CurrentValue;
+	bool bChanged = false;
+
+	// 콤보 박스에 표시할 아이템 목록
+	const char** Items = nullptr;
+	int ItemCount = 0;
+
+	// 2. 프로퍼티 이름(Prop.Name) 또는 타입(Prop.SubType)에 따라 아이템 목록 설정
+	// NOTE: enum type을 알 수가 없나? 일단 하드코딩으로 출력
+	if (Prop.Name == "AnimationMode")
+	{
+		static const char* AnimModes[] = {
+			"Use Animation Asset",  // 0
+			"Use Custom Script"     // 1
+		};
+		Items = AnimModes;
+		ItemCount = IM_ARRAYSIZE(AnimModes);
+	}
+	else // 다른 Enum 예시
+	{
+		static const char* AnotherItems[] = { "Item A", "Item B", "Item C" };
+		Items = AnotherItems;
+		ItemCount = IM_ARRAYSIZE(AnotherItems);
+	}
+
+	// 3. 매칭되는 Enum 정의가 없으면 읽기 전용 텍스트로 표시
+	if (!Items)
+	{
+		ImGui::Text("%s: %d (Unknown Enum)", Prop.Name, CurrentValue);
+		return false;
+	}
+
+	// 4. ImGui 콤보 박스 렌더링
+	// (값이 범위 내에 있는지 안전 검사)
+	if (CurrentValue < 0 || CurrentValue >= ItemCount)
+	{
+		CurrentValue = 0; // 범위를 벗어나면 0번으로 리셋 (안전장치)
+	}
+
+	if (ImGui::Combo(Prop.Name, &CurrentValue, Items, ItemCount))
+	{
+		// 5. 값이 변경되었으면 원본 데이터에 쓰기
+		if (CurrentValue != OriginalValue)
+		{
+			*EnumPtr = static_cast<uint8>(CurrentValue);
+			bChanged = true;
+
+			// [중요] AnimationMode가 변경되면 에디터 UI 레이아웃이 바뀌어야 하므로
+			// 즉시 컴포넌트의 로직을 갱신해주는 것이 좋습니다.
+			// (예: SkelComp->InitializeAnimScriptInstance())
+			UObject* Obj = static_cast<UObject*>(Instance);
+			if (USkeletalMeshComponent* SkelComp = Cast<USkeletalMeshComponent>(Obj))
+			{
+				if (Prop.Name == "AnimationMode")
+				{
+					// 모드 변경 시 필요한 초기화 로직 호출 (필요하다면)
+					 SkelComp->SetAnimationMode((EAnimationMode)*EnumPtr);
+				}
+			}
+		}
+	}
+
+	return bChanged;
 }
 
 bool UPropertyRenderer::RenderObjectPtrProperty(const FProperty& Prop, void* Instance)
@@ -977,6 +1085,130 @@ bool UPropertyRenderer::RenderCurveProperty(const FProperty& Prop, void* Instanc
 	// 툴팁 렌더링은 부모 함수인 RenderProperty에서 이미 처리하고 있습니다.
 
 	return bCurveChanged;
+}
+
+bool UPropertyRenderer::RenderAnimInstanceProperty(const FProperty& Prop, void* Instance)
+{
+	// 1. 현재 할당된 UAnimInstance 객체 포인터 가져오기
+	UAnimInstance** AnimInstPtr = Prop.GetValuePtr<UAnimInstance*>(Instance);
+	UAnimInstance* CurrentInstance = *AnimInstPtr;
+
+	if (!CurrentInstance)
+	{
+		ImGui::Text("%s: None (Not Initialized)", Prop.Name);
+		return false;
+	}
+
+	bool bChanged = false;
+;
+	ImGui::Indent(); // 들여쓰기 시작
+
+	// --------------------------------------------------------
+	// CASE A: 단일 애니메이션 재생 모드 (UAnimSingleNodeInstance)
+	// --------------------------------------------------------
+	if (UAnimSingleNodeInstance* SingleNode = Cast<UAnimSingleNodeInstance>(CurrentInstance))
+	{
+		// 현재 재생 중인 애니메이션 애셋 가져오기
+		UAnimationAsset* CurrentAnim = SingleNode->GetCurrentAnimationAsset();
+
+		FString CurrentPath;
+		if (CurrentAnim)
+		{
+			CurrentPath = CurrentAnim->GetFilePath();
+		}
+
+		// 미리보기에 표시할 텍스트 (현재 선택된 파일명)
+		FString PreviewValue = "None";
+		if (!CurrentPath.empty())
+		{
+			std::filesystem::path FsPath(UTF8ToWide(CurrentPath));
+			// (주의: 여기서 반환되는 string 포인터의 수명을 위해 임시 변수가 필요할 수 있음)
+			// 편의상 단순화: 실제로는 CachedAnimationItems에서 이름 찾는 로직 권장
+			PreviewValue = FsPath.filename().string().c_str();
+		}
+
+		// 2. BeginCombo 사용 (리스트를 수동으로 그리기 위해)
+		if (ImGui::BeginCombo(Prop.Name, PreviewValue.c_str()))
+		{
+			// [핵심] 팝업 창이 '처음 열리는 순간'에만 진입
+			if (ImGui::IsWindowAppearing())
+			{
+				// 여기서 캐시를 비우고 다시 로드합니다.
+				CachedAnimationPaths.Empty();
+				CachedAnimationItems.Empty();
+
+				// 리소스 매니저에서 다시 긁어오기
+				CacheResources();
+			}
+
+			// 3. 아이템 목록 순회 및 그리기
+			for (int i = 0; i < CachedAnimationItems.size(); ++i)
+			{
+				const bool bIsSelected = (CachedAnimationPaths[i] == CurrentPath);
+
+				// 아이템 그리기
+				if (ImGui::Selectable(CachedAnimationItems[i].c_str(), bIsSelected))
+				{
+					UAnimationAsset* NewAnim = nullptr;
+
+					// 빈 경로가 아니라면 로드
+					if (!CachedAnimationPaths[i].empty())
+					{
+						FString NewPath = CachedAnimationPaths[i];
+						NewAnim = UResourceManager::GetInstance().Load<UAnimSequenceBase>(NewPath);
+					}
+
+					// 인스턴스에 적용
+					SingleNode->SetAnimationAsset(NewAnim);
+					bChanged = true;
+				}
+
+				// 선택된 항목에 포커스 맞추기
+				if (bIsSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+
+			ImGui::EndCombo();
+		}
+	}
+
+	// --------------------------------------------------------
+	// CASE B: Lua 스크립트 모드 (UAnimLuaInstance)
+	// --------------------------------------------------------
+	//else if (UAnimLuaInstance* LuaInst = Cast<UAnimLuaInstance>(CurrentInstance))
+	//{
+	//	// 스크립트 경로 표시 (여기서 수정하기보다는 컴포넌트의 AnimScriptFile을 수정하는 게 원칙)
+	//	FString ScriptPath = LuaInst->GetScriptPath();
+	//	ImGui::Text("Script: %s", ScriptPath.c_str());
+
+	//	// 스크립트 리로드 버튼 (디버깅용)
+	//	if (ImGui::Button("Reload Script"))
+	//	{
+	//		LuaInst->LoadScript(ScriptPath); // 다시 로드
+	//		// 필요하다면 InitializeAnimation 호출
+	//	}
+
+	//	// (확장) Lua 내부 변수(State 등)를 보고 싶다면 여기서 추가 렌더링
+	//	// 예: 현재 스테이트 머신의 상태 표시
+	//	/*
+	//	if (LuaInst->StateMachine)
+	//	{
+	//		ImGui::Text("Current State: %s", LuaInst->StateMachine->GetCurrentStateName().c_str());
+	//	}
+	//	*/
+	//}
+	// --------------------------------------------------------
+	// CASE C: 기타 (알 수 없는 커스텀 인스턴스)
+	// --------------------------------------------------------
+	else
+	{
+		ImGui::TextDisabled("Unknown AnimInstance Type");
+	}
+
+	ImGui::Unindent(); // 들여쓰기 끝
+	return bChanged;
 }
 
 bool UPropertyRenderer::RenderPointLightCubeShadowMap(FLightManager* LightManager, ULightComponent* LightComp, int32 CubeSliceIndex)

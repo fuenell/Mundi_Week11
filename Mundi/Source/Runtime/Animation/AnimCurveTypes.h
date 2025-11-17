@@ -2,6 +2,7 @@
 #include "UEContainer.h"
 #include "Name.h"
 
+class FArchive; // Forward declaration
 
 enum ERichCurveInterpMode : int
 {
@@ -60,6 +61,20 @@ struct FRichCurveKey
 
 	float LeaveTangent;
 	float LeaveTangentWeight;
+
+	friend inline FArchive& operator<<(FArchive& Ar, FRichCurveKey& Key)
+	{
+		Ar << reinterpret_cast<int&>(Key.InterpMode);
+		Ar << reinterpret_cast<int&>(Key.TangentMode);
+		Ar << reinterpret_cast<int&>(Key.TangentWeightMode);
+		Ar << Key.Time;
+		Ar << Key.Value;
+		Ar << Key.ArriveTangent;
+		Ar << Key.ArriveTangentWeight;
+		Ar << Key.LeaveTangent;
+		Ar << Key.LeaveTangentWeight;
+		return Ar;
+	}
 };
 
 // 원래 UE에서는 각 Curve가 FAnimCurveBase라는 것을 상속받지만, 여기서는 단순화를 위해 생략
@@ -69,6 +84,8 @@ struct FFloatCurve
 {
 	FName Name;
 	TArray<FRichCurveKey> Keys;
+
+	friend inline FArchive& operator<<(FArchive& Ar, FFloatCurve& Curve);
 };
 
 struct FVectorCurve
@@ -82,6 +99,14 @@ struct FVectorCurve
 	};
 
 	FFloatCurve	FloatCurves[3];
+
+	friend inline FArchive& operator<<(FArchive& Ar, FVectorCurve& Curve)
+	{
+		Ar << Curve.FloatCurves[0];
+		Ar << Curve.FloatCurves[1];
+		Ar << Curve.FloatCurves[2];
+		return Ar;
+	}
 };
 
 struct FTransformCurve
@@ -95,4 +120,58 @@ struct FTransformCurve
 	 */
 	FVectorCurve	RotationCurve;
 	FVectorCurve	ScaleCurve;
+
+	friend inline FArchive& operator<<(FArchive& Ar, FTransformCurve& Curve)
+	{
+		Ar << Curve.TranslationCurve;
+		Ar << Curve.RotationCurve;
+		Ar << Curve.ScaleCurve;
+		return Ar;
+	}
 };
+
+// FFloatCurve의 직렬화 구현 (FRichCurveKey 정의 이후에 배치)
+inline FArchive& operator<<(FArchive& Ar, FFloatCurve& Curve)
+{
+	// FName 직렬화
+	if (Ar.IsSaving())
+	{
+		FString NameStr = Curve.Name.ToString();
+		Serialization::WriteString(Ar, NameStr);
+	}
+	else // Loading
+	{
+		FString NameStr;
+		Serialization::ReadString(Ar, NameStr);
+		Curve.Name = FName(NameStr);
+	}
+
+	// Keys 배열 직렬화
+	if (Ar.IsSaving())
+	{
+		uint32 KeyCount = static_cast<uint32>(Curve.Keys.size());
+		Ar << KeyCount;
+		for (auto& Key : Curve.Keys)
+		{
+			Ar << Key;
+		}
+	}
+	else // Loading
+	{
+		uint32 KeyCount;
+		Ar << KeyCount;
+
+		if (KeyCount > Serialization::MAX_REASONABLE_ARRAY_SIZE)
+		{
+			throw std::runtime_error("Cache corrupt: FRichCurveKey count is unreasonable.");
+		}
+
+		Curve.Keys.resize(KeyCount);
+		for (uint32 i = 0; i < KeyCount; ++i)
+		{
+			Ar << Curve.Keys[i];
+		}
+	}
+
+	return Ar;
+}

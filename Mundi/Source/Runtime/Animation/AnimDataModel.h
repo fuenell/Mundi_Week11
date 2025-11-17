@@ -5,6 +5,8 @@
 #include "Object.h"
 #include "AnimCurveTypes.h"
 
+class FArchive; // Forward declaration
+
 struct FFrameRate
 {
 	int32 Numerator;
@@ -18,18 +20,24 @@ struct FRawAnimSequenceTrack
 	TArray<FVector> PosKeys;   // 위치 키프레임
 	TArray<FQuat>   RotKeys;   // 회전 키프레임 (Quaternion)
 	TArray<FVector> ScaleKeys; // 스케일 키프레임
+
+	friend FArchive& operator<<(FArchive& Ar, FRawAnimSequenceTrack& Track);
 };
 
 struct FBoneAnimationTrack
 {
 	FName Name;                        // Bone 이름
 	FRawAnimSequenceTrack InternalTrack; // 실제 애니메이션 데이터
+
+	friend FArchive& operator<<(FArchive& Ar, FBoneAnimationTrack& Track);
 };
 
 struct FAnimationCurveData
 {
 	TArray<FFloatCurve>	FloatCurves;
 	TArray<FTransformCurve>	TransformCurves;
+
+	friend FArchive& operator<<(FArchive& Ar, FAnimationCurveData& Data);
 };
 
 class UAnimDataModel : public UObject
@@ -64,6 +72,9 @@ public:
 
 	// 디버그 정보 출력
 	void PrintDebugInfo() const;
+
+	// 직렬화
+	friend FArchive& operator<<(FArchive& Ar, UAnimDataModel& AnimData);
 
 private:
 	TArray<FBoneAnimationTrack> BoneAnimationTracks; // 현재 부모 기준 로컬 트랜스폼으로 저장함

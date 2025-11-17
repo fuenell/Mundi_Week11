@@ -8,6 +8,7 @@
 #include "WindowsBinReader.h"
 #include "WindowsBinWriter.h"
 #include "PathUtils.h"
+#include "AnimSequence.h"
 #include <filesystem>
 
 IMPLEMENT_CLASS(UFbxLoader)
@@ -17,6 +18,22 @@ UFbxLoader::UFbxLoader()
 	// 메모리 관리, FbxManager 소멸시 Fbx 관련 오브젝트 모두 소멸
 	SdkManager = FbxManager::Create();
 
+	// IO Settings 초기화
+	FbxIOSettings* IO = SdkManager->GetIOSettings();
+	if (!IO)
+	{
+		IO = FbxIOSettings::Create(SdkManager, IOSROOT);
+		SdkManager->SetIOSettings(IO);
+	}
+
+	// .fbm 폴더 생성 방지 설정
+	/*IO->SetBoolProp(IMP_FBX_MATERIAL, true);
+	IO->SetBoolProp(IMP_FBX_TEXTURE, true);
+	IO->SetBoolProp(IMP_FBX_ANIMATION, true);
+	IO->SetBoolProp(IMP_FBX_GLOBAL_SETTINGS, true);*/
+
+	// .fbm 폴더를 생성하는 옵션 비활성화
+	IO->SetBoolProp(IMP_FBX_EXTRACT_EMBEDDED_DATA, false);
 }
 
 void UFbxLoader::PreLoad()
@@ -54,10 +71,62 @@ void UFbxLoader::PreLoad()
           if (ProcessedFiles.find(WPathStr) == ProcessedFiles.end())
           {
              ProcessedFiles.insert(WPathStr);
-             FbxLoader.LoadFbxMesh(PathStr);
+             
+             // FBX 파일 내용 확인
+             bool bHasMesh = false;
+             bool bHasAnimation = false;
+             
+             // FBX 파일을 열어서 내용 확인
+             FString FbxPathAcp = UTF8ToACP(PathStr);
+             FbxImporter* Importer = FbxImporter::Create(FbxLoader.SdkManager, "");
 
-			 // for test
-			 //FbxLoader.LoadAnimationFromFbx(PathStr);
+             if (Importer->Initialize(FbxPathAcp.c_str(), -1, FbxLoader.SdkManager->GetIOSettings()))
+             {
+                FbxScene* Scene = FbxScene::Create(FbxLoader.SdkManager, "TempScene");
+                if (Importer->Import(Scene)) // TODO: Import 함수가 오래걸림 50~150ms
+                {
+                   // 메시 존재 여부 확인
+                   FbxNode* RootNode = Scene->GetRootNode();
+                   if (RootNode)
+                   {
+                       bHasMesh = HasMeshRecursive(RootNode);
+                   }
+                   
+                   // 애니메이션 존재 여부 확인
+                   int32 AnimStackCount = Scene->GetSrcObjectCount<FbxAnimStack>();
+                   if (AnimStackCount > 0)
+                   {
+                      bHasAnimation = true;
+                   }
+                }
+                Scene->Destroy();
+             }
+             Importer->Destroy();
+             
+             // 내용에 따라 적절한 로딩 함수 호출
+             if (bHasMesh && bHasAnimation)
+             {
+                // 메시와 애니메이션 모두 존재
+                FbxLoader.LoadFbxMesh(PathStr);
+				UResourceManager::GetInstance().Load<UAnimSequence>(PathStr); // UResourceManager에 등록 위함
+                UE_LOG("UFbxLoader::Preload: Loaded mesh and animation from %s", PathStr.c_str());
+             }
+             else if (bHasMesh)
+             {
+                // 메시만 존재
+                FbxLoader.LoadFbxMesh(PathStr);
+                UE_LOG("UFbxLoader::Preload: Loaded mesh from %s", PathStr.c_str());
+             }
+             else if (bHasAnimation)
+             {
+                // 애니메이션만 존재
+				 UResourceManager::GetInstance().Load<UAnimSequence>(PathStr); // UResourceManager에 등록 위함
+                UE_LOG("UFbxLoader::Preload: Loaded animation from %s", PathStr.c_str());
+             }
+             else
+             {
+                UE_LOG("UFbxLoader::Preload: No mesh or animation found in %s", PathStr.c_str());
+             }
 
              ++LoadedCount;
           }
@@ -235,6 +304,51 @@ FSkeletalMeshData* UFbxLoader::LoadFbxMeshAsset(const FString& FilePath)
     UE_LOG("Regenerating cache for FBX '%s'...", NormalizedPath.c_str());
 #endif // USE_OBJ_CACHE
 
+    // .fbm 폴더 존재 여부 확인 및 유효성 검사
+    std::filesystem::path FbmFolderPath = FbxPath.parent_path() / (FbxPath.stem().wstring() + L".fbm");
+    bool bShouldExtractEmbedded = true;
+
+    if (std::filesystem::exists(FbmFolderPath) && std::filesystem::is_directory(FbmFolderPath))
+    {
+        try
+        {
+            auto fbxTime = std::filesystem::last_write_time(FbxPath);
+            bool bAllFilesNewer = true;
+
+            // .fbm 폴더 내 모든 파일의 수정 시간 확인
+            for (const auto& entry : std::filesystem::recursive_directory_iterator(FbmFolderPath))
+            {
+                if (entry.is_regular_file())
+                {
+                    auto fileTime = std::filesystem::last_write_time(entry.path());
+                    if (fileTime < fbxTime)
+                    {
+                        bAllFilesNewer = false;
+                        break;
+                    }
+                }
+            }
+
+            // .fbm 폴더의 모든 파일이 FBX보다 최신이면 추출 비활성화
+            if (bAllFilesNewer)
+            {
+                bShouldExtractEmbedded = false;
+                UE_LOG("Skipping .fbm extraction: All files are newer than FBX file.");
+            }
+        }
+        catch (const std::filesystem::filesystem_error& e)
+        {
+            UE_LOG("Filesystem error during .fbm validation: %s", e.what());
+        }
+    }
+
+    // IO Settings에 동적으로 설정
+    FbxIOSettings* IO = SdkManager->GetIOSettings();
+    if (IO)
+    {
+        IO->SetBoolProp(IMP_FBX_EXTRACT_EMBEDDED_DATA, bShouldExtractEmbedded);
+    }
+
     // 7. FBX 임포터 생성
     FbxImporter* Importer = FbxImporter::Create(SdkManager, "");
 
@@ -329,6 +443,8 @@ FSkeletalMeshData* UFbxLoader::LoadFbxMeshAsset(const FString& FilePath)
         Count += IndexList.Num();
     }
 
+	Scene->Destroy();
+
 #ifdef USE_OBJ_CACHE
     // 13. 캐시 저장
     try
@@ -354,6 +470,12 @@ FSkeletalMeshData* UFbxLoader::LoadFbxMeshAsset(const FString& FilePath)
         UE_LOG("Failed to save FBX cache: %s", e.what());
     }
 #endif // USE_OBJ_CACHE
+
+	// IO Settings 복원 (생성자에서 설정한 기본값으로)
+	if (IO)
+	{
+		IO->SetBoolProp(IMP_FBX_EXTRACT_EMBEDDED_DATA, false);
+	}
 
     return MeshData;
 }
@@ -421,7 +543,7 @@ void UFbxLoader::LoadMeshFromNode(FbxNode* InNode,
 						MaterialSlotToIndex.Add(MaterialIndex);
 					}
 				}
-				// 노드가 하나의 머티리얼만 쓰는 경우
+				// 노드가 하나의 머티얼만 쓰는 경우
 				else if (MaterialElement->GetMappingMode() == FbxGeometryElement::eAllSame)
 				{
 					int MaterialIndex = 0;
@@ -1198,56 +1320,7 @@ void UFbxLoader::EnsureSingleRootBone(FSkeletalMeshData& MeshData)
 
 UAnimDataModel* UFbxLoader::LoadAnimationMixamo(const FString& FilePath)
 {
-	// TODO: 코드 중복이 많아 함수화 필요
-
-	// 1. 경로 정규화
-	FString NormalizedPath = NormalizePath(FilePath);
-	FWideString WNormalizedPath = UTF8ToWide(NormalizedPath);
-	std::filesystem::path FbxPath(WNormalizedPath);
-	FString FbxPathAcp = UTF8ToACP(NormalizedPath);
-	CurrentFbxBaseDir = NormalizePath(WideToUTF8(FbxPath.parent_path().wstring()));
-
-	UE_LOG("Loading animation from FBX: %s", NormalizedPath.c_str());
-
-	// 2. FBX 임포터 생성 및 초기화
-	FbxImporter* Importer = FbxImporter::Create(SdkManager, "AnimImporter");
-	if (!Importer->Initialize(FbxPathAcp.c_str(), -1, SdkManager->GetIOSettings()))
-	{
-		UE_LOG("Failed to initialize FBX Importer for animation: %s", Importer->GetStatus().GetErrorString());
-		return nullptr;
-	}
-
-	// 3. 씬 임포트
-	FbxScene* Scene = FbxScene::Create(SdkManager, "AnimScene");
-	if (!Importer->Import(Scene))
-	{
-		UE_LOG("Failed to import FBX scene for animation");
-		Importer->Destroy();
-		return nullptr;
-	}
-	Importer->Destroy();
-
-	// 4. 씬의 좌표계 변환 (Unreal Engine 좌표계로)
-	FbxAxisSystem UnrealImportAxis(FbxAxisSystem::eZAxis, FbxAxisSystem::eParityEven, FbxAxisSystem::eLeftHanded);
-	FbxAxisSystem SourceSetup = Scene->GetGlobalSettings().GetAxisSystem();
-	FbxSystemUnit::m.ConvertScene(Scene);
-
-	if (SourceSetup != UnrealImportAxis)
-	{
-		UE_LOG("Converting FBX axis system to Unreal coordinate system");
-		UnrealImportAxis.DeepConvertScene(Scene);
-	}
-
-	// 5. AnimStack 개수 확인
-	int32 AnimStackCount = Scene->GetSrcObjectCount<FbxAnimStack>();
-	if (AnimStackCount == 0)
-	{
-		UE_LOG("No animation (AnimStack) found in FBX file: %s", NormalizedPath.c_str());
-		return nullptr;
-	}
-	UE_LOG("Found %d AnimStack(s) in FBX file", AnimStackCount);
-
-	return LoadAnimationFromFbx(FilePath, AnimStackCount - 1);
+	return LoadAnimationFromFbx(FilePath, 1);
 }
 
 //====================================================================================
@@ -1262,9 +1335,98 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
     FString FbxPathAcp = UTF8ToACP(NormalizedPath);
     CurrentFbxBaseDir = NormalizePath(WideToUTF8(FbxPath.parent_path().wstring()));
 
+    UAnimDataModel* AnimData = nullptr;
+
+#ifdef USE_OBJ_CACHE
+    // 2. 캐시 파일 경로 설정
+    FString CachePathStr = ConvertDataPathToCachePath(NormalizedPath);
+    const FString BinPathFileName = CachePathStr + ".anim.bin";
+
+    // 파일 시스템용 wide path
+    FWideString WBinPath = UTF8ToWide(BinPathFileName);
+    std::filesystem::path BinPath(WBinPath);
+
+    // 캐시를 저장할 디렉토리가 없으면 생성
+    std::filesystem::path CacheFileDirPath = BinPath;
+    if (CacheFileDirPath.has_parent_path())
+    {
+        std::filesystem::create_directories(CacheFileDirPath.parent_path());
+    }
+
+    bool bLoadedFromCache = false;
+
+    // 3. 캐시 유효성 검사 (FBX 원본 vs 캐시 타임스탬프)
+    bool bShouldRegenerate = true;
+    if (std::filesystem::exists(BinPath))
+    {
+        try
+        {
+            auto binTime = std::filesystem::last_write_time(BinPath);
+            auto fbxTime = std::filesystem::last_write_time(FbxPath);
+
+            // FBX 파일이 캐시보다 오래되었으면 캐시 사용
+            if (fbxTime <= binTime)
+            {
+                bShouldRegenerate = false;
+            }
+        }
+        catch (const std::filesystem::filesystem_error& e)
+        {
+            UE_LOG("Filesystem error during animation cache validation: %s. Forcing regeneration.", e.what());
+            bShouldRegenerate = true;
+        }
+    }
+
+    // 4. 캐시에서 로드 시도
+    if (!bShouldRegenerate)
+    {
+        UE_LOG("Attempting to load animation '%s' from cache.", NormalizedPath.c_str());
+        try
+        {
+            AnimData = NewObject<UAnimDataModel>();
+
+            FWindowsBinReader Reader(BinPathFileName);
+            if (!Reader.IsOpen())
+            {
+                throw std::runtime_error("Failed to open animation bin file for reading.");
+            }
+            Reader << *AnimData;
+            Reader.Close();
+
+            bLoadedFromCache = true;
+
+            UE_LOG("Successfully loaded animation '%s' from cache.", NormalizedPath.c_str());
+            UE_LOG("  - Duration: %.2fs", AnimData->GetPlayLength());
+            UE_LOG("  - Frames: %d", AnimData->GetNumberOfFrames());
+            UE_LOG("  - FrameRate: %.2f fps", AnimData->GetFrameRate().ToFloat());
+            UE_LOG("  - Bone Tracks: %d", AnimData->GetBoneAnimationTracks().Num());
+            UE_LOG("  - Float Curves: %d", AnimData->GetCurveData().FloatCurves.Num());
+            UE_LOG("  - Transform Curves: %d", AnimData->GetCurveData().TransformCurves.Num());
+
+            return AnimData;
+        }
+        catch (const std::exception& e)
+        {
+            UE_LOG("Error loading animation from cache: %s. Cache might be corrupt or incompatible.", e.what());
+            UE_LOG("Deleting corrupt cache and forcing regeneration for '%s'.", NormalizedPath.c_str());
+
+            std::filesystem::remove(BinPath);
+            if (AnimData)
+            {
+                delete AnimData;
+                AnimData = nullptr;
+            }
+            bLoadedFromCache = false;
+        }
+    }
+
+    // 5. 캐시 로드 실패 시 FBX 파싱
+    UE_LOG("Regenerating animation cache for FBX '%s'...", NormalizedPath.c_str());
+#endif // USE_OBJ_CACHE
+
     UE_LOG("Loading animation from FBX: %s", NormalizedPath.c_str());
 
-    // 2. FBX 임포터 생성 및 초기화
+    // 6. FBX 임포터 생성 및 초기화
     FbxImporter* Importer = FbxImporter::Create(SdkManager, "AnimImporter");
     if (!Importer->Initialize(FbxPathAcp.c_str(), -1, SdkManager->GetIOSettings()))
     {
@@ -1298,32 +1460,34 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
     if (AnimStackCount == 0)
     {
         UE_LOG("No animation (AnimStack) found in FBX file: %s", NormalizedPath.c_str());
+        Scene->Destroy();
         return nullptr;
     }
     UE_LOG("Found %d AnimStack(s) in FBX file", AnimStackCount);
 
-    // 6. 인자로 들어온 인덱스(디폴트 0)에 해당하는 AnimStack 가져오기
+    // 10. 인자로 들어온 인덱스(디폴트 0)에 해당하는 AnimStack 가져오기
     if (AnimStackIndex < 0 || AnimStackIndex >= AnimStackCount)
     {
-        UE_LOG("Invalid AnimStackIndex %d (valid range: 0-%d). Using index 0.", AnimStackIndex, AnimStackCount - 1);
-        AnimStackIndex = 0;
+        UE_LOG("Invalid AnimStackIndex %d (valid range: 0-%d). Using index %d.", AnimStackIndex, AnimStackCount - 1, AnimStackCount - 1);
+		AnimStackIndex = AnimStackCount - 1; // 잘못된 인덱스일 시	 마지막 인덱스로 설정
     }
 
     FbxAnimStack* AnimStack = Scene->GetSrcObject<FbxAnimStack>(AnimStackIndex);
     if (!AnimStack)
     {
         UE_LOG("Failed to get AnimStack at index %d", AnimStackIndex);
+        Scene->Destroy();
         return nullptr;
     }
     UE_LOG("Using AnimStack: '%s'", AnimStack->GetName());
 
-    // 7. AnimStack을 현재 씬에 적용
+    // 11. AnimStack을 현재 씬에 적용
     Scene->SetCurrentAnimationStack(AnimStack);
 
-	// 8. 리턴할 UAnimDataModel 생성
-	UAnimDataModel* AnimData = NewObject<UAnimDataModel>();
+    // 12. 리턴할 UAnimDataModel 생성
+    AnimData = NewObject<UAnimDataModel>();
 
-    // 9. UAnimDataModel에 Duration, FrameRate 설정
+    // 13. UAnimDataModel에 Duration, FrameRate 설정
     FbxTakeInfo* TakeInfo = Scene->GetTakeInfo(AnimStack->GetName());
     FbxTime StartTime = TakeInfo ? TakeInfo->mLocalTimeSpan.GetStart() : AnimStack->GetLocalTimeSpan().GetStart();
     FbxTime EndTime = TakeInfo ? TakeInfo->mLocalTimeSpan.GetStop() : AnimStack->GetLocalTimeSpan().GetStop();
@@ -1335,23 +1499,24 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
     AnimData->SetPlayLength(static_cast<float>(Duration.GetSecondDouble()));
     AnimData->SetFrameRate(static_cast<int32>(FrameRateDouble), 1);
 
-	UE_LOG("Animation timeline - Start: %.2fs, End: %.2fs, Duration: %.2fs, FrameRate: %.2f fps",
-		StartTime.GetSecondDouble(), EndTime.GetSecondDouble(), Duration.GetSecondDouble(), FrameRateDouble);
+    UE_LOG("Animation timeline - Start: %.2fs, End: %.2fs, Duration: %.2fs, FrameRate: %.2f fps",
+        StartTime.GetSecondDouble(), EndTime.GetSecondDouble(), Duration.GetSecondDouble(), FrameRateDouble);
 
-	// 10. UAnimDataModel에 Frame 수 설정
+    // 14. UAnimDataModel에 Frame 수 설정
     int32 NumFrames = static_cast<int32>(Duration.GetFrameCount(TimeMode));
     AnimData->SetNumberOfFrames(NumFrames);
 
-    // 11. AnimLayer 개수 확인
+    // 15. AnimLayer 개수 확인
     int32 AnimLayerCount = AnimStack->GetMemberCount<FbxAnimLayer>();
     if (AnimLayerCount == 0)
     {
         UE_LOG("No AnimLayer found in AnimStack");
+        Scene->Destroy();
         return nullptr;
     }
     UE_LOG("Found %d AnimLayer(s) in AnimStack", AnimLayerCount);
 
-	// 12. 본 인덱스 맵 생성: 각 본에 해당하는 애니메이션 트랙을 UAnimDataModel에 추가하기 위함
+    // 16. 본 인덱스 맵 생성: 각 본에 해당하는 애니메이션 트랙을 UAnimDataModel에 추가하기 위함
     TMap<FbxNode*, int32> BoneToIndex;
     FbxNode* RootNode = Scene->GetRootNode();
     FSkeletalMeshData TempMeshData;
@@ -1364,19 +1529,18 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
     }
     UE_LOG("Found %d bones in skeleton", BoneToIndex.Num());
 
-    // 13. 프레임 간격 계산
+    // 17. 프레임 간격 계산
     FbxTime FrameTime;
     FrameTime.SetTime(0, 0, 0, 1, 0, TimeMode);
 
-	// 14. UAnimDataModel에 애니메이션 트랙 데이터 할당
-	for (auto& BonePair : BoneToIndex)
-	{
-		FbxNode* BoneNode = BonePair.first;
+    // 18. UAnimDataModel에 애니메이션 트랙 데이터 할당
+    for (auto& BonePair : BoneToIndex)
+    {
+        FbxNode* BoneNode = BonePair.first;
+        ExtractBoneAnimation(BoneNode, StartTime, EndTime, FrameTime, AnimData);
+    }
 
-		ExtractBoneAnimation(BoneNode, StartTime, EndTime, FrameTime, AnimData);
-	}
-
-	// 15. UAnimDataModel에 커브 데이터 할당
+    // 19. UAnimDataModel에 커브 데이터 할당
     for (int32 LayerIndex = 0; LayerIndex < AnimLayerCount; ++LayerIndex)
     {
         FbxAnimLayer* AnimLayer = AnimStack->GetMember<FbxAnimLayer>(LayerIndex);
@@ -1388,7 +1552,7 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
 
         UE_LOG("Processing AnimLayer %d: '%s'", LayerIndex, AnimLayer->GetName());
 
-        // 14-1. 각 본에 대한 커브 데이터 추출
+        // 19-1. 각 본에 대한 커브 데이터 추출
         for (auto& BonePair : BoneToIndex)
         {
             FbxNode* BoneNode = BonePair.first;
@@ -1397,15 +1561,33 @@ UAnimDataModel* UFbxLoader::LoadAnimationFromFbx(const FString& FilePath, int32 
             ExtractAnimationCurves(BoneNode, AnimLayer, AnimData, LayerIndex);
         }
 
-        // 14-2. 추가적인 Float Curve 추출 (Morph Target, Custom Attributes 등)
+        // 19-2. 추가적인 Float Curve 추출 (Morph Target, Custom Attributes 등)
         ExtractAllFloatCurves(Scene, AnimLayer, AnimData, LayerIndex);
     }
 
-    // 16. UAnimDataModel에 총 키 개수 할당
-	int32 TotalKeyCount = AnimData->GetNumberOfFrames() + 1; // UE가 이렇게 계산함
+    // 20. UAnimDataModel에 총 키 개수 할당
+    int32 TotalKeyCount = AnimData->GetNumberOfFrames() + 1; // UE가 이렇게 계산함
     AnimData->SetNumberOfKeys(TotalKeyCount);
 
-	// 결과 로그	출력
+    Scene->Destroy();
+
+#ifdef USE_OBJ_CACHE
+    // 21. 캐시 저장
+    try
+    {
+        FWindowsBinWriter Writer(BinPathFileName);
+        Writer << *AnimData;
+        Writer.Close();
+
+        UE_LOG("Animation cache regeneration complete for FBX '%s'.", NormalizedPath.c_str());
+    }
+    catch (const std::exception& e)
+    {
+        UE_LOG("Failed to save animation cache: %s", e.what());
+    }
+#endif // USE_OBJ_CACHE
+
+    // 결과 로그 출력
     UE_LOG("Successfully loaded animation from %s", NormalizedPath.c_str());
     UE_LOG("  - Duration: %.2fs", AnimData->GetPlayLength());
     UE_LOG("  - Frames: %d", AnimData->GetNumberOfFrames());
@@ -1740,5 +1922,32 @@ void UFbxLoader::ExtractMorphTargetCurves(FbxMesh* Mesh, FbxNode* InNode, FbxAni
             }
         }
     }
+}
+
+bool UFbxLoader::HasMeshRecursive(FbxNode* InNode)
+{
+	if (!InNode)
+		return false;
+
+	// 현재 노드에 메시 속성이 있는지 확인
+	for (int i = 0; i < InNode->GetNodeAttributeCount(); ++i)
+	{
+		FbxNodeAttribute* Attribute = InNode->GetNodeAttributeByIndex(i);
+		if (Attribute && Attribute->GetAttributeType() == FbxNodeAttribute::eMesh)
+		{
+			return true;
+		}
+	}
+
+	// 자식 노드에서 메시를 찾기
+	for (int i = 0; i < InNode->GetChildCount(); ++i)
+	{
+		if (HasMeshRecursive(InNode->GetChild(i)))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 

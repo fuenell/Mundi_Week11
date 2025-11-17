@@ -81,7 +81,7 @@ public:
 	void PlayAnimation(UAnimationAsset* NewAnimToPlay, bool bLooping);
 
 	/**
-	 * @brief 현재 SkeletalMesh가 기본적으로 가진 단일 애니메이션을 재생
+	 * @brief 현재 AnimScriptInstance가 이미 가지고 있는 단일 애니메이션을 재생
 	 */
 	void PlayDefaultAnimation();
 

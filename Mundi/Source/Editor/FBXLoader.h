@@ -65,6 +65,9 @@ private:
 	
 	void ExtractMorphTargetCurves(FbxMesh* Mesh, FbxNode* InNode, FbxAnimLayer* InAnimLayer, UAnimDataModel* OutAnimData, int32 LayerIndex = 0);
 
+	// FBX 파일 내용 확인을 위한 헬퍼 함수: Mesh 포함 여부 재귀 탐색
+	static bool HasMeshRecursive(FbxNode* InNode);
+
 	// 멤버 변수
 	TArray<FMaterialInfo> MaterialInfos;
 	FbxManager* SdkManager = nullptr;

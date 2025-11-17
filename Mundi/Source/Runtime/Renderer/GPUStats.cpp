@@ -1,14 +1,14 @@
 #include "pch.h"
-#include "PrimitiveStats.h"
+#include "GPUStats.h"
 
-void FPrimitiveStatManager::ResetFrameStats(D3D11RHI& RHI)
+void FGpuStatManager::ResetFrameStats(D3D11RHI& RHI)
 {
 	NewGpuDisjointQuery(RHI);
 
 	PrimitiveRenderStats.Empty();
 }
 
-void FPrimitiveStatManager::NewGpuDisjointQuery(D3D11RHI& RHI)
+void FGpuStatManager::NewGpuDisjointQuery(D3D11RHI& RHI)
 {
 	// 이전 쿼리 해제
 	if (CurrentDisjointQuery)
@@ -39,17 +39,17 @@ void FPrimitiveStatManager::NewGpuDisjointQuery(D3D11RHI& RHI)
 	CurrentDisjointQuery = CurrentDisjointQuery;
 }
 
-void FPrimitiveStatManager::StartGpuTimer(D3D11RHI& RHI, FGPUTimer& Timer)
+void FGpuStatManager::StartGpuTimer(D3D11RHI& RHI, FGpuTimer& Timer)
 {
 
 }
 
-void FPrimitiveStatManager::FinishGpuTimer(D3D11RHI& RHI, FGPUTimer& Timer)
+void FGpuStatManager::FinishGpuTimer(D3D11RHI& RHI, FGpuTimer& Timer)
 {
 
 }
 
-void FPrimitiveStatManager::DestroyGPUTimer(FGPUTimer& Timer)
+void FGpuStatManager::DestroyGpuTimer(FGpuTimer& Timer)
 {
 
 }

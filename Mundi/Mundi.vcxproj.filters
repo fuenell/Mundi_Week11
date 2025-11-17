@@ -648,6 +648,9 @@
     <ClCompile Include="Source\Runtime\Renderer\PrimitiveTypeRegistry.cpp">
       <Filter>Source\Runtime\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Renderer\PrimitiveStats.cpp">
+      <Filter>Source\Runtime\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2670,7 +2673,7 @@
     <ClInclude Include="Source\Runtime\Animation\AnimSingleNodeInstance.h">
       <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Renderer\MeshStats.h">
+    <ClInclude Include="Source\Runtime\Renderer\PrimitiveStats.h">
       <Filter>Source\Runtime\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Renderer\PrimitiveTypeRegistry.h">

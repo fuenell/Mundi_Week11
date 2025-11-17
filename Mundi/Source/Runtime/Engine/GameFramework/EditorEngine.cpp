@@ -5,6 +5,7 @@
 #include "FAudioDevice.h"
 #include "FbxLoader.h"
 #include "WindowsCrashReporter.h"
+#include "PlatformTime.h"
 #include <ObjManager.h>
 
 
@@ -320,6 +321,9 @@ void UEditorEngine::MainLoop()
 
             bChangedPieToEditor = false;
         }
+
+		// 이번 프레임 퍼포먼스 프로파일링을 위해 초기화
+		FScopeCycleCounter::TimeProfileInit();
 
         Tick(DeltaSeconds);
         Render();

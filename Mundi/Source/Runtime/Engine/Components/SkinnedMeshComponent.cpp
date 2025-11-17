@@ -5,6 +5,7 @@
 #include "D3D11RHI.h"
 #include "VertexData.h"
 #include "World.h"
+#include "PlatformTime.h"
 
 USkinnedMeshComponent::USkinnedMeshComponent() : SkeletalMesh(nullptr)
 {
@@ -325,7 +326,10 @@ void USkinnedMeshComponent::PerformCpuSkinning()
 		return;
 	}
 	if (!bSkinningMatricesDirty) { return; }
-	
+
+	FScopeCycleCounter SkinningScope(GetClass()->Name); // 파생클래스 이름으로 설정
+	FScopeCycleCounter TotalPrimitiveScope("Primitives Total");
+
 	const TArray<FSkinnedVertex>& SrcVertices = SkeletalMesh->GetSkeletalMeshData()->Vertices;
 	const int32 NumVertices = SrcVertices.Num();
 	SkinnedVertices.SetNum(NumVertices);

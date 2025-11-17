@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "TextRenderComponent.h"
 #include "Shader.h"
 #include "StaticMesh.h"
@@ -31,6 +31,7 @@
 #include "DecalStatManager.h"
 #include "SceneRenderer.h"
 #include "SceneView.h"
+#include "PlatformTime.h"
 
 #include <Windows.h>
 #include "DirectionalLightComponent.h"

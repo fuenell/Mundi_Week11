@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "SceneRenderer.h"
 
 // FSceneRenderer가 사용하는 모든 헤더 포함
@@ -1312,6 +1312,12 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 			//UE_LOG("[%s] 머티리얼에 셰이더가 컴파일에 실패했거나 없습니다!", Batch.Material->GetFilePath().c_str());	// NOTE: 로그가 매 프레임 떠서 셰이더 컴파일 에러 로그를 볼 수 없어서 주석 처리
 			continue;
 		}
+
+		// CPU 스코프 시간 측정 시작
+		const UClass* PrimitiveClass = FPrimitiveTypeRegistry::GetInstance().ResolveType(Batch.PrimitiveTypeID);
+		const FString PrimitiveClassName = PrimitiveClass ? PrimitiveClass->Name : FString("UnknownPrimitive");
+		FScopeCycleCounter PrimitiveScope(PrimitiveClassName);
+		FScopeCycleCounter TotalPrimitiveScope("Primitives Total");
 
 		// 1. 셰이더 상태 변경
 		if (Batch.VertexShader != CurrentVertexShader || Batch.PixelShader != CurrentPixelShader)

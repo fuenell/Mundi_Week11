@@ -189,7 +189,7 @@ static void DrawTextBlock(
 
 void UStatsOverlayD2D::Draw()
 {
-	if (!bInitialized || (!bShowFPS && !bShowMemory && !bShowPicking && !bShowDecal && !bShowTileCulling && !bShowLights && !bShowShadow) || !SwapChain)
+	if (!bInitialized || (!bShowFPS && !bShowMemory && !bShowPicking && !bShowDecal && !bShowTileCulling && !bShowLights && !bShowShadow && !bShowPrimitives) || !SwapChain)
 	{
 		return;
 	}
@@ -226,7 +226,7 @@ void UStatsOverlayD2D::Draw()
 	const float Space = 8.0f;
 	const float PanelWidth = 200.0f;
 	const float PanelHeight = 48.0f;
-	float NextY = 70.0f;
+	float NextY = 100.0f;
 
 	if (bShowFPS)
 	{
@@ -374,10 +374,54 @@ void UStatsOverlayD2D::Draw()
 		NextY += shadowPanelHeight + Space;
 	}
 
+	if (bShowPrimitives)
+	{
+		constexpr int32 NumPrimitiveKeys = 3;
+		const FString PrimitiveKeys[NumPrimitiveKeys] = {
+			FString("Primitives Total"),
+			FString("UStaticMeshComponent"),
+			FString("USkeletalMeshComponent")
+		};
+
+		const float PrimitivePanelHeight = 25.0f;
+		const float PrimitivePanelWidth = PanelWidth * 2.75f;
+		D2D1_RECT_F HeaderRect = D2D1::RectF(Margin, NextY, Margin + PrimitivePanelWidth, NextY + PrimitivePanelHeight);
+		DrawTextBlock(D2DContext, TextFormat, L"[Primitive Render Stats]", HeaderRect, BrushBlack, BrushLightGreen);
+		NextY += PrimitivePanelHeight;
+
+		for (const FString& Key : PrimitiveKeys)
+		{
+			if (Key.empty())
+			{
+				continue;
+			}
+
+			const FTimeProfile& Profile = FScopeCycleCounter::GetTimeProfile(Key);
+			const double CpuMilliseconds = Profile.Milliseconds;
+			const double GpuMilliseconds = 0.0; // TODO: GPU 프로파일링 도입 시 실제 값으로 교체
+			const double TotalMilliseconds = CpuMilliseconds + GpuMilliseconds;
+
+			std::wstring KeyWide(Key.begin(), Key.end());
+			wchar_t PrimitiveStatBuffer[256];
+			swprintf_s(
+				PrimitiveStatBuffer,
+				L"%s : %.3fms (CPU %.3fms, GPU %.3fms), Call : %u",
+				KeyWide.c_str(),
+				TotalMilliseconds,
+				CpuMilliseconds,
+				GpuMilliseconds,
+				Profile.CallCount);
+
+			D2D1_RECT_F StatRect = D2D1::RectF(Margin, NextY, Margin + PrimitivePanelWidth, NextY + PrimitivePanelHeight);
+			DrawTextBlock(D2DContext, TextFormat, PrimitiveStatBuffer, StatRect, BrushBlack, BrushLightGreen);
+			NextY += PrimitivePanelHeight;
+		}
+
+		NextY += Space;
+	}
+
 	D2DContext->EndDraw();
 	D2DContext->SetTarget(nullptr);
-
-	FScopeCycleCounter::TimeProfileInit();
 
 	SafeRelease(TargetBmp);
 	SafeRelease(Surface);
@@ -452,4 +496,14 @@ void UStatsOverlayD2D::SetShowShadow(bool b)
 void UStatsOverlayD2D::ToggleShadow()
 {
 	bShowShadow = !bShowShadow;
+}
+
+void UStatsOverlayD2D::SetShowPrimitives(bool b)
+{
+	bShowPrimitives = b;
+}
+
+void UStatsOverlayD2D::TogglePrimitives()
+{
+	bShowPrimitives = !bShowPrimitives;
 }

@@ -1257,43 +1257,68 @@ HRESULT D3D11RHI::CreateDisjointQuery(ID3D11Query** ppDisjointQuery)
 	return Device->CreateQuery(&queryDesc, ppDisjointQuery);
 }
 
-void D3D11RHI::BeginGPUTimer(ID3D11Query* pTimestampStart, ID3D11Query* pDisjointQuery)
+void D3D11RHI::BeginDisjointQuery(ID3D11Query* pDisjointQuery)
 {
-	DeviceContext->Begin(pDisjointQuery);
-	DeviceContext->End(pTimestampStart);
-}
-
-void D3D11RHI::EndGPUTimer(ID3D11Query* pTimestampEnd)
-{
-	DeviceContext->End(pTimestampEnd);
-}
-
-// 사용 흐름: BeginGPUTimer → (GPU 작업) → EndGPUTimer → GetGPUTime
-double D3D11RHI::GetGPUTime(ID3D11Query* pTimestampStart, ID3D11Query* pTimestampEnd, ID3D11Query* pDisjointQuery)
-{
-	DeviceContext->End(pDisjointQuery); // 시간 측정 구간 끝
-
-	// 쿼리 결과 대기
-	while (DeviceContext->GetData(pDisjointQuery, nullptr, 0, 0) == S_FALSE)
+	if (!pDisjointQuery)
 	{
-		// 쿼리 완료 대기
+		return;
 	}
 
-	D3D11_QUERY_DATA_TIMESTAMP_DISJOINT disjointData;
-	DeviceContext->GetData(pDisjointQuery, &disjointData, sizeof(disjointData), 0);
+	DeviceContext->Begin(pDisjointQuery);
+}
 
-	if (disjointData.Disjoint)
+void D3D11RHI::EndDisjointQuery(ID3D11Query* pDisjointQuery)
+{
+	if (!pDisjointQuery)
 	{
-		// GPU 클럭이 불안정하여 신뢰할 수 없음
+		return;
+	}
+
+	DeviceContext->End(pDisjointQuery);
+}
+
+bool D3D11RHI::GetDisjointQueryData(ID3D11Query* pDisjointQuery, D3D11_QUERY_DATA_TIMESTAMP_DISJOINT& OutData, bool bWaitForResult) const
+{
+	if (!pDisjointQuery)
+	{
+		return false;
+	}
+
+	const UINT Flags = bWaitForResult ? 0u : D3D11_ASYNC_GETDATA_DONOTFLUSH;
+	const HRESULT Result = DeviceContext->GetData(pDisjointQuery, &OutData, sizeof(OutData), Flags);
+	return Result == S_OK;
+}
+
+void D3D11RHI::WriteTimestamp(ID3D11Query* pTimestampQuery)
+{
+	if (!pTimestampQuery)
+	{
+		return;
+	}
+
+	DeviceContext->End(pTimestampQuery);
+}
+
+bool D3D11RHI::GetTimestampData(ID3D11Query* pTimestampQuery, UINT64& OutTimestamp, bool bWaitForResult) const
+{
+	if (!pTimestampQuery)
+	{
+		return false;
+	}
+
+	const UINT Flags = bWaitForResult ? 0u : D3D11_ASYNC_GETDATA_DONOTFLUSH;
+	const HRESULT Result = DeviceContext->GetData(pTimestampQuery, &OutTimestamp, sizeof(UINT64), Flags);
+	return Result == S_OK;
+}
+
+double D3D11RHI::CalculateElapsedMilliseconds(UINT64 StartTimestamp, UINT64 EndTimestamp, const D3D11_QUERY_DATA_TIMESTAMP_DISJOINT& DisjointData) const
+{
+	if (DisjointData.Disjoint || DisjointData.Frequency == 0 || EndTimestamp <= StartTimestamp)
+	{
 		return -1.0;
 	}
 
-	UINT64 startTime, endTime;
-	DeviceContext->GetData(pTimestampStart, &startTime, sizeof(UINT64), 0);
-	DeviceContext->GetData(pTimestampEnd, &endTime, sizeof(UINT64), 0);
-
-	UINT64 elapsedTicks = endTime - startTime;
-	double elapsedSeconds = static_cast<double>(elapsedTicks) / static_cast<double>(disjointData.Frequency);
-
-	return elapsedSeconds * 1000.0; // 밀리초로 변환
+	const UINT64 ElapsedTicks = EndTimestamp - StartTimestamp;
+	const double ElapsedSeconds = static_cast<double>(ElapsedTicks) / static_cast<double>(DisjointData.Frequency);
+	return ElapsedSeconds * 1000.0;
 }

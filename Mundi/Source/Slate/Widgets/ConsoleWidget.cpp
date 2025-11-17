@@ -355,6 +355,8 @@ void UConsoleWidget::ExecCommand(const char* command_line)
 		AddLog("- STAT DECAL");
 		AddLog("- STAT ALL");
 		AddLog("- STAT LIGHT");
+		AddLog("- STAT SHADOW");
+		AddLog("- STAT PRIMITIVE");
 		AddLog("- STAT NONE");
 	}
 	else if (Stricmp(command_line, "STAT FPS") == 0)
@@ -382,6 +384,16 @@ void UConsoleWidget::ExecCommand(const char* command_line)
 		UStatsOverlayD2D::Get().ToggleTileCulling();
 		AddLog("STAT LIGHT TOGGLED");
 	}
+	else if (Stricmp(command_line, "STAT SHADOW") == 0)
+	{
+		UStatsOverlayD2D::Get().ToggleShadow();
+		AddLog("STAT SHADOW TOGGLED");
+	}
+	else if (Stricmp(command_line, "STAT PRIMITIVE") == 0)
+	{
+		UStatsOverlayD2D::Get().TogglePrimitives();
+		AddLog("STAT PRIMITIVE TOGGLED");
+	}
 	else if (Stricmp(command_line, "STAT ALL") == 0)
 	{
 		UStatsOverlayD2D::Get().SetShowFPS(true);
@@ -389,6 +401,9 @@ void UConsoleWidget::ExecCommand(const char* command_line)
 		UStatsOverlayD2D::Get().SetShowPicking(true);
 		UStatsOverlayD2D::Get().SetShowDecal(true);
 		UStatsOverlayD2D::Get().SetShowTileCulling(true);
+		UStatsOverlayD2D::Get().SetShowLights(true);
+		UStatsOverlayD2D::Get().SetShowShadow(true);
+		UStatsOverlayD2D::Get().SetShowPrimitives(true);
 		AddLog("STAT: ON");
 	}
 	else if (Stricmp(command_line, "STAT NONE") == 0)
@@ -398,6 +413,9 @@ void UConsoleWidget::ExecCommand(const char* command_line)
 		UStatsOverlayD2D::Get().SetShowPicking(false);
 		UStatsOverlayD2D::Get().SetShowDecal(false);
 		UStatsOverlayD2D::Get().SetShowTileCulling(false);
+		UStatsOverlayD2D::Get().SetShowLights(false);
+		UStatsOverlayD2D::Get().SetShowShadow(false);
+		UStatsOverlayD2D::Get().SetShowPrimitives(false);
 		AddLog("STAT: OFF");
 	}
 	else if (Stricmp(command_line, "SKINNING") == 0)

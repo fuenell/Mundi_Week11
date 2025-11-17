@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "SSkeletalMeshViewerWindow.h"
 #include "FViewport.h"
 #include "FViewportClient.h"
@@ -11,6 +11,8 @@
 #include "BoneAnchorComponent.h"
 #include "Source/Runtime/Engine/Collision/Picking.h"
 #include "Source/Runtime/Engine/GameFramework/CameraActor.h"
+#include "Source/Runtime/Engine/Components/SkeletalMeshComponent.h"
+#include "Source/Runtime/Animation/AnimSingleNodeInstance.h"
 
 SSkeletalMeshViewerWindow::SSkeletalMeshViewerWindow()
 {
@@ -105,7 +107,7 @@ void SSkeletalMeshViewerWindow::OnRender()
 
         ImVec2 contentAvail = ImGui::GetContentRegionAvail();
         float totalWidth = contentAvail.x;
-        float totalHeight = contentAvail.y;
+        float totalHeight = contentAvail.y - PlaybackBarHeight; // Reserve space for playback bar
 
         float leftWidth = totalWidth * LeftPanelRatio;
         float rightWidth = totalWidth * RightPanelRatio;
@@ -524,6 +526,9 @@ void SSkeletalMeshViewerWindow::OnRender()
 
         // Pop the ItemSpacing style
         ImGui::PopStyleVar();
+
+        // Render the playback bar at the bottom
+        RenderPlaybackBar();
     }
     ImGui::End();
 
@@ -541,6 +546,173 @@ void SSkeletalMeshViewerWindow::OnRender()
     }
 
     bRequestFocus = false;
+}
+
+void SSkeletalMeshViewerWindow::RenderPlaybackBar()
+{
+    if (!ActiveState || !ActiveState->PreviewActor)
+        return;
+
+    USkeletalMeshComponent* SkeletalComp = ActiveState->PreviewActor->GetSkeletalMeshComponent();
+    if (!SkeletalComp)
+        return;
+
+    // Playback bar background
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.15f, 0.15f, 0.18f, 1.0f));
+    ImGui::BeginChild("PlaybackBar", ImVec2(0, PlaybackBarHeight), true, ImGuiWindowFlags_NoScrollbar);
+    ImGui::PopStyleColor();
+
+    // Get animation instance
+    UAnimSingleNodeInstance* AnimInstance = SkeletalComp->GetSingleNodeInstance();
+    bool bHasAnimation = AnimInstance && AnimInstance->GetCurrentAnimationAsset();
+
+    // Center the controls vertically
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (PlaybackBarHeight - 40.0f) * 0.5f);
+    ImGui::Spacing();
+
+    // Playback controls
+    ImGui::BeginGroup();
+    
+    // Play button
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.20f, 0.70f, 0.40f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.80f, 0.50f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.15f, 0.60f, 0.30f, 1.0f));
+
+    bool bIsPlaying = AnimInstance && AnimInstance->IsPlaying();
+    if (!bHasAnimation)
+    {
+        ImGui::BeginDisabled();
+    }
+    
+    if (ImGui::Button("Play", ImVec2(80, 30)))
+    {
+        OnPlayButtonPressed();
+    }
+    
+    if (!bHasAnimation)
+    {
+        ImGui::EndDisabled();
+    }
+    ImGui::PopStyleColor(3);
+
+    ImGui::SameLine();
+
+    // Pause button
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.70f, 0.60f, 0.20f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.80f, 0.70f, 0.30f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.60f, 0.50f, 0.15f, 1.0f));
+    
+    if (!bHasAnimation || !bIsPlaying)
+    {
+        ImGui::BeginDisabled();
+    }
+    
+    if (ImGui::Button("Pause", ImVec2(80, 30)))
+    {
+        OnPauseButtonPressed();
+    }
+    
+    if (!bHasAnimation || !bIsPlaying)
+    {
+        ImGui::EndDisabled();
+    }
+    ImGui::PopStyleColor(3);
+
+    ImGui::SameLine();
+
+    // Stop button
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.70f, 0.20f, 0.20f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.80f, 0.30f, 0.30f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.60f, 0.15f, 0.15f, 1.0f));
+    
+    if (!bHasAnimation)
+    {
+        ImGui::BeginDisabled();
+    }
+    
+    if (ImGui::Button("Stop", ImVec2(80, 30)))
+    {
+        OnStopButtonPressed();
+    }
+    
+    if (!bHasAnimation)
+    {
+        ImGui::EndDisabled();
+    }
+    ImGui::PopStyleColor(3);
+
+    ImGui::SameLine();
+    ImGui::Spacing();
+    ImGui::SameLine();
+
+    // Animation status text
+    if (bHasAnimation)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.7f, 0.9f, 1.0f, 1.0f));
+        const char* statusText = bIsPlaying ? "Playing" : "Stopped";
+        ImGui::Text("Status: %s | Loop: %s", statusText, AnimInstance->IsLooping() ? "On" : "Off");
+        ImGui::PopStyleColor();
+    }
+    else
+    {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+        ImGui::Text("No animation loaded");
+        ImGui::PopStyleColor();
+    }
+
+    ImGui::EndGroup();
+
+    ImGui::EndChild();
+}
+
+void SSkeletalMeshViewerWindow::OnPlayButtonPressed()
+{
+    if (!ActiveState || !ActiveState->PreviewActor)
+        return;
+
+    USkeletalMeshComponent* SkeletalComp = ActiveState->PreviewActor->GetSkeletalMeshComponent();
+    if (!SkeletalComp)
+        return;
+
+    // Set animation mode to single node if not already
+    SkeletalComp->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+
+    // Play the animation (use default animation already set on the component)
+    SkeletalComp->Play(true); // Loop enabled by default
+}
+
+void SSkeletalMeshViewerWindow::OnPauseButtonPressed()
+{
+    if (!ActiveState || !ActiveState->PreviewActor)
+        return;
+
+    USkeletalMeshComponent* SkeletalComp = ActiveState->PreviewActor->GetSkeletalMeshComponent();
+    if (!SkeletalComp)
+        return;
+
+    UAnimSingleNodeInstance* AnimInstance = SkeletalComp->GetSingleNodeInstance();
+    if (AnimInstance)
+    {
+        AnimInstance->SetPlaying(false);
+    }
+}
+
+void SSkeletalMeshViewerWindow::OnStopButtonPressed()
+{
+    if (!ActiveState || !ActiveState->PreviewActor)
+        return;
+
+    USkeletalMeshComponent* SkeletalComp = ActiveState->PreviewActor->GetSkeletalMeshComponent();
+    if (!SkeletalComp)
+        return;
+
+    UAnimSingleNodeInstance* AnimInstance = SkeletalComp->GetSingleNodeInstance();
+    if (AnimInstance)
+    {
+        AnimInstance->SetPlaying(false);
+		AnimInstance->SetCurrentTime(0.0f);
+        // Optionally reset to the beginning or restore bind pose
+    }
 }
 
 void SSkeletalMeshViewerWindow::OnUpdate(float DeltaSeconds)

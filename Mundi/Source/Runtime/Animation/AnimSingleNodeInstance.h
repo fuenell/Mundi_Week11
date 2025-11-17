@@ -14,6 +14,11 @@ public:
 
 	void SetPlaying(bool bIsPlaying);
 	void SetLooping(bool bIsLooping);
+	void SetCurrentTime(float InTime) { CurrentTime = InTime; }
+
+	bool IsPlaying() const { return bIsPlaying; }
+	bool IsLooping() const { return bLooping; }
+	float GetCurrentTime() const { return CurrentTime; }
 
 	virtual void SetAnimationAsset(UAnimationAsset* NewAsset, bool bIsLooping = true, float InPlayRate = 1.f);
 	UAnimationAsset* GetCurrentAnimationAsset() const { return CurrentAsset; }

@@ -36,6 +36,12 @@ private:
     void OpenNewTab(const char* Name = "Viewer");
     void CloseTab(int Index);
 
+    // Animation playback controls
+    void RenderPlaybackBar();
+    void OnPlayButtonPressed();
+    void OnPauseButtonPressed();
+    void OnStopButtonPressed();
+
 private:
     // Per-tab state
     ViewerState* ActiveState = nullptr;
@@ -49,6 +55,7 @@ private:
     // Layout state
     float LeftPanelRatio = 0.25f;   // 25% of width
     float RightPanelRatio = 0.25f;  // 25% of width
+    float PlaybackBarHeight = 60.0f; // Height of the playback bar at the bottom
 
     // Cached center region used for viewport sizing and input mapping
     FRect CenterRect;

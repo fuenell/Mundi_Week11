@@ -648,7 +648,7 @@
     <ClCompile Include="Source\Runtime\Renderer\PrimitiveTypeRegistry.cpp">
       <Filter>Source\Runtime\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Renderer\PrimitiveStats.cpp">
+    <ClCompile Include="Source\Runtime\Renderer\GPUStats.cpp">
       <Filter>Source\Runtime\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2673,7 +2673,7 @@
     <ClInclude Include="Source\Runtime\Animation\AnimSingleNodeInstance.h">
       <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Renderer\PrimitiveStats.h">
+    <ClInclude Include="Source\Runtime\Renderer\GPUStats.h">
       <Filter>Source\Runtime\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Renderer\PrimitiveTypeRegistry.h">

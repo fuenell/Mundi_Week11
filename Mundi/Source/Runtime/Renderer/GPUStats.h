@@ -3,26 +3,31 @@
 #include "PrimitiveTypeRegistry.h"
 #include "PlatformTime.h"
 
+class D3D11RHI;
+
 struct FGpuTimer
 {
 	FString Type;
 	ID3D11Query* TimestampStart = nullptr;
 	ID3D11Query* TimestampEnd = nullptr;
+	bool bStartIssued = false;
+	bool bEndIssued = false;
 
-	FGpuTimer(FString InType) : Type(InType) {}
+	explicit FGpuTimer(FString InType) : Type(std::move(InType)) {}
 };
 
 struct RenderStat
 {
 	double CpuRenderTimeMs = 0.0;
 	double GpuRenderTimeMs = 0.0;
-	// uint32 VertexCount = 0; 버텍스 카운트는 나중에 필요하면 추가
+	uint32 CallCount = 0;
 
-	RenderStat operator+=(const RenderStat& Other)
+	RenderStat& operator+=(const RenderStat& Other)
 	{
 		CpuRenderTimeMs += Other.CpuRenderTimeMs;
 		GpuRenderTimeMs += Other.GpuRenderTimeMs;
-		// VertexCount += Other.VertexCount;
+		CallCount += Other.CallCount;
+		return *this;
 	}
 };
 
@@ -36,28 +41,32 @@ public:
 	}
 
 	void ResetFrameStats(D3D11RHI& RHI);
-
-	// 이전 프레임의 Disjoint 쿼리를 해제하고 해당 프레임의 Disjoint 쿼리를 새로 만듭니다.
-	void NewGpuDisjointQuery(D3D11RHI& RHI);
-	ID3D11Query* GetCurrentDisjointQuery() const { return CurrentDisjointQuery; }
+	void EndFrame(D3D11RHI& RHI);
 
 	void StartGpuTimer(D3D11RHI& RHI, FGpuTimer& Timer);
 	void FinishGpuTimer(D3D11RHI& RHI, FGpuTimer& Timer);
-	void DestroyGpuTimer(FGpuTimer& Timer);
 
-	bool IsDisjointQueryBegun() const { return bDisjointQueryBegun; }
+	const RenderStat* FindPrimitiveStat(const FString& Key) const;
+	const TMap<FString, RenderStat>& GetPrimitiveRenderStats() const { return PrimitiveRenderStats; }
 
 private:
-	// 싱글톤 패턴을 위해 생성/소멸자는 내부에서만 접근
 	FGpuStatManager() = default;
-	~FGpuStatManager() = default;
-	// 싱글톤 패턴을 위해 복사 초기화 및 복사 대입 금지
+	~FGpuStatManager();
 	FGpuStatManager(const FGpuStatManager&) = delete;
 	FGpuStatManager& operator=(const FGpuStatManager&) = delete;
 
+	void ResolvePreviousFrameTimers(D3D11RHI& RHI);
+	void ReleaseDisjointQuery(ID3D11Query*& Query);
+	void AccumulateGpuStat(const FString& PrimitiveKey, double Milliseconds);
+	void ReleaseTimerQueries(TArray<FGpuTimer>& Timers);
+	void BeginNewFrameQuery(D3D11RHI& RHI);
+
 private:
 	ID3D11Query* CurrentDisjointQuery = nullptr;
+	ID3D11Query* PreviousDisjointQuery = nullptr;
 	bool bDisjointQueryBegun = false;
 
+	TArray<FGpuTimer> CurrentFrameTimers;
+	TArray<FGpuTimer> PreviousFrameTimers;
 	TMap<FString, RenderStat> PrimitiveRenderStats;
 };

@@ -13,6 +13,7 @@
 #include "TileCullingStats.h"
 #include "LightStats.h"
 #include "ShadowStats.h"
+#include "GPUStats.h"
 
 #pragma comment(lib, "d2d1")
 #pragma comment(lib, "dwrite")
@@ -389,6 +390,7 @@ void UStatsOverlayD2D::Draw()
 		DrawTextBlock(D2DContext, TextFormat, L"[Primitive Render Stats]", HeaderRect, BrushBlack, BrushLightGreen);
 		NextY += PrimitivePanelHeight;
 
+		const FGpuStatManager& GpuStats = FGpuStatManager::GetInstance();
 		for (const FString& Key : PrimitiveKeys)
 		{
 			if (Key.empty())
@@ -398,7 +400,8 @@ void UStatsOverlayD2D::Draw()
 
 			const FTimeProfile& Profile = FScopeCycleCounter::GetTimeProfile(Key);
 			const double CpuMilliseconds = Profile.Milliseconds;
-			const double GpuMilliseconds = 0.0; // TODO: GPU 프로파일링 도입 시 실제 값으로 교체
+			const RenderStat* GpuStat = GpuStats.FindPrimitiveStat(Key);
+			const double GpuMilliseconds = GpuStat ? GpuStat->GpuRenderTimeMs : 0.0;
 			const double TotalMilliseconds = CpuMilliseconds + GpuMilliseconds;
 
 			std::wstring KeyWide(Key.begin(), Key.end());

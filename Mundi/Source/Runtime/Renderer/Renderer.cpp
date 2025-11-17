@@ -54,9 +54,6 @@ void URenderer::BeginFrame()
 
 	RHIDevice->OMSetRenderTargets(ERTVMode::BackBufferWithDepth);
 
-	// 이번 프레임 퍼포먼스 프로파일링을 위해 초기화
-	FScopeCycleCounter::TimeProfileInit();
-
 	// 프레임별 데칼 통계를 추적하기 위해 초기화
 	FDecalStatManager::GetInstance().ResetFrameStats();
 

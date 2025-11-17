@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "GameEngine.h"
 #include "USlateManager.h"
 #include "SelectionManager.h"
@@ -6,6 +6,7 @@
 #include "PlayerCameraManager.h"
 #include <ObjManager.h>
 #include "FAudioDevice.h"
+#include "PlatformTime.h"
 #include <sol/sol.hpp>
 
 float UGameEngine::ClientWidth = 1024.0f;
@@ -312,6 +313,9 @@ void UGameEngine::MainLoop()
         }
 
         if (!bRunning) break;
+
+		// 이번 프레임 퍼포먼스 프로파일링을 위해 초기화
+		FScopeCycleCounter::TimeProfileInit();
 
         Tick(DeltaSeconds);
         Render();

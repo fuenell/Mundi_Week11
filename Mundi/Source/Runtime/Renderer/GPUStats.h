@@ -51,24 +51,32 @@ public:
 	void GetDisjointStats(uint64& OutFailCount, uint64& OutDisjointCount, uint64& OutJointCount) const;
 
 private:
-	FGpuStatManager() = default;
+	struct FFrameTimingBatch
+	{
+		TArray<FGpuTimer> Timers;
+		ID3D11Query* DisjointQuery = nullptr;
+		bool bDisjointQueryBegun = false;
+		bool bPendingResolve = false;
+	};
+
+	static constexpr uint32 BufferedFrameCount = 3;
+
+	FGpuStatManager();
 	~FGpuStatManager();
 	FGpuStatManager(const FGpuStatManager&) = delete;
 	FGpuStatManager& operator=(const FGpuStatManager&) = delete;
 
-	void ResolvePreviousFrameTimers(D3D11RHI& RHI);
+	void ResolveFrameBatch(D3D11RHI& RHI, uint32 BatchIndex);
 	void ReleaseDisjointQuery(ID3D11Query*& Query);
 	void AccumulateGpuStat(const FString& PrimitiveKey, double Milliseconds);
 	void ReleaseTimerQueries(TArray<FGpuTimer>& Timers);
 	void BeginNewFrameQuery(D3D11RHI& RHI);
+	void PrepareFrameBatch(uint32 BatchIndex);
 
 private:
-	ID3D11Query* CurrentDisjointQuery = nullptr;
-	ID3D11Query* PreviousDisjointQuery = nullptr;
-	bool bDisjointQueryBegun = false;
-
-	TArray<FGpuTimer> CurrentFrameTimers;
-	TArray<FGpuTimer> PreviousFrameTimers;
+	TArray<FFrameTimingBatch> FrameBatches;
+	uint32 CurrentBatchIndex = 0;
+	FFrameTimingBatch* ActiveBatch = nullptr;
 	TMap<FString, RenderStat> PrimitiveRenderStats;
 
 	uint64 FailCount = 0;

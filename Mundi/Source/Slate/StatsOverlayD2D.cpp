@@ -420,7 +420,7 @@ void UStatsOverlayD2D::Draw()
 			NextY += PrimitivePanelHeight;
 		}
 
-		/*uint64 FailCount = 0;
+		uint64 FailCount = 0;
 		uint64 DisjointCount = 0;
 		uint64 JointCount = 0;
 		GpuStats.GetDisjointStats(FailCount, DisjointCount, JointCount);
@@ -437,7 +437,7 @@ void UStatsOverlayD2D::Draw()
 
 		const float IntegrityPanelHeight = PrimitivePanelHeight;
 		D2D1_RECT_F RenderProfileHeader = D2D1::RectF(Margin, NextY, Margin + PrimitivePanelWidth, NextY + IntegrityPanelHeight);
-		DrawTextBlock(D2DContext, TextFormat, L"[Render Profile Integrity]", RenderProfileHeader, BrushBlack, BrushLightGreen);
+		DrawTextBlock(D2DContext, TextFormat, L"[Disjoint Query Stats]", RenderProfileHeader, BrushBlack, BrushLightGreen);
 		NextY += IntegrityPanelHeight;
 
 		wchar_t IntegrityBuffer[128];
@@ -454,7 +454,7 @@ void UStatsOverlayD2D::Draw()
 		swprintf_s(IntegrityBuffer, L"Joint: %llu (%.1f%%)", JointCount, CalcPercent(JointCount));
 		D2D1_RECT_F JointRect = D2D1::RectF(Margin, NextY, Margin + PrimitivePanelWidth, NextY + IntegrityPanelHeight);
 		DrawTextBlock(D2DContext, TextFormat, IntegrityBuffer, JointRect, BrushBlack, BrushLightGreen);
-		NextY += IntegrityPanelHeight;*/
+		NextY += IntegrityPanelHeight;
 
 		NextY += Space;
 	}

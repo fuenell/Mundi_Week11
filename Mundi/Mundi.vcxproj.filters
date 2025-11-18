@@ -651,6 +651,18 @@
     <ClCompile Include="Source\Runtime\Renderer\PrimitiveStats.cpp">
       <Filter>Source\Runtime\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Generated\UAnimInstance.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\UAnimLuaInstance.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\UAnimSingleNodeInstance.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimLuaInstance.cpp">
+      <Filter>Source\Runtime\AssetManagement</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2678,6 +2690,18 @@
     </ClInclude>
     <ClInclude Include="Source\Runtime\Renderer\PrimitiveTypeRegistry.h">
       <Filter>Source\Runtime\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UAnimInstance.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UAnimLuaInstance.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UAnimSingleNodeInstance.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimLuaInstance.h">
+      <Filter>Source\Runtime\AssetManagement</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

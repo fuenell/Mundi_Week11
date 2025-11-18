@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -365,6 +365,7 @@
     <ClCompile Include="Source\Runtime\Animation\AnimInstance.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimLuaInstance.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimSequence.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -616,6 +617,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_StandAlone|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Generated\UAnimInstance.generated.cpp" />
+    <ClCompile Include="Generated\UAnimLuaInstance.generated.cpp" />
+    <ClCompile Include="Generated\UAnimSingleNodeInstance.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -643,6 +647,7 @@
     <ClInclude Include="Source\Runtime\Animation\AnimInstance.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimLuaInstance.h" />
     <ClInclude Include="Source\Runtime\Animation\AnimSequence.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
@@ -1306,6 +1311,9 @@
     <ClInclude Include="ThirdParty\Include\sol\variadic_results.hpp" />
     <ClInclude Include="ThirdParty\Include\sol\version.hpp" />
     <ClInclude Include="ThirdParty\Include\sol\wrapper.hpp" />
+    <ClInclude Include="Generated\UAnimInstance.generated.h" />
+    <ClInclude Include="Generated\UAnimLuaInstance.generated.h" />
+    <ClInclude Include="Generated\UAnimSingleNodeInstance.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Shaders\Common\LightingBuffers.hlsl" />

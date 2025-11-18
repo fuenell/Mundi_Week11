@@ -1,16 +1,21 @@
 #pragma once
 #include "Object.h"
 #include "AnimTypes.h"
+#include "UAnimInstance.generated.h"
 
 class FSkeleton;
+class USkeletalMeshComponent;
 
 // 애니메이션을 실행하는 인스턴스. 보통 이것을 상속받아 사용
 class UAnimInstance : public UObject
 {
 public:
-	DECLARE_CLASS(UAnimInstance, UObject)
+	GENERATED_REFLECTION_BODY()
+
 	UAnimInstance() = default;
 	virtual ~UAnimInstance() override = default;
+
+	virtual void Initialize(USkeletalMeshComponent* InOwningComponent);
 
 	void TriggerAnimNotifies(float DeltaSeconds);
 
@@ -21,7 +26,18 @@ public:
 	// DeltaSeconds를 바탕으로, 애니메이션을 적용해, OutFinalPose에 최종 포즈를 할당
 	void EvaluateAnimationPose(float DeltaSeconds, FPoseContext& OutFinalPose);
 
-	void SetSkeleton(FSkeleton* InSkeleton) { Skeleton = InSkeleton; }
+	virtual void SetFloat(const FString& Name, float Value) {}
+	virtual void SetBool(const FString& Name, bool Value) {}
+	virtual void SetInt(const FString& Name, int Value) {}
+
+	virtual float GetFloat(const FString& Name) { return 0.0f; }
+	virtual bool GetBool(const FString& Name) { return false; }
+	virtual int GetInt(const FString& Name) { return 0; }
+
+	USkeletalMeshComponent* GetOwningComponent() const { return OwningComponent; }
+	AActor* GetOwningActor() const;
+	UWorld* GetWorld() const;
+
 protected:
 	FPoseContext FinalPose; // 최종 포즈 데이터
 
@@ -32,4 +48,7 @@ protected:
 	*/
 	// 애니메이션을 적용할 스켈레톤
 	FSkeleton* Skeleton = nullptr;
+
+private:
+	USkeletalMeshComponent* OwningComponent = nullptr;
 };

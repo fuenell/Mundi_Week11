@@ -682,9 +682,6 @@ bool UPropertyRenderer::RenderEnumProperty(const FProperty& Prop, void* Instance
 		// 5. 값이 변경되었으면 원본 데이터에 쓰기
 		if (CurrentValue != OriginalValue)
 		{
-			*EnumPtr = static_cast<uint8>(CurrentValue);
-			bChanged = true;
-
 			// [중요] AnimationMode가 변경되면 에디터 UI 레이아웃이 바뀌어야 하므로
 			// 즉시 컴포넌트의 로직을 갱신해주는 것이 좋습니다.
 			// (예: SkelComp->InitializeAnimScriptInstance())
@@ -694,8 +691,15 @@ bool UPropertyRenderer::RenderEnumProperty(const FProperty& Prop, void* Instance
 				if (Prop.Name == "AnimationMode")
 				{
 					// 모드 변경 시 필요한 초기화 로직 호출 (필요하다면)
-					 SkelComp->SetAnimationMode((EAnimationMode)*EnumPtr);
+					 SkelComp->SetAnimationMode((EAnimationMode)CurrentValue);
+					 bChanged = true;
 				}
+			}
+
+			if(bChanged == false)
+			{
+				*EnumPtr = static_cast<uint8>(CurrentValue);
+				bChanged = true;
 			}
 		}
 	}
@@ -965,8 +969,8 @@ bool UPropertyRenderer::RenderScriptFileProperty(const FProperty& Property, void
 		if (ImGui::Button("스크립트 생성"))
 		{
 			// 1. 경로 및 확장자 설정
-			const FString* ExtPtr = Property.Metadata.Find(FName("FileExtension"));
-			FString Extension = (ExtPtr) ? *ExtPtr : ".lua";
+			// const FString* ExtPtr = Property.Metadata.Find(FName("FileExtension"));
+			FString Extension = ".lua";
 			if (Extension[0] != '.') Extension = "." + Extension;
 
 			// (참고: 스크립트 기본 경로는 "Content/Scripts/"로 가정)
@@ -1158,8 +1162,7 @@ bool UPropertyRenderer::RenderAnimInstanceProperty(const FProperty& Prop, void* 
 						NewAnim = UResourceManager::GetInstance().Load<UAnimSequenceBase>(NewPath);
 					}
 
-					// 인스턴스에 적용
-					SingleNode->SetAnimationAsset(NewAnim);
+					CurrentInstance->GetOwningComponent()->PlayAnimation(NewAnim, true);
 					bChanged = true;
 				}
 

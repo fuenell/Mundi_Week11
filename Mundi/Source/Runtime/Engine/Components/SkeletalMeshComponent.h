@@ -20,10 +20,13 @@ public:
     REGISTER_PRIMITIVE_COMPONENT(USkeletalMeshComponent)
     
     USkeletalMeshComponent();
-    ~USkeletalMeshComponent() override = default;
+    ~USkeletalMeshComponent() override;
 
     void TickComponent(float DeltaTime) override;
     void SetSkeletalMesh(const FString& PathFileName) override;
+
+	void DuplicateSubObjects() override;
+	void OnRegister(UWorld* InWorld) override;
 
 // Editor Section
 public:
@@ -123,7 +126,7 @@ protected:
 
 	// 이 컴포넌트에 연결된 애니메이션 인스턴스
 	UPROPERTY(EditAnywhere, Category = "Skeletal Mesh", Tooltip = "AnimScriptInstance")
-	class UAnimInstance* AnimScriptInstance;
+	class UAnimInstance* AnimScriptInstance = nullptr;
 
 // FOR TEST!!!
 private:

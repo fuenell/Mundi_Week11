@@ -3,6 +3,7 @@
 #include "AnimSingleNodeInstance.h"
 #include "AnimationAsset.h"
 #include "AnimSequence.h"
+#include "AnimLuaInstance.h"
 
 USkeletalMeshComponent::USkeletalMeshComponent()
 {
@@ -10,6 +11,30 @@ USkeletalMeshComponent::USkeletalMeshComponent()
     SetSkeletalMesh(GDataDir + "/Test.fbx"); 
 }
 
+USkeletalMeshComponent::~USkeletalMeshComponent()
+{
+	if (AnimScriptInstance)
+	{
+		DeleteObject(AnimScriptInstance);
+		AnimScriptInstance = nullptr;
+	}
+}
+
+void USkeletalMeshComponent::DuplicateSubObjects()
+{
+	Super::DuplicateSubObjects();
+
+	UAnimInstance* Origin = AnimScriptInstance;
+	AnimScriptInstance = Origin->Duplicate();
+	AnimScriptInstance->Initialize(nullptr);
+}
+
+void USkeletalMeshComponent::OnRegister(UWorld* InWorld)
+{
+	Super::OnRegister(InWorld);
+
+	AnimScriptInstance->Initialize(this);
+}
 
 void USkeletalMeshComponent::TickComponent(float DeltaTime)
 {
@@ -174,7 +199,12 @@ FTransform USkeletalMeshComponent::GetBoneWorldTransform(int32 BoneIndex)
 
 UAnimSingleNodeInstance* USkeletalMeshComponent::GetSingleNodeInstance() const
 {
-	return Cast<class UAnimSingleNodeInstance>(AnimScriptInstance);
+	if (AnimScriptInstance)
+	{
+		return Cast<class UAnimSingleNodeInstance>(AnimScriptInstance);
+	}
+
+	return nullptr;
 }
 
 void USkeletalMeshComponent::SetAnimationMode(EAnimationMode InAnimationMode, bool bForceInitAnimScriptInstance)
@@ -333,29 +363,25 @@ bool USkeletalMeshComponent::InitializeAnimScriptInstance()
 {
 	if (AnimScriptInstance == nullptr)
 	{
-		switch (AnimationMode)
+ 		switch (AnimationMode)
 		{
 		case EAnimationMode::AnimationSingleNode:
 			AnimScriptInstance = NewObject<UAnimSingleNodeInstance>();
 			break;
 		case EAnimationMode::AnimationCustomMode:
+			AnimScriptInstance = NewObject<UAnimLuaInstance>();
 			break;
 		default:
 			assert(false, "Unknown AnimationMode");
 			break;
 		}
 
-		if (AnimScriptInstance)
-		{
-			//AnimScriptInstance->InitializeAnimation();
-			AnimScriptInstance->SetSkeleton(SkeletalMesh->GetSkeletonMutable());
-			return true;
-		}
-		else
+		if (!AnimScriptInstance)
 		{
 			return false;
 		}
 	}
-	AnimScriptInstance->SetSkeleton(SkeletalMesh->GetSkeletonMutable());
+
+	AnimScriptInstance->Initialize(this);
 	return true;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "AnimInstance.h"
+#include "UAnimSingleNodeInstance.generated.h"
 
 class UAnimationAsset;
 struct FPoseContext;
@@ -8,7 +9,8 @@ struct FPoseContext;
 class UAnimSingleNodeInstance : public UAnimInstance
 {
 public:
-	DECLARE_CLASS(UAnimSingleNodeInstance, UAnimInstance)
+	GENERATED_REFLECTION_BODY()
+
 	UAnimSingleNodeInstance() = default;
 	virtual ~UAnimSingleNodeInstance() override = default;
 

@@ -111,9 +111,9 @@ void UAnimSingleNodeInstance::SetLooping(bool bIsLooping)
 	bLooping = bIsLooping;
 }
 
-void UAnimSingleNodeInstance::SetCurrentTime(float InTime)
+void UAnimSingleNodeInstance::SetCurrentTime(float InTime, bool bForceDirty)
 {
-	if (CurrentTime != InTime)
+	if (CurrentTime != InTime || bForceDirty)
 	{
 		CurrentTime = InTime;
 		bDirtyTime = true;

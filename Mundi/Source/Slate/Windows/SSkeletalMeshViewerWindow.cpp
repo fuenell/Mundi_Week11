@@ -585,6 +585,7 @@ void SSkeletalMeshViewerWindow::RenderAnimationModeCheckbox()
         if (ActiveState->bAnimationMode)
         {
             // Animation Mode로 전환
+			SkeletalComp->SetEnableAnimation(true);
             UE_LOG("Animation Mode enabled");
         }
         else
@@ -1043,10 +1044,11 @@ void SSkeletalMeshViewerWindow::LoadSkeletalMesh(const FString& Path)
         // Update mesh path buffer for display in UI
         strncpy_s(ActiveState->MeshPathBuffer, Path.c_str(), sizeof(ActiveState->MeshPathBuffer) - 1);
 
-        // Sync mesh visibility with checkbox state
+		// Sync mesh visibility with checkbox state and, if in animation mode, enable animation
         if (auto* Skeletal = ActiveState->PreviewActor->GetSkeletalMeshComponent())
         {
             Skeletal->SetVisibility(ActiveState->bShowMesh);
+			Skeletal->SetEnableAnimation(ActiveState->bAnimationMode);
         }
 
         // Mark bone lines as dirty to rebuild on next frame

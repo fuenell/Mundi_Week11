@@ -103,6 +103,7 @@ protected:
 	 */
 	bool InitializeAnimScriptInstance();
 
+	void SetBoneTransformsToAnimationPose(float InTime);
 // Editor Section
 protected:
 

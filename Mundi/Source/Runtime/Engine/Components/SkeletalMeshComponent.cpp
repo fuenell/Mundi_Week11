@@ -126,6 +126,8 @@ void USkeletalMeshComponent::SetSkeletalMesh(const FString& PathFileName)
 					}
 				}
 				// TODO: 다른 모드일 경우 처리 필요
+
+				SetBoneTransformsToAnimationPose(0.0f);
 			}
 			else
 			{
@@ -203,6 +205,10 @@ void USkeletalMeshComponent::SetEnableAnimation(bool bInEnableAnimation)
 		{
 			Stop();
 			ResetBoneTransformsToBindPose();
+		}
+		else
+		{
+			SetBoneTransformsToAnimationPose(0.0f);
 		}
 		bEnableAnimation = bInEnableAnimation;
 	}
@@ -414,4 +420,22 @@ bool USkeletalMeshComponent::InitializeAnimScriptInstance()
 	}
 	AnimScriptInstance->SetSkeleton(SkeletalMesh->GetSkeletonMutable());
 	return true;
+}
+
+void USkeletalMeshComponent::SetBoneTransformsToAnimationPose(float InTime)
+{
+	UAnimSingleNodeInstance* SingleNodeInstance = GetSingleNodeInstance();
+	if (SingleNodeInstance)
+	{
+		SingleNodeInstance->SetCurrentTime(0.0f, true);
+
+		FPoseContext OutPose;
+		const float dummy = 0.0f;
+		SingleNodeInstance->EvaluateAnimationPose(dummy, OutPose);
+		if (OutPose.LocalTransforms.Num() == CurrentLocalSpacePose.Num())
+		{
+			CurrentLocalSpacePose = OutPose.LocalTransforms;
+			ForceRecomputePose();
+		}
+	}
 }

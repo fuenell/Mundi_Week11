@@ -89,6 +89,13 @@ const RenderStat* FGpuStatManager::FindPrimitiveStat(const FString& Key) const
 	return PrimitiveRenderStats.Find(Key);
 }
 
+void FGpuStatManager::GetDisjointStats(uint64& OutFailCount, uint64& OutDisjointCount, uint64& OutJointCount) const
+{
+	OutFailCount = FailCount;
+	OutDisjointCount = DisjointCount;
+	OutJointCount = JointCount;
+}
+
 void FGpuStatManager::ResolvePreviousFrameTimers(D3D11RHI& RHI)
 {
 	// 이전 프레임에 측정된 타이머가 없으면 Disjoint 쿼리만 해제하고 종료
@@ -101,6 +108,7 @@ void FGpuStatManager::ResolvePreviousFrameTimers(D3D11RHI& RHI)
 	// 이전 프레임의 Disjoint 쿼리가 없으면 이전 프레임 타이머들은 전무 무효로 간주 -> 해제 후 종료
 	if (!PreviousDisjointQuery)
 	{
+		++FailCount;
 		ReleaseTimerQueries(PreviousFrameTimers);
 		PreviousFrameTimers.clear();
 		return;
@@ -108,13 +116,25 @@ void FGpuStatManager::ResolvePreviousFrameTimers(D3D11RHI& RHI)
 
 	// 이전 프레임 Disjoint 쿼리 결과가 유효하지 않거나 Disjoint 상태이면 이전 프레임 타이머들은 모두 무효로 간주 -> 해제 후 종료
 	D3D11_QUERY_DATA_TIMESTAMP_DISJOINT DisjointData{};
-	if (!RHI.GetDisjointQueryData(PreviousDisjointQuery, DisjointData, true) || DisjointData.Disjoint)
+	bool bSuccess = RHI.GetDisjointQueryData(PreviousDisjointQuery, DisjointData, true);
+	if (!bSuccess || DisjointData.Disjoint)
 	{
+		if(!bSuccess)
+		{
+			++FailCount;
+		}
+		else
+		{
+			++DisjointCount;
+		}
+
 		ReleaseTimerQueries(PreviousFrameTimers);
 		PreviousFrameTimers.clear();
 		ReleaseDisjointQuery(PreviousDisjointQuery);
 		return;
 	}
+
+	++JointCount;
 
 	// 각 타이머의 시작/끝 타임스탬프를 조회하여 GPU 시간 계산 및 누적
 	for (FGpuTimer& Timer : PreviousFrameTimers)

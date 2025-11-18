@@ -48,6 +48,7 @@ public:
 
 	const RenderStat* FindPrimitiveStat(const FString& Key) const;
 	const TMap<FString, RenderStat>& GetPrimitiveRenderStats() const { return PrimitiveRenderStats; }
+	void GetDisjointStats(uint64& OutFailCount, uint64& OutDisjointCount, uint64& OutJointCount) const;
 
 private:
 	FGpuStatManager() = default;
@@ -69,4 +70,8 @@ private:
 	TArray<FGpuTimer> CurrentFrameTimers;
 	TArray<FGpuTimer> PreviousFrameTimers;
 	TMap<FString, RenderStat> PrimitiveRenderStats;
+
+	uint64 FailCount = 0;
+	uint64 DisjointCount = 0;
+	uint64 JointCount = 0;
 };

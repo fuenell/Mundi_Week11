@@ -41,6 +41,7 @@ ViewerState* SkeletalViewerBootstrap::CreateViewerState(const char* Name, UWorld
     if (State->World)
     {
         ASkeletalMeshActor* Preview = State->World->SpawnActor<ASkeletalMeshActor>();
+		Preview->SetTickInEditor(true);
         State->PreviewActor = Preview;
     }
 

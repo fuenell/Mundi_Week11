@@ -31,4 +31,12 @@ public:
     
     bool bBoneTransformChanged = false;
     bool bBoneRotationEditing = false;
+
+	// 애니메이션 관련
+	bool bAnimationMode = false; // false면 본 편집 모드, true면 애니메이션 재생 모드
+	bool bOnChangedToBoneMode = false; // bAnimationMode가 false로 변경됐는지 (bAnimationMode의 false에 대한 처리 완료 시, 바로 false로 변경)
+
+    // Animation timeline scrubbing state
+    bool bTimelineScrubbing = false;
+    bool bWasPlayingBeforeScrub = false;
 };

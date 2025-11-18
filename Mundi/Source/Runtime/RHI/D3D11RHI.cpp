@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "StatsOverlayD2D.h"
 #include "Color.h"
+#include <thread>
+#include <chrono>
 
 void D3D11RHI::Initialize(HWND hWindow)
 {
@@ -1285,8 +1287,28 @@ bool D3D11RHI::GetDisjointQueryData(ID3D11Query* pDisjointQuery, D3D11_QUERY_DAT
 	}
 
 	const UINT Flags = bWaitForResult ? 0u : D3D11_ASYNC_GETDATA_DONOTFLUSH;
-	const HRESULT Result = DeviceContext->GetData(pDisjointQuery, &OutData, sizeof(OutData), Flags);
-	return Result == S_OK;
+	constexpr uint32 MaxAttempts = 5;
+	constexpr std::chrono::nanoseconds RetryDelay(5);
+
+	for (uint32 Attempt = 0; Attempt < (bWaitForResult ? MaxAttempts : 1u); ++Attempt)
+	{
+		const HRESULT Result = DeviceContext->GetData(pDisjointQuery, &OutData, sizeof(OutData), Flags);
+		if (Result == S_OK)
+		{
+			return true;
+		}
+
+		const bool bShouldRetry = bWaitForResult && Result == S_FALSE && Attempt + 1 < MaxAttempts;
+		if (bShouldRetry)
+		{
+			std::this_thread::sleep_for(RetryDelay);
+			continue;
+		}
+
+		break;
+	}
+
+	return false;
 }
 
 void D3D11RHI::WriteTimestamp(ID3D11Query* pTimestampQuery)

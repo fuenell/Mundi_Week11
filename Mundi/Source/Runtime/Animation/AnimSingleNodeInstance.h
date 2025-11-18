@@ -2,6 +2,7 @@
 #include "AnimInstance.h"
 
 class UAnimationAsset;
+class UAnimSequence;
 struct FPoseContext;
 
 // 단일 애니메이션 에셋을 재생하는 애니메이션 인스턴스
@@ -14,9 +15,16 @@ public:
 
 	void SetPlaying(bool bIsPlaying);
 	void SetLooping(bool bIsLooping);
+	void SetCurrentTime(float InTime, bool bForceDirty = false);
+
+	bool IsPlaying() const { return bIsPlaying; }
+	bool IsLooping() const { return bLooping; }
+	float GetCurrentTime() const { return CurrentTime; }
 
 	virtual void SetAnimationAsset(UAnimationAsset* NewAsset, bool bIsLooping = true, float InPlayRate = 1.f);
 	UAnimationAsset* GetCurrentAnimationAsset() const { return CurrentAsset; }
+
+	UAnimSequence* GetCurrentAnimSequence() const;
 
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
@@ -26,5 +34,7 @@ protected:
 	bool bIsPlaying = false;
 	bool bLooping = true;
 	float PlayRate = 1.f;
-	float CurrentTime = 0.0f; // 추가: 현재 애니메이션 재생 시간
+	float CurrentTime = -1.0f; // 현재 애니메이션 재생 시간
+
+	bool bDirtyTime = false; // 시간 변경 플래그
 };

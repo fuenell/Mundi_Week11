@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Object.h"
 #include "Vector.h"
 #include "ActorComponent.h"
@@ -150,6 +150,8 @@ public:
 
     bool CanEverTick() const { return bCanEverTick; }
 	bool CanTickInEditor() const { return bTickInEditor; }
+
+	void SetTickInEditorEnabled(bool bEnabled) { bTickInEditor = bEnabled; }
     // ───── 충돌 관련 ─────────────────────────  
     void OnBeginOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp);
     void OnEndOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp);

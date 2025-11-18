@@ -22,6 +22,7 @@ public:
     USkeletalMeshComponent();
     ~USkeletalMeshComponent() override = default;
 
+	void BeginPlay() override;
     void TickComponent(float DeltaTime) override;
     void SetSkeletalMesh(const FString& PathFileName) override;
 
@@ -35,7 +36,9 @@ public:
     void SetBoneLocalTransform(int32 BoneIndex, const FTransform& NewLocalTransform);
 
     void SetBoneWorldTransform(int32 BoneIndex, const FTransform& NewWorldTransform);
-    
+
+	void ResetBoneTransformsToBindPose();
+
     /**
      * @brief 특정 뼈의 현재 로컬 트랜스폼을 반환
      */
@@ -65,6 +68,9 @@ protected:
     
 // Animation Section
 public:
+	void SetEnableAnimation(bool bInEnableAnimation);
+	bool IsAnimationEnabled() const { return bEnableAnimation; }
+
 	class UAnimSingleNodeInstance* GetSingleNodeInstance() const;
 
 	void SetAnimationMode(EAnimationMode InAnimationMode, bool bForceInitAnimScriptInstance = true);
@@ -72,6 +78,7 @@ public:
 	// 단일 애니메이션 재생 관련 함수들
 	void SetAnimation(UAnimationAsset* NewAnimToPlay);
 	void Play(bool bLooping);
+	void Stop();
 
 	/**
 	 * @brief 단일 애니메이션 재생 시작
@@ -96,8 +103,18 @@ protected:
 	 */
 	bool InitializeAnimScriptInstance();
 
+	/**
+	 * @brief AnimScriptInstance가 SingleNodeInstance인 경우, 지정된 시간의 애니메이션 포즈로 뼈 트랜스폼 설정
+	 */
+	void SetBoneTransformsToAnimationPose(float InTime);
 // Editor Section
 protected:
+
+	/**
+	 * @brief 각 뼈의 부모 기준 초기 로컬 트랜스폼
+	 */
+	TArray<FTransform> BindLocalSpacePose;
+
     /**
      * @brief 각 뼈의 부모 기준 로컬 트랜스폼
      */

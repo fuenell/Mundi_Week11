@@ -11,6 +11,16 @@ USkeletalMeshComponent::USkeletalMeshComponent()
 }
 
 
+void USkeletalMeshComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (bEnableAnimation && AnimScriptInstance)
+	{
+		PlayDefaultAnimation();
+	}
+}
+
 void USkeletalMeshComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
@@ -20,13 +30,6 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
     // 애니메이션 활성화 시 AnimScriptInstance 업데이트
     if (bEnableAnimation && AnimScriptInstance)
     {
-		// for test
-		if (!bIsInitialized)
-		{
-			PlayDefaultAnimation();
-			bIsInitialized = true;
-		}
-
         FPoseContext OutPose;
         AnimScriptInstance->EvaluateAnimationPose(DeltaTime, OutPose);
 
@@ -72,6 +75,7 @@ void USkeletalMeshComponent::SetSkeletalMesh(const FString& PathFileName)
         const FSkeleton& Skeleton = SkeletalMesh->GetSkeletalMeshData()->Skeleton;
         const int32 NumBones = Skeleton.Bones.Num();
 
+		BindLocalSpacePose.SetNum(NumBones);
         CurrentLocalSpacePose.SetNum(NumBones);
         CurrentComponentSpacePose.SetNum(NumBones);
         TempFinalSkinningMatrices.SetNum(NumBones);
@@ -93,6 +97,7 @@ void USkeletalMeshComponent::SetSkeletalMesh(const FString& PathFileName)
                 LocalBindMatrix = ThisBone.BindPose * ParentInverseBindPose;
             }
             // 계산된 로컬 행렬을 로컬 트랜스폼으로 변환
+			BindLocalSpacePose[i] = FTransform(LocalBindMatrix);
             CurrentLocalSpacePose[i] = FTransform(LocalBindMatrix); 
         }
         
@@ -113,6 +118,8 @@ void USkeletalMeshComponent::SetSkeletalMesh(const FString& PathFileName)
 					}
 				}
 				// TODO: 다른 모드일 경우 처리 필요
+
+				SetBoneTransformsToAnimationPose(0.0f);
 			}
 			else
 			{
@@ -152,6 +159,16 @@ void USkeletalMeshComponent::SetBoneWorldTransform(int32 BoneIndex, const FTrans
     SetBoneLocalTransform(BoneIndex, DesiredLocal);
 }
 
+void USkeletalMeshComponent::ResetBoneTransformsToBindPose()
+{
+	const int32 NumBones = BindLocalSpacePose.Num();
+	for (int32 i = 0; i < NumBones; ++i)
+	{
+		CurrentLocalSpacePose[i] = BindLocalSpacePose[i];
+	}
+	ForceRecomputePose();
+}
+
 
 FTransform USkeletalMeshComponent::GetBoneLocalTransform(int32 BoneIndex) const
 {
@@ -170,6 +187,23 @@ FTransform USkeletalMeshComponent::GetBoneWorldTransform(int32 BoneIndex)
         return GetWorldTransform().GetWorldTransform(CurrentComponentSpacePose[BoneIndex]);
     }
     return GetWorldTransform(); // 실패 시 컴포넌트 위치 반환
+}
+
+void USkeletalMeshComponent::SetEnableAnimation(bool bInEnableAnimation)
+{
+	if (bEnableAnimation != bInEnableAnimation)
+	{
+		if (bInEnableAnimation == false)
+		{
+			Stop();
+			ResetBoneTransformsToBindPose();
+		}
+		else
+		{
+			SetBoneTransformsToAnimationPose(0.0f);
+		}
+		bEnableAnimation = bInEnableAnimation;
+	}
 }
 
 UAnimSingleNodeInstance* USkeletalMeshComponent::GetSingleNodeInstance() const
@@ -239,6 +273,26 @@ void USkeletalMeshComponent::Play(bool bLooping)
 	{
 		SingleNodeInstance->SetPlaying(true);
 		SingleNodeInstance->SetLooping(bLooping);
+	}
+	else if (AnimScriptInstance != nullptr)
+	{
+		UE_LOG("Currently in Animation Blueprint mode. Please change AnimationMode to Use Animation Asset");
+	}
+}
+
+void USkeletalMeshComponent::Stop()
+{
+	if (!bEnableAnimation)
+	{
+		UE_LOG("Stop: Animation is currently disabled");
+		return;
+	}
+
+	UAnimSingleNodeInstance* SingleNodeInstance = GetSingleNodeInstance();
+	if (SingleNodeInstance)
+	{
+		SingleNodeInstance->SetPlaying(false);
+		SingleNodeInstance->SetCurrentTime(0.0f);
 	}
 	else if (AnimScriptInstance != nullptr)
 	{
@@ -358,4 +412,22 @@ bool USkeletalMeshComponent::InitializeAnimScriptInstance()
 	}
 	AnimScriptInstance->SetSkeleton(SkeletalMesh->GetSkeletonMutable());
 	return true;
+}
+
+void USkeletalMeshComponent::SetBoneTransformsToAnimationPose(float InTime)
+{
+	UAnimSingleNodeInstance* SingleNodeInstance = GetSingleNodeInstance();
+	if (SingleNodeInstance)
+	{
+		SingleNodeInstance->SetCurrentTime(0.0f, true);
+
+		FPoseContext OutPose;
+		const float dummy = 0.0f;
+		SingleNodeInstance->EvaluateAnimationPose(dummy, OutPose);
+		if (OutPose.LocalTransforms.Num() == CurrentLocalSpacePose.Num())
+		{
+			CurrentLocalSpacePose = OutPose.LocalTransforms;
+			ForceRecomputePose();
+		}
+	}
 }

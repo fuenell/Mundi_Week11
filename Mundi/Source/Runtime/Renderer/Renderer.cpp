@@ -32,6 +32,7 @@
 #include "SceneRenderer.h"
 #include "SceneView.h"
 #include "PlatformTime.h"
+#include "GPUStats.h"
 
 #include <Windows.h>
 #include "DirectionalLightComponent.h"
@@ -58,10 +59,13 @@ void URenderer::BeginFrame()
 	FDecalStatManager::GetInstance().ResetFrameStats();
 
 	RHIDevice->ClearAllBuffer();
+
+	FGpuStatManager::GetInstance().ResetFrameStats(*RHIDevice);
 }
 
 void URenderer::EndFrame()
 {
+	FGpuStatManager::GetInstance().EndFrame(*RHIDevice);
 	RHIDevice->Present();
 }
 

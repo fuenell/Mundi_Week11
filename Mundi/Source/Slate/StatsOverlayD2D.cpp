@@ -13,6 +13,7 @@
 #include "TileCullingStats.h"
 #include "LightStats.h"
 #include "ShadowStats.h"
+#include "GPUStats.h"
 
 #pragma comment(lib, "d2d1")
 #pragma comment(lib, "dwrite")
@@ -389,6 +390,7 @@ void UStatsOverlayD2D::Draw()
 		DrawTextBlock(D2DContext, TextFormat, L"[Primitive Render Stats]", HeaderRect, BrushBlack, BrushLightGreen);
 		NextY += PrimitivePanelHeight;
 
+		const FGpuStatManager& GpuStats = FGpuStatManager::GetInstance();
 		for (const FString& Key : PrimitiveKeys)
 		{
 			if (Key.empty())
@@ -398,14 +400,15 @@ void UStatsOverlayD2D::Draw()
 
 			const FTimeProfile& Profile = FScopeCycleCounter::GetTimeProfile(Key);
 			const double CpuMilliseconds = Profile.Milliseconds;
-			const double GpuMilliseconds = 0.0; // TODO: GPU 프로파일링 도입 시 실제 값으로 교체
+			const RenderStat* GpuStat = GpuStats.FindPrimitiveStat(Key);
+			const double GpuMilliseconds = GpuStat ? GpuStat->GpuRenderTimeMs : 0.0;
 			const double TotalMilliseconds = CpuMilliseconds + GpuMilliseconds;
 
 			std::wstring KeyWide(Key.begin(), Key.end());
 			wchar_t PrimitiveStatBuffer[256];
 			swprintf_s(
 				PrimitiveStatBuffer,
-				L"%s : %.3fms (CPU %.3fms, GPU %.3fms), Call : %u",
+				L"%s : %.3fms (CPU %.3lfms, GPU %.3lfms), Call : %u",
 				KeyWide.c_str(),
 				TotalMilliseconds,
 				CpuMilliseconds,
@@ -416,6 +419,42 @@ void UStatsOverlayD2D::Draw()
 			DrawTextBlock(D2DContext, TextFormat, PrimitiveStatBuffer, StatRect, BrushBlack, BrushLightGreen);
 			NextY += PrimitivePanelHeight;
 		}
+
+		/*uint64 FailCount = 0;
+		uint64 DisjointCount = 0;
+		uint64 JointCount = 0;
+		GpuStats.GetDisjointStats(FailCount, DisjointCount, JointCount);
+
+		const double TotalSamples = static_cast<double>(FailCount + DisjointCount + JointCount);
+		auto CalcPercent = [TotalSamples](uint64 Count) -> double
+		{
+			if (TotalSamples <= 0.0)
+			{
+				return 0.0;
+			}
+			return (static_cast<double>(Count) / TotalSamples) * 100.0;
+		};
+
+		const float IntegrityPanelHeight = PrimitivePanelHeight;
+		D2D1_RECT_F RenderProfileHeader = D2D1::RectF(Margin, NextY, Margin + PrimitivePanelWidth, NextY + IntegrityPanelHeight);
+		DrawTextBlock(D2DContext, TextFormat, L"[Render Profile Integrity]", RenderProfileHeader, BrushBlack, BrushLightGreen);
+		NextY += IntegrityPanelHeight;
+
+		wchar_t IntegrityBuffer[128];
+		swprintf_s(IntegrityBuffer, L"Fail: %llu (%.1f%%)", FailCount, CalcPercent(FailCount));
+		D2D1_RECT_F FailRect = D2D1::RectF(Margin, NextY, Margin + PrimitivePanelWidth, NextY + IntegrityPanelHeight);
+		DrawTextBlock(D2DContext, TextFormat, IntegrityBuffer, FailRect, BrushBlack, BrushLightGreen);
+		NextY += IntegrityPanelHeight;
+
+		swprintf_s(IntegrityBuffer, L"Disjoint: %llu (%.1f%%)", DisjointCount, CalcPercent(DisjointCount));
+		D2D1_RECT_F DisjointRect = D2D1::RectF(Margin, NextY, Margin + PrimitivePanelWidth, NextY + IntegrityPanelHeight);
+		DrawTextBlock(D2DContext, TextFormat, IntegrityBuffer, DisjointRect, BrushBlack, BrushLightGreen);
+		NextY += IntegrityPanelHeight;
+
+		swprintf_s(IntegrityBuffer, L"Joint: %llu (%.1f%%)", JointCount, CalcPercent(JointCount));
+		D2D1_RECT_F JointRect = D2D1::RectF(Margin, NextY, Margin + PrimitivePanelWidth, NextY + IntegrityPanelHeight);
+		DrawTextBlock(D2DContext, TextFormat, IntegrityBuffer, JointRect, BrushBlack, BrushLightGreen);
+		NextY += IntegrityPanelHeight;*/
 
 		NextY += Space;
 	}

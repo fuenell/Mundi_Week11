@@ -16,6 +16,11 @@ void UAnimSingleNodeInstance::SetAnimationAsset(UAnimationAsset* NewAsset, bool 
 	PlayRate = InPlayRate;
 }
 
+UAnimSequence* UAnimSingleNodeInstance::GetCurrentAnimSequence() const
+{
+	return Cast<UAnimSequence>(CurrentAsset);
+}
+
 void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	if(!bIsPlaying && !bDirtyTime)
@@ -24,7 +29,7 @@ void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
 		return;
 	}
 
-	UAnimSequence* AnimSequence = Cast<UAnimSequence>(CurrentAsset);
+	UAnimSequence* AnimSequence = GetCurrentAnimSequence();
 	if (CurrentAsset && AnimSequence)
 	{
 		// 2. 애니메이션 길이 가져오기

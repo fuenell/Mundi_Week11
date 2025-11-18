@@ -2,6 +2,7 @@
 #include "AnimInstance.h"
 
 class UAnimationAsset;
+class UAnimSequence;
 struct FPoseContext;
 
 // 단일 애니메이션 에셋을 재생하는 애니메이션 인스턴스
@@ -22,6 +23,8 @@ public:
 
 	virtual void SetAnimationAsset(UAnimationAsset* NewAsset, bool bIsLooping = true, float InPlayRate = 1.f);
 	UAnimationAsset* GetCurrentAnimationAsset() const { return CurrentAsset; }
+
+	UAnimSequence* GetCurrentAnimSequence() const;
 
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 

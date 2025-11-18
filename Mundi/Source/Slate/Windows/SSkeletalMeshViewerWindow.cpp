@@ -13,6 +13,7 @@
 #include "Source/Runtime/Engine/GameFramework/CameraActor.h"
 #include "Source/Runtime/Engine/Components/SkeletalMeshComponent.h"
 #include "Source/Runtime/Animation/AnimSingleNodeInstance.h"
+#include "Source/Runtime/Animation/AnimSequence.h"
 
 SSkeletalMeshViewerWindow::SSkeletalMeshViewerWindow()
 {
@@ -107,7 +108,10 @@ void SSkeletalMeshViewerWindow::OnRender()
 
         ImVec2 contentAvail = ImGui::GetContentRegionAvail();
         float totalWidth = contentAvail.x;
-        float totalHeight = contentAvail.y - PlaybackBarHeight; // Reserve space for playback bar
+        
+        // Calculate playback bar height based on animation mode
+        float playbackBarHeight = (ActiveState && ActiveState->bAnimationMode) ? PlaybackBarHeight : 40.0f;
+        float totalHeight = contentAvail.y - playbackBarHeight;
 
         float leftWidth = totalWidth * LeftPanelRatio;
         float rightWidth = totalWidth * RightPanelRatio;
@@ -527,8 +531,14 @@ void SSkeletalMeshViewerWindow::OnRender()
         // Pop the ItemSpacing style
         ImGui::PopStyleVar();
 
-        // Render the playback bar at the bottom
-        RenderPlaybackBar();
+        // Render Animation Mode checkbox (always visible)
+        RenderAnimationModeCheckbox();
+
+        // Render the playback bar only if animation mode is enabled
+        if (ActiveState && ActiveState->bAnimationMode)
+        {
+            RenderPlaybackBar();
+        }
     }
     ImGui::End();
 
@@ -548,6 +558,54 @@ void SSkeletalMeshViewerWindow::OnRender()
     bRequestFocus = false;
 }
 
+void SSkeletalMeshViewerWindow::RenderAnimationModeCheckbox()
+{
+    if (!ActiveState || !ActiveState->PreviewActor)
+        return;
+
+    USkeletalMeshComponent* SkeletalComp = ActiveState->PreviewActor->GetSkeletalMeshComponent();
+    if (!SkeletalComp)
+        return;
+
+    // Animation Mode checkbox container
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.12f, 0.12f, 0.15f, 1.0f));
+    ImGui::BeginChild("AnimationModeCheckbox", ImVec2(0, 40.0f), true, ImGuiWindowFlags_NoScrollbar);
+    ImGui::PopStyleColor();
+
+    // Center the checkbox vertically
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
+    ImGui::Spacing();
+
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.25f, 0.30f, 0.35f, 0.8f));
+    ImGui::PushStyleColor(ImGuiCol_CheckMark, ImVec4(0.40f, 0.70f, 1.00f, 1.0f));
+    
+    if (ImGui::Checkbox("Animation Mode", &ActiveState->bAnimationMode))
+    {
+        // 체크박스 토글 시 처리
+        if (ActiveState->bAnimationMode)
+        {
+            // Animation Mode로 전환
+            UE_LOG("Animation Mode enabled");
+        }
+        else
+        {
+            // Bone Edit Mode로 전환 - 애니메이션 중지
+            UE_LOG("Animation Mode disabled - switching to Bone Edit Mode");
+            ActiveState->bOnChangedToBoneMode = true;
+            SkeletalComp->SetEnableAnimation(false);
+        }
+    }
+    
+    ImGui::PopStyleColor(2);
+    
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip("Enable/Disable animation playback mode");
+    }
+
+    ImGui::EndChild();
+}
+
 void SSkeletalMeshViewerWindow::RenderPlaybackBar()
 {
     if (!ActiveState || !ActiveState->PreviewActor)
@@ -559,15 +617,20 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
 
     // Playback bar background
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.15f, 0.15f, 0.18f, 1.0f));
-    ImGui::BeginChild("PlaybackBar", ImVec2(0, PlaybackBarHeight), true, ImGuiWindowFlags_NoScrollbar);
+    ImGui::BeginChild("PlaybackBar", ImVec2(0, PlaybackBarHeight - 40.0f), true, ImGuiWindowFlags_NoScrollbar);
+    //ImGui::BeginChild("PlaybackBar", ImVec2(0, 0), true, ImGuiWindowFlags_NoScrollbar);
     ImGui::PopStyleColor();
 
     // Get animation instance
     UAnimSingleNodeInstance* AnimInstance = SkeletalComp->GetSingleNodeInstance();
-    bool bHasAnimation = AnimInstance && AnimInstance->GetCurrentAnimationAsset();
+    UAnimSequence* AnimSequence = AnimInstance ? AnimInstance->GetCurrentAnimSequence() : nullptr;
+    UAnimDataModel* AnimDataModel = AnimSequence ? AnimSequence->GetDataModel() : nullptr;
+    bool bHasAnimationSequence = AnimInstance && AnimSequence && AnimDataModel;
 
-    // Center the controls vertically
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (PlaybackBarHeight - 40.0f) * 0.5f);
+    bool bIsPlaying = AnimInstance && AnimInstance->IsPlaying();
+
+    // Center the controls vertically for buttons section
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
     ImGui::Spacing();
 
     // Playback controls
@@ -577,9 +640,8 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.20f, 0.70f, 0.40f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.80f, 0.50f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.15f, 0.60f, 0.30f, 1.0f));
-
-    bool bIsPlaying = AnimInstance && AnimInstance->IsPlaying();
-    if (!bHasAnimation)
+    
+    if (!bHasAnimationSequence)
     {
         ImGui::BeginDisabled();
     }
@@ -589,7 +651,7 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
         OnPlayButtonPressed();
     }
     
-    if (!bHasAnimation)
+    if (!bHasAnimationSequence)
     {
         ImGui::EndDisabled();
     }
@@ -602,7 +664,7 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.80f, 0.70f, 0.30f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.60f, 0.50f, 0.15f, 1.0f));
     
-    if (!bHasAnimation || !bIsPlaying)
+    if (!bHasAnimationSequence || !bIsPlaying)
     {
         ImGui::BeginDisabled();
     }
@@ -612,7 +674,7 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
         OnPauseButtonPressed();
     }
     
-    if (!bHasAnimation || !bIsPlaying)
+    if (!bHasAnimationSequence || !bIsPlaying)
     {
         ImGui::EndDisabled();
     }
@@ -625,7 +687,7 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.80f, 0.30f, 0.30f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.60f, 0.15f, 0.15f, 1.0f));
     
-    if (!bHasAnimation)
+    if (!bHasAnimationSequence)
     {
         ImGui::BeginDisabled();
     }
@@ -635,7 +697,7 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
         OnStopButtonPressed();
     }
     
-    if (!bHasAnimation)
+    if (!bHasAnimationSequence)
     {
         ImGui::EndDisabled();
     }
@@ -646,7 +708,7 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
     ImGui::SameLine();
 
     // Animation status text
-    if (bHasAnimation)
+    if (bHasAnimationSequence)
     {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.7f, 0.9f, 1.0f, 1.0f));
         const char* statusText = bIsPlaying ? "Playing" : "Stopped";
@@ -661,6 +723,72 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
     }
 
     ImGui::EndGroup();
+
+    // Timeline section
+    if (bHasAnimationSequence)
+    {
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        float AnimLength = AnimSequence->GetDataModel()->GetPlayLength();
+        float CurrentTime = AnimInstance->GetCurrentTime();
+
+        // Timeline slider
+        ImGui::BeginGroup();
+        
+        // Time display
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.9f, 1.0f));
+        ImGui::Text("Time: %.2f / %.2f", CurrentTime, AnimLength);
+        ImGui::PopStyleColor();
+
+        // Timeline slider
+        ImGui::PushItemWidth(-1.0f);
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.20f, 0.22f, 0.25f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 0.27f, 0.30f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.30f, 0.32f, 0.35f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.40f, 0.70f, 1.00f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.50f, 0.80f, 1.00f, 1.0f));
+
+        float TimelineValue = CurrentTime;
+        bool bWasDragging = ActiveState->bTimelineScrubbing;
+        
+        if (ImGui::SliderFloat("##Timeline", &TimelineValue, 0.0f, AnimLength, ""))
+        {
+            // User is scrubbing the timeline
+            if (!ActiveState->bTimelineScrubbing)
+            {
+                // Start scrubbing - pause if playing
+                ActiveState->bTimelineScrubbing = true;
+                ActiveState->bWasPlayingBeforeScrub = bIsPlaying;
+                if (bIsPlaying)
+                {
+                    AnimInstance->SetPlaying(false);
+                }
+            }
+
+            // Update animation to the scrubbed time
+            AnimInstance->SetCurrentTime(TimelineValue);
+            SkeletalComp->ForceRecomputePose();
+            ActiveState->bBoneLinesDirty = true;
+        }
+
+        // Check if user released the slider
+        if (bWasDragging && !ImGui::IsItemActive())
+        {
+            ActiveState->bTimelineScrubbing = false;
+            // Resume playing if it was playing before scrubbing
+            if (ActiveState->bWasPlayingBeforeScrub)
+            {
+                AnimInstance->SetPlaying(true);
+            }
+        }
+
+        ImGui::PopStyleColor(5);
+        ImGui::PopItemWidth();
+
+        ImGui::EndGroup();
+    }
 
     ImGui::EndChild();
 }
@@ -705,9 +833,7 @@ void SSkeletalMeshViewerWindow::OnStopButtonPressed()
     if (!SkeletalComp)
         return;
 
-	SkeletalComp->SetEnableAnimation(false);
-	ActiveState->bAnimationMode = false;
-	ActiveState->bOnStopPressed = true;
+	SkeletalComp->Stop();
 }
 
 void SSkeletalMeshViewerWindow::OnUpdate(float DeltaSeconds)
@@ -863,11 +989,10 @@ void SSkeletalMeshViewerWindow::OnRenderViewport()
 			{
 				ActiveState->PreviewActor->RebuildBoneLines(0); // 전체 본 갱신
 			}
-			else if (ActiveState->bOnStopPressed)
+			else if (ActiveState->bOnChangedToBoneMode)
 			{
 				ActiveState->PreviewActor->RebuildBoneLines(0); // 전체 본 갱신
-				ActiveState->bOnStopPressed = false;
-				ActiveState->bAnimationMode = false; // OnStopButtonPressed에서 이미 false로 바꿔주나, 혹시 모르니 다시 한 번 설정
+				ActiveState->bOnChangedToBoneMode = false;
 			}
 			else
 			{

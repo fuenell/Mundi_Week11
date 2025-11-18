@@ -560,51 +560,57 @@ void SSkeletalMeshViewerWindow::OnRender()
 
 void SSkeletalMeshViewerWindow::RenderAnimationModeCheckbox()
 {
-    if (!ActiveState || !ActiveState->PreviewActor)
-        return;
+	if (!ActiveState || !ActiveState->PreviewActor)
+		return;
 
-    USkeletalMeshComponent* SkeletalComp = ActiveState->PreviewActor->GetSkeletalMeshComponent();
-    if (!SkeletalComp)
-        return;
+	USkeletalMeshComponent* SkeletalComp = ActiveState->PreviewActor->GetSkeletalMeshComponent();
+	if (!SkeletalComp)
+		return;
 
-    // Animation Mode checkbox container
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.12f, 0.12f, 0.15f, 1.0f));
-    ImGui::BeginChild("AnimationModeCheckbox", ImVec2(0, 40.0f), true, ImGuiWindowFlags_NoScrollbar);
-    ImGui::PopStyleColor();
+	// Animation Mode checkbox container
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.12f, 0.12f, 0.15f, 1.0f));
+	ImGui::BeginChild("AnimationModeCheckbox", ImVec2(0, 40.0f), true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	ImGui::PopStyleColor();
 
-    // Center the checkbox vertically
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
-    ImGui::Spacing();
+	// Center the checkbox vertically - calculate proper offset
+	float availableHeight = ImGui::GetContentRegionAvail().y;
+	float checkboxHeight = ImGui::GetFrameHeight();
+	float verticalOffset = (availableHeight - checkboxHeight) * 0.5f;
 
-    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.25f, 0.30f, 0.35f, 0.8f));
-    ImGui::PushStyleColor(ImGuiCol_CheckMark, ImVec4(0.40f, 0.70f, 1.00f, 1.0f));
-    
-    if (ImGui::Checkbox("Animation Mode", &ActiveState->bAnimationMode))
-    {
-        // 체크박스 토글 시 처리
-        if (ActiveState->bAnimationMode)
-        {
-            // Animation Mode로 전환
+	if (verticalOffset > 0.0f)
+	{
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + verticalOffset);
+	}
+
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.25f, 0.30f, 0.35f, 0.8f));
+	ImGui::PushStyleColor(ImGuiCol_CheckMark, ImVec4(0.40f, 0.70f, 1.00f, 1.0f));
+
+	if (ImGui::Checkbox("Animation Mode", &ActiveState->bAnimationMode))
+	{
+		// 체크박스 토글 시 처리
+		if (ActiveState->bAnimationMode)
+		{
+			// Animation Mode로 전환
 			SkeletalComp->SetEnableAnimation(true);
-            UE_LOG("Animation Mode enabled");
-        }
-        else
-        {
-            // Bone Edit Mode로 전환 - 애니메이션 중지
-            UE_LOG("Animation Mode disabled - switching to Bone Edit Mode");
-            ActiveState->bOnChangedToBoneMode = true;
-            SkeletalComp->SetEnableAnimation(false);
-        }
-    }
-    
-    ImGui::PopStyleColor(2);
-    
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::SetTooltip("Enable/Disable animation playback mode");
-    }
+			UE_LOG("Animation Mode enabled");
+		}
+		else
+		{
+			// Bone Edit Mode로 전환 - 애니메이션 중지
+			UE_LOG("Animation Mode disabled - switching to Bone Edit Mode");
+			ActiveState->bOnChangedToBoneMode = true;
+			SkeletalComp->SetEnableAnimation(false);
+		}
+	}
 
-    ImGui::EndChild();
+	ImGui::PopStyleColor(2);
+
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Enable/Disable animation playback mode");
+	}
+
+	ImGui::EndChild();
 }
 
 void SSkeletalMeshViewerWindow::RenderPlaybackBar()

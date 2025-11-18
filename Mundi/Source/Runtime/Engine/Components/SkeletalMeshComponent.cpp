@@ -18,7 +18,6 @@ void USkeletalMeshComponent::BeginPlay()
 	if (bEnableAnimation && AnimScriptInstance)
 	{
 		PlayDefaultAnimation();
-		//bIsInitialized = true;
 	}
 }
 
@@ -31,13 +30,6 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
     // 애니메이션 활성화 시 AnimScriptInstance 업데이트
     if (bEnableAnimation && AnimScriptInstance)
     {
-		// for test
-		/*if (!bIsInitialized)
-		{
-			PlayDefaultAnimation();
-			bIsInitialized = true;
-		}*/
-
         FPoseContext OutPose;
         AnimScriptInstance->EvaluateAnimationPose(DeltaTime, OutPose);
 

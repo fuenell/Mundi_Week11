@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "SViewportWindow.h"
 #include "World.h"
 #include "ImGui/imgui.h"
@@ -12,14 +12,52 @@
 #include "CameraComponent.h"
 #include "CameraActor.h"
 #include "StatsOverlayD2D.h"
+#include "ActorComponent.h"
 
 #include "StaticMeshActor.h"
 //#include "SkeletalMeshActor.h"
 #include "ResourceManager.h"
+#include "SkeletalMeshComponent.h"
 #include <filesystem>
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
+
+namespace
+{
+	void ApplySkinningModeToWorld(UWorld* World, ESkinningMode NewMode)
+	{
+		if (!World)
+		{
+			return;
+		}
+
+		URenderSettings& Settings = World->GetRenderSettings();
+		if (Settings.GetSkinningMode() == NewMode)
+		{
+			return;
+		}
+
+		Settings.SetSkinningMode(NewMode);
+
+		const TArray<AActor*>& Actors = World->GetActors();
+		for (AActor* Actor : Actors)
+		{
+			if (!Actor)
+			{
+				continue;
+			}
+
+			for (UActorComponent* Component : Actor->GetOwnedComponents())
+			{
+				if (USkeletalMeshComponent* SkelComp = Cast<USkeletalMeshComponent>(Component))
+				{
+					SkelComp->ForceRecomputePose();
+				}
+			}
+		}
+	}
+}
 
 SViewportWindow::SViewportWindow()
 {
@@ -1352,7 +1390,16 @@ void SViewportWindow::RenderShowFlagDropdownMenu()
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.2f, 0.2f, 0.2f, 0.5f));
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.3f, 0.3f, 0.3f, 0.6f));
 
-		URenderSettings& RenderSettings = ViewportClient->GetWorld()->GetRenderSettings();
+		UWorld* CurrentWorld = ViewportClient->GetWorld();
+		if (!CurrentWorld)
+		{
+			ImGui::PopStyleColor(3);
+			ImGui::PopStyleVar(2);
+			ImGui::EndPopup();
+			return;
+		}
+
+		URenderSettings& RenderSettings = CurrentWorld->GetRenderSettings();
 
 		// --- 디폴트 사용 (Reset) ---
 		ImVec2 ResetCursorPos = ImGui::GetCursorScreenPos();
@@ -1491,6 +1538,17 @@ void SViewportWindow::RenderShowFlagDropdownMenu()
 			{
 				ImGui::SetTooltip("셉도우 맵 통계를 표시합니다. (셉도우 라이트 개수, 아틀라스 크기, 메모리 사용량)");
 			}
+
+			bool bPrimitiveStats = UStatsOverlayD2D::Get().IsPrimitivesVisible();
+			if (ImGui::Checkbox(" PRIMITIVES", &bPrimitiveStats))
+			{
+				UStatsOverlayD2D::Get().TogglePrimitives();
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("프리미티브 렌더링 통계를 표시합니다. (프리미티브 종류별 CPU/GPU 소요 시간)");
+			}
+
 
 			ImGui::EndMenu();
 		}
@@ -1927,6 +1985,46 @@ void SViewportWindow::RenderShowFlagDropdownMenu()
 		if (ImGui::IsItemHovered())
 		{
 			ImGui::SetTooltip("그림자 안티 에일리어싱 기술 설정");
+		}
+
+		ImGui::Separator();
+
+		if (IconSkeletalMesh && IconSkeletalMesh->GetShaderResourceView())
+		{
+			ImGui::Image((void*)IconSkeletalMesh->GetShaderResourceView(), IconSize);
+			ImGui::SameLine(0, 4);
+		}
+
+		if (ImGui::BeginMenu(" 스키닝 모드"))
+		{
+			ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "스키닝 모드");
+			ImGui::Separator();
+
+			const ESkinningMode CurrentMode = RenderSettings.GetSkinningMode();
+			const bool bCpuSelected = (CurrentMode == ESkinningMode::CPU);
+			const bool bGpuSelected = (CurrentMode == ESkinningMode::GPU);
+
+			if (ImGui::MenuItem(" CPU 스키닝", nullptr, bCpuSelected))
+			{
+				if (!bCpuSelected)
+				{
+					ApplySkinningModeToWorld(CurrentWorld, ESkinningMode::CPU);
+				}
+			}
+
+			if (ImGui::MenuItem(" GPU 스키닝", nullptr, bGpuSelected))
+			{
+				if (!bGpuSelected)
+				{
+					ApplySkinningModeToWorld(CurrentWorld, ESkinningMode::GPU);
+				}
+			}
+
+			ImGui::EndMenu();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("스키닝 모드를 전환합니다. (CPU / GPU 중 하나 선택)");
 		}
 
 		ImGui::PopStyleColor(3);

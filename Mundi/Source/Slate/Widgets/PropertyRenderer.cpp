@@ -1327,9 +1327,9 @@ bool UPropertyRenderer::RenderSkeletalMeshProperty(const FProperty& Prop, void* 
 		{
 			// 컴포넌트별 Setter 호출
 			UObject* Object = static_cast<UObject*>(Instance);
-			if (USkeletalMeshComponent* StaticMeshComponent = Cast<USkeletalMeshComponent>(Object))
+			if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(Object))
 			{
-				StaticMeshComponent->SetSkeletalMesh(CachedSkeletalMeshPaths[SelectedIdx]);
+				SkeletalMeshComponent->SetSkeletalMesh(CachedSkeletalMeshPaths[SelectedIdx]);
 			}
 			else
 			{

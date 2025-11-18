@@ -674,11 +674,10 @@ void SSkeletalMeshViewerWindow::OnPlayButtonPressed()
     if (!SkeletalComp)
         return;
 
-    // Set animation mode to single node if not already
-    SkeletalComp->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+	SkeletalComp->SetEnableAnimation(true);
+	SkeletalComp->PlayDefaultAnimation();
 
-    // Play the animation (use default animation already set on the component)
-    SkeletalComp->Play(true); // Loop enabled by default
+	ActiveState->bAnimationMode = true;
 }
 
 void SSkeletalMeshViewerWindow::OnPauseButtonPressed()
@@ -706,13 +705,9 @@ void SSkeletalMeshViewerWindow::OnStopButtonPressed()
     if (!SkeletalComp)
         return;
 
-    UAnimSingleNodeInstance* AnimInstance = SkeletalComp->GetSingleNodeInstance();
-    if (AnimInstance)
-    {
-        AnimInstance->SetPlaying(false);
-		AnimInstance->SetCurrentTime(0.0f);
-        // Optionally reset to the beginning or restore bind pose
-    }
+	SkeletalComp->SetEnableAnimation(false);
+	ActiveState->bAnimationMode = false;
+	ActiveState->bOnStopPressed = true;
 }
 
 void SSkeletalMeshViewerWindow::OnUpdate(float DeltaSeconds)
@@ -863,8 +858,22 @@ void SSkeletalMeshViewerWindow::OnRenderViewport()
             {
                 LineComp->SetLineVisible(true);
             }
-            ActiveState->PreviewActor->RebuildBoneLines(ActiveState->SelectedBoneIndex);
-            ActiveState->bBoneLinesDirty = false;
+
+			if (ActiveState->bAnimationMode)
+			{
+				ActiveState->PreviewActor->RebuildBoneLines(0); // 전체 본 갱신
+			}
+			else if (ActiveState->bOnStopPressed)
+			{
+				ActiveState->PreviewActor->RebuildBoneLines(0); // 전체 본 갱신
+				ActiveState->bOnStopPressed = false;
+				ActiveState->bAnimationMode = false; // OnStopButtonPressed에서 이미 false로 바꿔주나, 혹시 모르니 다시 한 번 설정
+			}
+			else
+			{
+				ActiveState->PreviewActor->RebuildBoneLines(ActiveState->SelectedBoneIndex);
+			}
+			ActiveState->bBoneLinesDirty = false;
         }
 
         // 뷰포트 렌더링 (ImGui보다 먼저)

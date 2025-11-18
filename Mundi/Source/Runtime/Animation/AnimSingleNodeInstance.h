@@ -14,7 +14,7 @@ public:
 
 	void SetPlaying(bool bIsPlaying);
 	void SetLooping(bool bIsLooping);
-	void SetCurrentTime(float InTime) { CurrentTime = InTime; }
+	void SetCurrentTime(float InTime);
 
 	bool IsPlaying() const { return bIsPlaying; }
 	bool IsLooping() const { return bLooping; }
@@ -32,4 +32,6 @@ protected:
 	bool bLooping = true;
 	float PlayRate = 1.f;
 	float CurrentTime = 0.0f; // 추가: 현재 애니메이션 재생 시간
+
+	bool bDirtyTime = false; // 시간 변경 플래그
 };

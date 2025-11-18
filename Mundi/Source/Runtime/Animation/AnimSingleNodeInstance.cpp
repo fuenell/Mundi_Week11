@@ -18,19 +18,26 @@ void UAnimSingleNodeInstance::SetAnimationAsset(UAnimationAsset* NewAsset, bool 
 
 void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
-	if (bIsPlaying && CurrentAsset)
+	if(!bIsPlaying && !bDirtyTime)
 	{
-		if(UAnimSequence* AnimSequence = Cast<UAnimSequence>(CurrentAsset))
+		// 재생도 멈추고 시간 변경도 없으면 아무 작업도 하지 않음
+		return;
+	}
+
+	UAnimSequence* AnimSequence = Cast<UAnimSequence>(CurrentAsset);
+	if (CurrentAsset && AnimSequence)
+	{
+		// 2. 애니메이션 길이 가져오기
+		UAnimDataModel* DataModel = AnimSequence->GetDataModel();
+		if (!DataModel)
+		{
+			return;
+		}
+
+		if (bIsPlaying)
 		{
 			// 1. 현재 시간 업데이트
 			CurrentTime += DeltaSeconds * PlayRate;
-
-			// 2. 애니메이션 길이 가져오기
-			UAnimDataModel* DataModel = AnimSequence->GetDataModel();
-			if (!DataModel)
-			{
-				return;
-			}
 
 			float AnimLength = DataModel->GetPlayLength();
 
@@ -56,20 +63,36 @@ void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
 					bIsPlaying = false; // 애니메이션 종료
 				}
 			}
-
-			// 4. 애니메이션 포즈 추출을 위한 컨텍스트 설정
-			FAnimExtractContext ExtractContext;
-			ExtractContext.CurrentTime = CurrentTime;
-			ExtractContext.bLooping = bLooping;
-			ExtractContext.Skeleton = Skeleton;
-
-			// 5. 애니메이션 포즈 추출
-			FPoseContext OutPoseContext;
-			AnimSequence->GetAnimationPose(OutPoseContext, ExtractContext);
-
-			// 6. 최종 포즈 저장
-			FinalPose = OutPoseContext;
 		}
+		else if (bDirtyTime)
+		{
+			// 재생이 멈춘 상태에서 시간만 변경된 경우, 유효 범위로 클램핑
+			float AnimLength = DataModel->GetPlayLength();
+			if (CurrentTime < 0.0f)
+			{
+				CurrentTime = 0.0f;
+			}
+			else if (CurrentTime > AnimLength)
+			{
+				CurrentTime = AnimLength;
+			}
+
+			bDirtyTime = false;
+		}
+
+
+		// 4. 애니메이션 포즈 추출을 위한 컨텍스트 설정
+		FAnimExtractContext ExtractContext;
+		ExtractContext.CurrentTime = CurrentTime;
+		ExtractContext.bLooping = bLooping;
+		ExtractContext.Skeleton = Skeleton;
+
+		// 5. 애니메이션 포즈 추출
+		FPoseContext OutPoseContext;
+		AnimSequence->GetAnimationPose(OutPoseContext, ExtractContext);
+
+		// 6. 최종 포즈 저장
+		FinalPose = OutPoseContext;
 	}
 }
 
@@ -81,4 +104,13 @@ void UAnimSingleNodeInstance::SetPlaying(bool bInIsPlaying)
 void UAnimSingleNodeInstance::SetLooping(bool bIsLooping)
 {
 	bLooping = bIsLooping;
+}
+
+void UAnimSingleNodeInstance::SetCurrentTime(float InTime)
+{
+	if (CurrentTime != InTime)
+	{
+		CurrentTime = InTime;
+		bDirtyTime = true;
+	}
 }

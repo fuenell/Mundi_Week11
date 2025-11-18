@@ -7,40 +7,53 @@ namespace
 	static const FString GPrimitiveTotalKey("Primitives Total");
 }
 
+FGpuStatManager::FGpuStatManager()
+{
+	FrameBatches.resize(BufferedFrameCount);
+}
+
 FGpuStatManager::~FGpuStatManager()
 {
-	ReleaseTimerQueries(CurrentFrameTimers);
-	ReleaseTimerQueries(PreviousFrameTimers);
-	ReleaseDisjointQuery(CurrentDisjointQuery);
-	ReleaseDisjointQuery(PreviousDisjointQuery);
+	for (FFrameTimingBatch& Batch : FrameBatches)
+	{
+		ReleaseTimerQueries(Batch.Timers);
+		ReleaseDisjointQuery(Batch.DisjointQuery);
+		Batch.Timers.clear();
+		Batch.bDisjointQueryBegun = false;
+		Batch.bPendingResolve = false;
+	}
 }
 
 void FGpuStatManager::ResetFrameStats(D3D11RHI& RHI)
 {
-	PrimitiveRenderStats.Empty(); // 지난 프레임에 표시했던 통계 초기화
-	ResolvePreviousFrameTimers(RHI);
+	ResolveFrameBatch(RHI, CurrentBatchIndex);
+	PrepareFrameBatch(CurrentBatchIndex);
 	BeginNewFrameQuery(RHI);
 }
 
 void FGpuStatManager::EndFrame(D3D11RHI& RHI)
 {
-	if (bDisjointQueryBegun && CurrentDisjointQuery)
+	if (FrameBatches.empty())
 	{
-		RHI.EndDisjointQuery(CurrentDisjointQuery);
-		bDisjointQueryBegun = false;
+		return;
 	}
 
-	PreviousFrameTimers = std::move(CurrentFrameTimers);
-	CurrentFrameTimers.clear();
+	FFrameTimingBatch& Batch = FrameBatches[CurrentBatchIndex];
+	if (Batch.bDisjointQueryBegun && Batch.DisjointQuery)
+	{
+		RHI.EndDisjointQuery(Batch.DisjointQuery);
+		Batch.bDisjointQueryBegun = false;
+	}
 
-	ReleaseDisjointQuery(PreviousDisjointQuery);
-	PreviousDisjointQuery = CurrentDisjointQuery;
-	CurrentDisjointQuery = nullptr;
+	Batch.bPendingResolve = true;
+	ActiveBatch = nullptr;
+
+	CurrentBatchIndex = (CurrentBatchIndex + 1) % BufferedFrameCount;
 }
 
 void FGpuStatManager::StartGpuTimer(D3D11RHI& RHI, FGpuTimer& Timer)
 {
-	if (!bDisjointQueryBegun || !CurrentDisjointQuery)
+	if (!ActiveBatch || !ActiveBatch->bDisjointQueryBegun || !ActiveBatch->DisjointQuery)
 	{
 		return;
 	}
@@ -60,7 +73,7 @@ void FGpuStatManager::StartGpuTimer(D3D11RHI& RHI, FGpuTimer& Timer)
 
 void FGpuStatManager::FinishGpuTimer(D3D11RHI& RHI, FGpuTimer& Timer)
 {
-	if (!Timer.bStartIssued || !bDisjointQueryBegun || !CurrentDisjointQuery)
+	if (!ActiveBatch || !Timer.bStartIssued || !ActiveBatch->bDisjointQueryBegun || !ActiveBatch->DisjointQuery)
 	{
 		return;
 	}
@@ -76,7 +89,7 @@ void FGpuStatManager::FinishGpuTimer(D3D11RHI& RHI, FGpuTimer& Timer)
 	RHI.WriteTimestamp(Timer.TimestampEnd);
 	Timer.bEndIssued = true;
 
-	CurrentFrameTimers.Add(Timer);
+	ActiveBatch->Timers.Add(Timer);
 
 	Timer.TimestampStart = nullptr;
 	Timer.TimestampEnd = nullptr;
@@ -96,48 +109,53 @@ void FGpuStatManager::GetDisjointStats(uint64& OutFailCount, uint64& OutDisjoint
 	OutJointCount = JointCount;
 }
 
-void FGpuStatManager::ResolvePreviousFrameTimers(D3D11RHI& RHI)
+void FGpuStatManager::ResolveFrameBatch(D3D11RHI& RHI, uint32 BatchIndex)
 {
-	// 이전 프레임에 측정된 타이머가 없으면 Disjoint 쿼리만 해제하고 종료
-	if (PreviousFrameTimers.empty())
+	if (FrameBatches.empty())
 	{
-		ReleaseDisjointQuery(PreviousDisjointQuery);
 		return;
 	}
 
-	// 이전 프레임의 Disjoint 쿼리가 없으면 이전 프레임 타이머들은 전무 무효로 간주 -> 해제 후 종료
-	if (!PreviousDisjointQuery)
+	FFrameTimingBatch& Batch = FrameBatches[BatchIndex];
+	if (!Batch.bPendingResolve)
+	{
+		return;
+	}
+
+	PrimitiveRenderStats.Empty();
+
+	if (!Batch.DisjointQuery)
 	{
 		++FailCount;
-		ReleaseTimerQueries(PreviousFrameTimers);
-		PreviousFrameTimers.clear();
+		ReleaseTimerQueries(Batch.Timers);
+		Batch.Timers.clear();
+		Batch.bPendingResolve = false;
 		return;
 	}
 
-	// 이전 프레임 Disjoint 쿼리 결과가 유효하지 않거나 Disjoint 상태이면 이전 프레임 타이머들은 모두 무효로 간주 -> 해제 후 종료
 	D3D11_QUERY_DATA_TIMESTAMP_DISJOINT DisjointData{};
-	bool bSuccess = RHI.GetDisjointQueryData(PreviousDisjointQuery, DisjointData, true);
+	const bool bSuccess = RHI.GetDisjointQueryData(Batch.DisjointQuery, DisjointData, true);
 	if (!bSuccess || DisjointData.Disjoint)
 	{
-		if(!bSuccess)
+		/*if (!bSuccess)
 		{
 			++FailCount;
 		}
 		else
 		{
 			++DisjointCount;
-		}
+		}*/
 
-		ReleaseTimerQueries(PreviousFrameTimers);
-		PreviousFrameTimers.clear();
-		ReleaseDisjointQuery(PreviousDisjointQuery);
+		ReleaseTimerQueries(Batch.Timers);
+		Batch.Timers.clear();
+		ReleaseDisjointQuery(Batch.DisjointQuery);
+		Batch.bPendingResolve = false;
 		return;
 	}
 
-	++JointCount;
+	// ++JointCount;
 
-	// 각 타이머의 시작/끝 타임스탬프를 조회하여 GPU 시간 계산 및 누적
-	for (FGpuTimer& Timer : PreviousFrameTimers)
+	for (FGpuTimer& Timer : Batch.Timers)
 	{
 		if (!Timer.TimestampStart || !Timer.TimestampEnd)
 		{
@@ -148,19 +166,40 @@ void FGpuStatManager::ResolvePreviousFrameTimers(D3D11RHI& RHI)
 		UINT64 EndTimestamp = 0;
 		const bool bStartReady = RHI.GetTimestampData(Timer.TimestampStart, StartTimestamp, true);
 		const bool bEndReady = RHI.GetTimestampData(Timer.TimestampEnd, EndTimestamp, true);
-		if (bStartReady && bEndReady)
+		if (!bStartReady || !bEndReady)
 		{
-			const double Milliseconds = RHI.CalculateElapsedMilliseconds(StartTimestamp, EndTimestamp, DisjointData);
-			if (Milliseconds >= 0.0)
-			{
-				AccumulateGpuStat(Timer.Type, Milliseconds);
-			}
+			continue;
+		}
+
+		const double Milliseconds = RHI.CalculateElapsedMilliseconds(StartTimestamp, EndTimestamp, DisjointData);
+		if (Milliseconds >= 0.0)
+		{
+			AccumulateGpuStat(Timer.Type, Milliseconds);
 		}
 	}
 
-	ReleaseTimerQueries(PreviousFrameTimers);
-	PreviousFrameTimers.clear();
-	ReleaseDisjointQuery(PreviousDisjointQuery);
+	ReleaseTimerQueries(Batch.Timers);
+	Batch.Timers.clear();
+	ReleaseDisjointQuery(Batch.DisjointQuery);
+	Batch.bDisjointQueryBegun = false;
+	Batch.bPendingResolve = false;
+}
+
+void FGpuStatManager::PrepareFrameBatch(uint32 BatchIndex)
+{
+	if (FrameBatches.empty())
+	{
+		FrameBatches.resize(BufferedFrameCount);
+	}
+
+	ActiveBatch = &FrameBatches[BatchIndex];
+	FFrameTimingBatch& Batch = *ActiveBatch;
+
+	ReleaseTimerQueries(Batch.Timers);
+	Batch.Timers.clear();
+	ReleaseDisjointQuery(Batch.DisjointQuery);
+	Batch.bDisjointQueryBegun = false;
+	Batch.bPendingResolve = false;
 }
 
 void FGpuStatManager::ReleaseDisjointQuery(ID3D11Query*& Query)
@@ -207,16 +246,22 @@ void FGpuStatManager::ReleaseTimerQueries(TArray<FGpuTimer>& Timers)
 
 void FGpuStatManager::BeginNewFrameQuery(D3D11RHI& RHI)
 {
-	ReleaseDisjointQuery(CurrentDisjointQuery);
+	if (FrameBatches.empty())
+	{
+		FrameBatches.resize(BufferedFrameCount);
+	}
 
-	if (FAILED(RHI.CreateDisjointQuery(&CurrentDisjointQuery)) || !CurrentDisjointQuery)
+	FFrameTimingBatch& Batch = FrameBatches[CurrentBatchIndex];
+	ActiveBatch = &Batch;
+
+	if (FAILED(RHI.CreateDisjointQuery(&Batch.DisjointQuery)) || !Batch.DisjointQuery)
 	{
 		UE_LOG("FGpuStatManager::BeginNewFrameQuery - Failed to create disjoint query.");
-		CurrentDisjointQuery = nullptr;
-		bDisjointQueryBegun = false;
+		Batch.DisjointQuery = nullptr;
+		Batch.bDisjointQueryBegun = false;
 		return;
 	}
 
-	RHI.BeginDisjointQuery(CurrentDisjointQuery);
-	bDisjointQueryBegun = true;
+	RHI.BeginDisjointQuery(Batch.DisjointQuery);
+	Batch.bDisjointQueryBegun = true;
 }

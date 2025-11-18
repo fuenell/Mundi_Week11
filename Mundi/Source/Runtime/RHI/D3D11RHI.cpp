@@ -1287,7 +1287,7 @@ bool D3D11RHI::GetDisjointQueryData(ID3D11Query* pDisjointQuery, D3D11_QUERY_DAT
 	}
 
 	const UINT Flags = bWaitForResult ? 0u : D3D11_ASYNC_GETDATA_DONOTFLUSH;
-	constexpr uint32 MaxAttempts = 10;
+	constexpr uint32 MaxAttempts = 5;
 	constexpr std::chrono::nanoseconds RetryDelay(5);
 
 	for (uint32 Attempt = 0; Attempt < (bWaitForResult ? MaxAttempts : 1u); ++Attempt)

@@ -37,6 +37,7 @@ public:
     bool IsTileCullingVisible() const { return bShowTileCulling; }
     bool IsLightsVisible() const { return bShowLights; }
     bool IsShadowVisible() const { return bShowShadow; }
+	bool IsPrimitivesVisible() const { return bShowPrimitives; }
 
 private:
     UStatsOverlayD2D() = default;

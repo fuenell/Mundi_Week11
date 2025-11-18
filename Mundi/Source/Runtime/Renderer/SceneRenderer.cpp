@@ -48,6 +48,7 @@
 #include "PostProcessing/VignettePass.h"
 #include "FbxLoader.h"
 #include "SkinnedMeshComponent.h"
+#include "GPUStats.h"
 
 FSceneRenderer::FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer)
 	: World(InWorld)
@@ -1303,6 +1304,8 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 	ID3D11SamplerState* VSMSampler = RHIDevice->GetSamplerState(RHI_Sampler_Index::VSM);
 
 	// 정렬된 리스트 순회
+	FGpuStatManager& GpuStatManager = FGpuStatManager::GetInstance();
+
 	for (const FMeshBatchElement& Batch : InMeshBatches)
 	{
 		// --- 필수 요소 유효성 검사 ---
@@ -1313,11 +1316,13 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 			continue;
 		}
 
-		// CPU 스코프 시간 측정 시작
+		// CPU/GPU 스코프 시간 측정 시작
 		const UClass* PrimitiveClass = FPrimitiveTypeRegistry::GetInstance().ResolveType(Batch.PrimitiveTypeID);
 		const FString PrimitiveClassName = PrimitiveClass ? PrimitiveClass->Name : FString("UnknownPrimitive");
 		FScopeCycleCounter PrimitiveScope(PrimitiveClassName);
 		FScopeCycleCounter TotalPrimitiveScope("Primitives Total");
+		FGpuTimer PrimitiveGpuTimer(PrimitiveClassName);
+		GpuStatManager.StartGpuTimer(*RHIDevice, PrimitiveGpuTimer);
 
 		// 1. 셰이더 상태 변경
 		if (Batch.VertexShader != CurrentVertexShader || Batch.PixelShader != CurrentPixelShader)
@@ -1462,6 +1467,8 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 
 		// 5. 드로우 콜 실행
 		RHIDevice->GetDeviceContext()->DrawIndexed(Batch.IndexCount, Batch.StartIndex, Batch.BaseVertexIndex);
+
+		GpuStatManager.FinishGpuTimer(*RHIDevice, PrimitiveGpuTimer);
 	}
 
 	// 한 배치라도 GPU 모드를 사용했다면, 다음 패스를 위해 VS slot을 정리

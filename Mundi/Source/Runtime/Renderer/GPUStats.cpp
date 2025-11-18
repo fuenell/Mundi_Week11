@@ -137,14 +137,14 @@ void FGpuStatManager::ResolveFrameBatch(D3D11RHI& RHI, uint32 BatchIndex)
 	const bool bSuccess = RHI.GetDisjointQueryData(Batch.DisjointQuery, DisjointData, true);
 	if (!bSuccess || DisjointData.Disjoint)
 	{
-		if (!bSuccess)
+		/*if (!bSuccess)
 		{
 			++FailCount;
 		}
 		else
 		{
 			++DisjointCount;
-		}
+		}*/
 
 		ReleaseTimerQueries(Batch.Timers);
 		Batch.Timers.clear();
@@ -153,7 +153,7 @@ void FGpuStatManager::ResolveFrameBatch(D3D11RHI& RHI, uint32 BatchIndex)
 		return;
 	}
 
-	++JointCount;
+	// ++JointCount;
 
 	for (FGpuTimer& Timer : Batch.Timers)
 	{

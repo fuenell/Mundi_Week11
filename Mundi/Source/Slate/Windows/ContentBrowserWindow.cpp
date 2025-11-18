@@ -440,7 +440,7 @@ void UContentBrowserWindow::HandleDoubleClick(FFileEntry& Entry)
 	{
 		// SkeletalMeshViewer 열기
 		std::string pathStr = Entry.Path.string();
-		USlateManager::GetInstance().OpenSkeletalMeshViewerWithFile(pathStr.c_str());
+		USlateManager::GetInstance().OpenSkeletalMeshViewerWithFile(pathStr.c_str(), pathStr.c_str());
 		UE_LOG("Opening SkeletalMeshViewer for: %s", Entry.FileName.c_str());
 	}
 	else if (ext == ".obj")

@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "USlateManager.h"
 
 #include "CameraActor.h"
@@ -192,7 +192,7 @@ void USlateManager::OpenSkeletalMeshViewer()
     SkeletalViewerWindow->Initialize(x, y, w, h, World, Device);
 }
 
-void USlateManager::OpenSkeletalMeshViewerWithFile(const char* FilePath)
+void USlateManager::OpenSkeletalMeshViewerWithFile(const char* MeshFilePath, const char* AnimFilePath)
 {
     // 뷰어가 이미 열려있으면 그냥 사용, 아니면 새로 열기
     if (!SkeletalViewerWindow)
@@ -201,10 +201,17 @@ void USlateManager::OpenSkeletalMeshViewerWithFile(const char* FilePath)
     }
 
     // Load the skeletal mesh into the viewer
-    if (SkeletalViewerWindow && FilePath && FilePath[0] != '\0')
+    if (SkeletalViewerWindow && MeshFilePath && MeshFilePath[0] != '\0')
     {
-        SkeletalViewerWindow->LoadSkeletalMesh(FilePath);
-        UE_LOG("Opening SkeletalMeshViewer with file: %s", FilePath);
+        SkeletalViewerWindow->LoadSkeletalMesh(MeshFilePath);
+        UE_LOG("Opening SkeletalMeshViewer with file: %s", MeshFilePath);
+    }
+
+    // Load the animation into the viewer
+    if (SkeletalViewerWindow && AnimFilePath && AnimFilePath[0] != '\0')
+    {
+        SkeletalViewerWindow->LoadAnimation(AnimFilePath);
+        UE_LOG("Opening SkeletalMeshViewer with animation: %s", AnimFilePath);
     }
 }
 

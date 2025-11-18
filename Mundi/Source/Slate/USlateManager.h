@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Object.h"
 #include "Windows/SWindow.h" // for FRect and SWindow types used by children
 #include "Windows/SSplitterV.h"
@@ -75,7 +75,7 @@ public:
 
     // Temp: open/close Skeletal Mesh Viewer (detached window)
     void OpenSkeletalMeshViewer();
-    void OpenSkeletalMeshViewerWithFile(const char* FilePath);
+    void OpenSkeletalMeshViewerWithFile(const char* FilePath, const char* AnimFilePath);
     void CloseSkeletalMeshViewer();
     bool IsSkeletalMeshViewerOpen() const { return SkeletalViewerWindow != nullptr; }
 

@@ -1153,16 +1153,7 @@ bool UPropertyRenderer::RenderAnimInstanceProperty(const FProperty& Prop, void* 
 				// 아이템 그리기
 				if (ImGui::Selectable(CachedAnimationItems[i].c_str(), bIsSelected))
 				{
-					UAnimationAsset* NewAnim = nullptr;
-
-					// 빈 경로가 아니라면 로드
-					if (!CachedAnimationPaths[i].empty())
-					{
-						FString NewPath = CachedAnimationPaths[i];
-						NewAnim = UResourceManager::GetInstance().Load<UAnimSequenceBase>(NewPath);
-					}
-
-					CurrentInstance->GetOwningComponent()->PlayAnimation(NewAnim, true);
+					CurrentInstance->GetOwningComponent()->PlayAnimationByFileName(CachedAnimationPaths[i], true);
 					bChanged = true;
 				}
 
@@ -1307,7 +1298,18 @@ bool UPropertyRenderer::RenderSkeletalMeshProperty(const FProperty& Prop, void* 
 			// Open viewer with the currently selected skeletal mesh if available
 			if (!CurrentPath.empty())
 			{
-				USlateManager::GetInstance().OpenSkeletalMeshViewerWithFile(CurrentPath.c_str());
+				UObject* Object = static_cast<UObject*>(Instance);
+				USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(Object);
+				UAnimSingleNodeInstance* SingleNodeInst = SkeletalMeshComponent->GetSingleNodeInstance();
+				if (SingleNodeInst)
+				{
+					UAnimationAsset* AnimAsset = SingleNodeInst->GetCurrentAnimationAsset();
+					USlateManager::GetInstance().OpenSkeletalMeshViewerWithFile(CurrentPath.c_str(), AnimAsset->GetFilePath().c_str());
+				}
+				else
+				{
+					UE_LOG("[Warning] Skeletal Mesh Viewer: Current AnimInstance is not UAnimSingleNodeInstance. Cannot open viewer");
+				}
 			}
 			else
 			{
@@ -1327,9 +1329,9 @@ bool UPropertyRenderer::RenderSkeletalMeshProperty(const FProperty& Prop, void* 
 		{
 			// 컴포넌트별 Setter 호출
 			UObject* Object = static_cast<UObject*>(Instance);
-			if (USkeletalMeshComponent* StaticMeshComponent = Cast<USkeletalMeshComponent>(Object))
+			if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(Object))
 			{
-				StaticMeshComponent->SetSkeletalMesh(CachedSkeletalMeshPaths[SelectedIdx]);
+				SkeletalMeshComponent->SetSkeletalMesh(CachedSkeletalMeshPaths[SelectedIdx]);
 			}
 			else
 			{

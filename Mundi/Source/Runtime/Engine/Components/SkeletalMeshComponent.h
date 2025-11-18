@@ -91,6 +91,13 @@ public:
 	void PlayAnimation(UAnimationAsset* NewAnimToPlay, bool bLooping);
 
 	/**
+	 * @brief 파일명을 기반으로 단일 애니메이션 재생 시작
+	 * @param AnimAssetName 재생할 애니메이션 에셋의 파일명
+	 * @param bLooping 애니메이션 반복 재생 여부
+	 */
+	void PlayAnimationByFileName(const FString& PathFileName, bool bLooping);
+
+	/**
 	 * @brief 현재 AnimScriptInstance가 이미 가지고 있는 단일 애니메이션을 재생
 	 */
 	void PlayDefaultAnimation();

@@ -1054,7 +1054,6 @@ void SSkeletalMeshViewerWindow::LoadSkeletalMesh(const FString& Path)
         if (auto* Skeletal = ActiveState->PreviewActor->GetSkeletalMeshComponent())
         {
             Skeletal->SetVisibility(ActiveState->bShowMesh);
-			Skeletal->SetEnableAnimation(ActiveState->bAnimationMode);
         }
 
         // Mark bone lines as dirty to rebuild on next frame
@@ -1073,6 +1072,32 @@ void SSkeletalMeshViewerWindow::LoadSkeletalMesh(const FString& Path)
     {
         UE_LOG("SSkeletalMeshViewerWindow: Failed to load skeletal mesh from %s", Path.c_str());
     }
+}
+
+void SSkeletalMeshViewerWindow::LoadAnimation(const FString& Path)
+{
+	if (!ActiveState || Path.empty())
+		return;
+
+	if (ActiveState->PreviewActor)
+	{
+		USkeletalMeshComponent* SkeletalComp = ActiveState->PreviewActor->GetSkeletalMeshComponent();
+		if (SkeletalComp)
+		{
+			SkeletalComp->PlayAnimationByFileName(Path, true);
+
+			ActiveState->bAnimationMode = false;
+			SkeletalComp->SetEnableAnimation(ActiveState->bAnimationMode);
+
+			// Update animation path buffer for display in UI
+			strncpy_s(ActiveState->AnimationPathBuffer, Path.c_str(), sizeof(ActiveState->AnimationPathBuffer) - 1);
+			UE_LOG("SSkeletalMeshViewerWindow: Loaded animation from %s", Path.c_str());
+		}
+	}
+	else
+	{
+		UE_LOG("SSkeletalMeshViewerWindow: Failed to load animation from %s", Path.c_str());
+	}
 }
 
 void SSkeletalMeshViewerWindow::UpdateBoneTransformFromSkeleton(ViewerState* State)

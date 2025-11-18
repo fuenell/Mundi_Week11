@@ -22,6 +22,7 @@ public:
     int32 LastSelectedBoneIndex = -1; // 색상 갱신을 위한 이전 선택 인덱스
     // UI path buffer per-tab
     char MeshPathBuffer[260] = {0};
+	char AnimationPathBuffer[260] = { 0 };
     std::set<int32> ExpandedBoneIndices;
 
     // 본 트랜스폼 편집 관련

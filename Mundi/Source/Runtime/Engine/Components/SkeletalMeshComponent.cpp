@@ -7,8 +7,11 @@
 
 USkeletalMeshComponent::USkeletalMeshComponent()
 {
-    // 테스트용 기본 메시 설정
-    SetSkeletalMesh(GDataDir + "/Test.fbx"); 
+    // 테스트용 기본 메시 및 애니메이션 설정
+	const FString DefualtMeshPath = GDataDir + "/Test.fbx";
+
+    SetSkeletalMesh(DefualtMeshPath);
+	PlayAnimationByFileName(DefualtMeshPath, true);
 }
 
 USkeletalMeshComponent::~USkeletalMeshComponent()
@@ -125,32 +128,11 @@ void USkeletalMeshComponent::SetSkeletalMesh(const FString& PathFileName)
 			BindLocalSpacePose[i] = FTransform(LocalBindMatrix);
             CurrentLocalSpacePose[i] = FTransform(LocalBindMatrix); 
         }
+
+		// 바뀐 메시의 본 트랜스폼을 애니메이션 포즈로 초기화하기 위해 호출
+		PlayDefaultAnimation();
         
         ForceRecomputePose();
-
-		if (bEnableAnimation)
-		{
-			bool bInitialized = InitializeAnimScriptInstance();
-			if (bInitialized)
-			{
-				if (AnimationMode == EAnimationMode::AnimationSingleNode)
-				{
-					UAnimSingleNodeInstance* SingleNodeInstance = GetSingleNodeInstance();
-					if (SingleNodeInstance)
-					{
-						UAnimSequence* DefaultAnimAsset = UResourceManager::GetInstance().Load<UAnimSequence>(PathFileName);
-						SingleNodeInstance->SetAnimationAsset(DefaultAnimAsset, true);
-					}
-				}
-				// TODO: 다른 모드일 경우 처리 필요
-
-				SetBoneTransformsToAnimationPose(0.0f);
-			}
-			else
-			{
-				UE_LOG("SetSkeletalMesh: Failed to initialize AnimScriptInstance");
-			}
-		}
     }
     else
     {
@@ -272,6 +254,8 @@ void USkeletalMeshComponent::SetAnimationMode(EAnimationMode InAnimationMode, bo
 
 void USkeletalMeshComponent::SetAnimation(UAnimationAsset* NewAnimToPlay)
 {
+	assert(NewAnimToPlay && "SetAnimation: NewAnimToPlay is null");
+
 	if (!bEnableAnimation)
 	{
 		UE_LOG("SetAnimation: Animation is currently disabled");
@@ -343,6 +327,25 @@ void USkeletalMeshComponent::PlayAnimation(UAnimationAsset* NewAnimToPlay, bool 
 	SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	SetAnimation(NewAnimToPlay);
 	Play(bLooping);
+}
+
+void USkeletalMeshComponent::PlayAnimationByFileName(const FString& PathFileName, bool bLooping)
+{
+	if (!bEnableAnimation)
+	{
+		UE_LOG("PlayAnimationByFileName: Animation is currently disabled");
+		return;
+	}
+
+	UAnimSequence* AnimAsset = UResourceManager::GetInstance().Load<UAnimSequence>(PathFileName);
+	if (AnimAsset)
+	{
+		PlayAnimation(AnimAsset, bLooping);
+	}
+	else
+	{
+		UE_LOG("PlayAnimationByFileName: Failed to load animation asset: %s", PathFileName.c_str());
+	}
 }
 
 void USkeletalMeshComponent::PlayDefaultAnimation()

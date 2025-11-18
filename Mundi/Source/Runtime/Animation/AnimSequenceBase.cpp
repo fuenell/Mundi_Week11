@@ -13,4 +13,6 @@ void UAnimSequenceBase::Load(const FString& InFilePath, class ID3D11Device* InDe
 	{
 		UE_LOG("UAnimSequenceBase::Load: Failed to load animation data model from FBX OR No Animation: %s", InFilePath.c_str());
 	}
+
+	SetFilePath(InFilePath);
 }

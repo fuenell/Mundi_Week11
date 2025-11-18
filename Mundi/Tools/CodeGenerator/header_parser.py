@@ -89,6 +89,10 @@ class Property:
                 return 'ADD_PROPERTY_CURVE'
             return 'ADD_PROPERTY_CURVE'
 
+        # ScriptFileExtension 메타데이터 체크 (가장 먼저 체크하여 우선순위 부여)
+        if 'ScriptFileExtension' in self.metadata:
+            return 'ADD_PROPERTY_SCRIPT'
+
         # SRV (Shader Resource View) 타입 체크
         if 'srv' in type_lower or 'shaderresourceview' in type_lower:
             # MacroParser에서 SRV 매크로 찾기
@@ -399,6 +403,11 @@ class HeaderParser:
         tooltip_match = re.search(r'Tooltip\s*=\s*"([^"]+)"', metadata)
         if tooltip_match:
             prop.tooltip = tooltip_match.group(1)
+
+        # ScriptFileExtension 추출
+        script_file_ext_match = re.search(r'ScriptFileExtension\s*=\s*"([^"]+)"', metadata)
+        if script_file_ext_match:
+            prop.metadata['ScriptFileExtension'] = script_file_ext_match.group(1)
 
         return prop
 

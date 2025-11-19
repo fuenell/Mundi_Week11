@@ -52,4 +52,8 @@ public:
     // Anim notify selection
     int32 SelectedNotifyIndex = -1;
     UAnimNotify* SelectedNotifyObject = nullptr;
+    int32 LastNotifyPropertySyncIndex = -1;
+    float EditNotifyTriggerTime = 0.f;
+    float EditNotifyDuration = 0.f;
+    char EditNotifyName[64] = {0};
 };

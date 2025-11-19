@@ -468,7 +468,8 @@ void SSkeletalMeshViewerWindow::OnRender()
         ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.25f, 0.35f, 0.50f, 0.8f));
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4);
         ImGui::Indent(8.0f);
-        ImGui::Text("Bone Properties");
+        const bool bAnimationModePanel = ActiveState && ActiveState->bAnimationMode;
+        ImGui::Text("%s", bAnimationModePanel ? "Anim Notify Properties" : "Bone Properties");
         ImGui::Unindent(8.0f);
         ImGui::PopStyleColor();
 
@@ -478,118 +479,309 @@ void SSkeletalMeshViewerWindow::OnRender()
         ImGui::PopStyleColor();
         ImGui::Spacing();
 
-        // === 선택된 본의 트랜스폼 편집 UI ===
-        if (ActiveState->SelectedBoneIndex >= 0 && ActiveState->CurrentMesh)
+        if (ActiveState && ActiveState->bAnimationMode)
         {
-            const FSkeleton* Skeleton = ActiveState->CurrentMesh->GetSkeleton();
-            if (Skeleton && ActiveState->SelectedBoneIndex < Skeleton->Bones.size())
+            USkeletalMeshComponent* SkeletalComp = ActiveState->PreviewActor ? ActiveState->PreviewActor->GetSkeletalMeshComponent() : nullptr;
+            UAnimSingleNodeInstance* AnimInstance = SkeletalComp ? SkeletalComp->GetSingleNodeInstance() : nullptr;
+            UAnimSequence* AnimSequence = AnimInstance ? AnimInstance->GetCurrentAnimSequence() : nullptr;
+
+            auto ResetNotifyEditState = [&]()
             {
-                const FBone& SelectedBone = Skeleton->Bones[ActiveState->SelectedBoneIndex];
+                ActiveState->SelectedNotifyIndex = -1;
+                ActiveState->SelectedNotifyObject = nullptr;
+                ActiveState->LastNotifyPropertySyncIndex = -1;
+                ActiveState->EditNotifyTriggerTime = 0.f;
+                ActiveState->EditNotifyDuration = 0.f;
+                ActiveState->EditNotifyName[0] = '\0';
+            };
 
-                // Selected bone header with icon-like prefix
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.90f, 0.40f, 1.0f));
-                ImGui::Text("> Selected Bone");
-                ImGui::PopStyleColor();
+            auto ResolveSelectedNotify = [&](FAnimNotifyEvent*& OutEvent, int32& OutIndex)
+            {
+                OutEvent = nullptr;
+                OutIndex = -1;
 
-                ImGui::Spacing();
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.90f, 0.95f, 1.00f, 1.0f));
-                ImGui::TextWrapped("%s", SelectedBone.Name.c_str());
-                ImGui::PopStyleColor();
-
-                ImGui::Spacing();
-                ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.45f, 0.55f, 0.70f, 0.8f));
-                ImGui::Separator();
-                ImGui::PopStyleColor();
-
-                // 본의 현재 트랜스폼 가져오기 (편집 중이 아닐 때만)
-                if (!ActiveState->bBoneRotationEditing)
+                if (!AnimSequence)
                 {
-                    UpdateBoneTransformFromSkeleton(ActiveState);
+                    return;
                 }
 
-                ImGui::Spacing();
-
-                // Location 편집
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
-                ImGui::Text("Location");
-                ImGui::PopStyleColor();
-
-                ImGui::PushItemWidth(-1);
-                ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.28f, 0.20f, 0.20f, 0.6f));
-                bool bLocationChanged = false;
-                bLocationChanged |= ImGui::DragFloat("##BoneLocX", &ActiveState->EditBoneLocation.X, 0.1f, 0.0f, 0.0f, "X: %.3f");
-                bLocationChanged |= ImGui::DragFloat("##BoneLocY", &ActiveState->EditBoneLocation.Y, 0.1f, 0.0f, 0.0f, "Y: %.3f");
-                bLocationChanged |= ImGui::DragFloat("##BoneLocZ", &ActiveState->EditBoneLocation.Z, 0.1f, 0.0f, 0.0f, "Z: %.3f");
-                ImGui::PopStyleColor();
-                ImGui::PopItemWidth();
-
-                if (bLocationChanged)
+                TArray<FAnimNotifyEvent>& NotifyEvents = AnimSequence->Notifies;
+                if (ActiveState->SelectedNotifyObject)
                 {
-                    ApplyBoneTransform(ActiveState);
-                    ActiveState->bBoneLinesDirty = true;
+                    for (int32 Index = 0; Index < NotifyEvents.Num(); ++Index)
+                    {
+                        if (NotifyEvents[Index].Notify == ActiveState->SelectedNotifyObject)
+                        {
+                            ActiveState->SelectedNotifyIndex = Index;
+                            OutEvent = &NotifyEvents[Index];
+                            OutIndex = Index;
+                            return;
+                        }
+                    }
                 }
 
-                ImGui::Spacing();
-
-                // Rotation 편집
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 1.0f, 0.5f, 1.0f));
-                ImGui::Text("Rotation");
-                ImGui::PopStyleColor();
-
-                ImGui::PushItemWidth(-1);
-                ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.20f, 0.28f, 0.20f, 0.6f));
-                bool bRotationChanged = false;
-
-                if (ImGui::IsAnyItemActive())
+                if (ActiveState->SelectedNotifyIndex >= 0 && ActiveState->SelectedNotifyIndex < NotifyEvents.Num())
                 {
-                    ActiveState->bBoneRotationEditing = true;
+                    OutEvent = &NotifyEvents[ActiveState->SelectedNotifyIndex];
+                    OutIndex = ActiveState->SelectedNotifyIndex;
+                    return;
                 }
 
-                bRotationChanged |= ImGui::DragFloat("##BoneRotX", &ActiveState->EditBoneRotation.X, 0.5f, -180.0f, 180.0f, "X: %.2f°");
-                bRotationChanged |= ImGui::DragFloat("##BoneRotY", &ActiveState->EditBoneRotation.Y, 0.5f, -180.0f, 180.0f, "Y: %.2f°");
-                bRotationChanged |= ImGui::DragFloat("##BoneRotZ", &ActiveState->EditBoneRotation.Z, 0.5f, -180.0f, 180.0f, "Z: %.2f°");
-                ImGui::PopStyleColor();
-                ImGui::PopItemWidth();
+                ActiveState->SelectedNotifyIndex = -1;
+                ActiveState->SelectedNotifyObject = nullptr;
+            };
 
-                if (!ImGui::IsAnyItemActive())
+            if (!AnimSequence)
+            {
+                ResetNotifyEditState();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+                ImGui::TextWrapped("Load an animation and select a notify event to edit its properties.");
+                ImGui::PopStyleColor();
+            }
+            else
+            {
+                FAnimNotifyEvent* SelectedEvent = nullptr;
+                int32 SelectedEventIndex = -1;
+                ResolveSelectedNotify(SelectedEvent, SelectedEventIndex);
+
+                if (!SelectedEvent)
                 {
-                    ActiveState->bBoneRotationEditing = false;
+                    ResetNotifyEditState();
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+                    ImGui::TextWrapped("Select an Anim Notify from the timeline to edit Trigger Time, Duration, and Name.");
+                    ImGui::PopStyleColor();
                 }
-
-                if (bRotationChanged)
+                else
                 {
-                    ApplyBoneTransform(ActiveState);
-                    ActiveState->bBoneLinesDirty = true;
-                }
+                    const float SequenceLength = AnimSequence->GetSequenceLength();
+                    ActiveState->EditNotifyTriggerTime = SelectedEvent->TriggerTime;
+                    ActiveState->EditNotifyDuration = SelectedEvent->Duration;
 
-                ImGui::Spacing();
+                    FString NotifyDisplayName = SelectedEvent->NotifyName.ToString();
+                    if (NotifyDisplayName.empty() && SelectedEvent->Notify && SelectedEvent->Notify->GetClass())
+                    {
+                        const UClass* NotifyClass = SelectedEvent->Notify->GetClass();
+                        if (NotifyClass->DisplayName && NotifyClass->DisplayName[0] != '\0')
+                        {
+                            NotifyDisplayName = NotifyClass->DisplayName;
+                        }
+                        else if (NotifyClass->Name)
+                        {
+                            NotifyDisplayName = NotifyClass->Name;
+                        }
+                    }
+                    if (NotifyDisplayName.empty())
+                    {
+                        NotifyDisplayName = "AnimNotify";
+                    }
 
-                // Scale 편집
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 1.0f, 1.0f));
-                ImGui::Text("Scale");
-                ImGui::PopStyleColor();
+                    if (ActiveState->LastNotifyPropertySyncIndex != SelectedEventIndex)
+                    {
+                        std::memset(ActiveState->EditNotifyName, 0, sizeof(ActiveState->EditNotifyName));
+                        FString EditableName = SelectedEvent->NotifyName.ToString();
+                        if (EditableName.empty())
+                        {
+                            EditableName = NotifyDisplayName;
+                        }
+                        if (!EditableName.empty())
+                        {
+                            strncpy_s(ActiveState->EditNotifyName, sizeof(ActiveState->EditNotifyName), EditableName.c_str(), _TRUNCATE);
+                        }
+                        ActiveState->LastNotifyPropertySyncIndex = SelectedEventIndex;
+                    }
 
-                ImGui::PushItemWidth(-1);
-                ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.20f, 0.20f, 0.28f, 0.6f));
-                bool bScaleChanged = false;
-                bScaleChanged |= ImGui::DragFloat("##BoneScaleX", &ActiveState->EditBoneScale.X, 0.01f, 0.001f, 100.0f, "X: %.3f");
-                bScaleChanged |= ImGui::DragFloat("##BoneScaleY", &ActiveState->EditBoneScale.Y, 0.01f, 0.001f, 100.0f, "Y: %.3f");
-                bScaleChanged |= ImGui::DragFloat("##BoneScaleZ", &ActiveState->EditBoneScale.Z, 0.01f, 0.001f, 100.0f, "Z: %.3f");
-                ImGui::PopStyleColor();
-                ImGui::PopItemWidth();
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.90f, 0.40f, 1.0f));
+                    ImGui::Text("> Selected Notify");
+                    ImGui::PopStyleColor();
 
-                if (bScaleChanged)
-                {
-                    ApplyBoneTransform(ActiveState);
-                    ActiveState->bBoneLinesDirty = true;
+                    ImGui::Spacing();
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.90f, 0.95f, 1.00f, 1.0f));
+                    ImGui::TextWrapped("%s", NotifyDisplayName.c_str());
+                    ImGui::PopStyleColor();
+
+                    ImGui::Spacing();
+                    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.45f, 0.55f, 0.70f, 0.8f));
+                    ImGui::Separator();
+                    ImGui::PopStyleColor();
+
+                    ImGui::Spacing();
+                    ImGui::Text("Notify Name");
+                    ImGui::PushItemWidth(-1);
+                    if (ImGui::InputText("##NotifyNameField", ActiveState->EditNotifyName, sizeof(ActiveState->EditNotifyName)))
+                    {
+                        if (ActiveState->EditNotifyName[0] != '\0')
+                        {
+                            SelectedEvent->NotifyName = FName(ActiveState->EditNotifyName);
+                        }
+                        else
+                        {
+                            SelectedEvent->NotifyName = FName();
+                        }
+                    }
+                    ImGui::PopItemWidth();
+
+                    ImGui::Spacing();
+                    ImGui::Text("Trigger Time (s)");
+                    ImGui::PushItemWidth(-1);
+                    float TriggerMax = (SequenceLength > 0.0f) ? SequenceLength : std::max(ActiveState->EditNotifyTriggerTime, 1.0f);
+                    bool bTriggerChanged = ImGui::DragFloat("##NotifyTrigger", &ActiveState->EditNotifyTriggerTime, 0.01f, 0.0f, TriggerMax, "%.3f");
+                    if (bTriggerChanged)
+                    {
+                        float DesiredTime = ActiveState->EditNotifyTriggerTime;
+                        if (SequenceLength > 0.0f)
+                        {
+                            DesiredTime = std::clamp(DesiredTime, 0.0f, SequenceLength);
+                        }
+                        else
+                        {
+                            DesiredTime = std::max(0.0f, DesiredTime);
+                        }
+
+                        AnimSequence->MoveNotify(SelectedEventIndex, DesiredTime);
+                        ResolveSelectedNotify(SelectedEvent, SelectedEventIndex);
+                        if (SelectedEvent)
+                        {
+                            ActiveState->EditNotifyTriggerTime = SelectedEvent->TriggerTime;
+                            ActiveState->EditNotifyDuration = SelectedEvent->Duration;
+                            ActiveState->LastNotifyPropertySyncIndex = SelectedEventIndex;
+                        }
+                        else
+                        {
+                            ResetNotifyEditState();
+                        }
+                    }
+                    ImGui::PopItemWidth();
+
+                    ImGui::Spacing();
+                    ImGui::Text("Duration (s)");
+                    ImGui::PushItemWidth(-1);
+                    float DurationMax = (SequenceLength > 0.0f) ? SequenceLength : std::max(ActiveState->EditNotifyDuration, 1.0f);
+                    bool bDurationChanged = ImGui::DragFloat("##NotifyDuration", &ActiveState->EditNotifyDuration, 0.01f, 0.0f, DurationMax, "%.3f");
+                    if (bDurationChanged)
+                    {
+                        SelectedEvent->Duration = std::max(0.0f, ActiveState->EditNotifyDuration);
+                        SelectedEvent->ClampDurationToSequence(SequenceLength);
+                        ActiveState->EditNotifyDuration = SelectedEvent->Duration;
+                    }
+                    ImGui::PopItemWidth();
                 }
             }
         }
-        else
+        else if (ActiveState)
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
-            ImGui::TextWrapped("Select a bone from the hierarchy to edit its transform properties.");
-            ImGui::PopStyleColor();
+            // === 선택된 본의 트랜스폼 편집 UI ===
+            if (ActiveState->SelectedBoneIndex >= 0 && ActiveState->CurrentMesh)
+            {
+                const FSkeleton* Skeleton = ActiveState->CurrentMesh->GetSkeleton();
+                if (Skeleton && ActiveState->SelectedBoneIndex < Skeleton->Bones.size())
+                {
+                    const FBone& SelectedBone = Skeleton->Bones[ActiveState->SelectedBoneIndex];
+
+                    // Selected bone header with icon-like prefix
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.90f, 0.40f, 1.0f));
+                    ImGui::Text("> Selected Bone");
+                    ImGui::PopStyleColor();
+
+                    ImGui::Spacing();
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.90f, 0.95f, 1.00f, 1.0f));
+                    ImGui::TextWrapped("%s", SelectedBone.Name.c_str());
+                    ImGui::PopStyleColor();
+
+                    ImGui::Spacing();
+                    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.45f, 0.55f, 0.70f, 0.8f));
+                    ImGui::Separator();
+                    ImGui::PopStyleColor();
+
+                    // 본의 현재 트랜스폼 가져오기 (편집 중이 아닐 때만)
+                    if (!ActiveState->bBoneRotationEditing)
+                    {
+                        UpdateBoneTransformFromSkeleton(ActiveState);
+                    }
+
+                    ImGui::Spacing();
+
+                    // Location 편집
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
+                    ImGui::Text("Location");
+                    ImGui::PopStyleColor();
+
+                    ImGui::PushItemWidth(-1);
+                    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.28f, 0.20f, 0.20f, 0.6f));
+                    bool bLocationChanged = false;
+                    bLocationChanged |= ImGui::DragFloat("##BoneLocX", &ActiveState->EditBoneLocation.X, 0.1f, 0.0f, 0.0f, "X: %.3f");
+                    bLocationChanged |= ImGui::DragFloat("##BoneLocY", &ActiveState->EditBoneLocation.Y, 0.1f, 0.0f, 0.0f, "Y: %.3f");
+                    bLocationChanged |= ImGui::DragFloat("##BoneLocZ", &ActiveState->EditBoneLocation.Z, 0.1f, 0.0f, 0.0f, "Z: %.3f");
+                    ImGui::PopStyleColor();
+                    ImGui::PopItemWidth();
+
+                    if (bLocationChanged)
+                    {
+                        ApplyBoneTransform(ActiveState);
+                        ActiveState->bBoneLinesDirty = true;
+                    }
+
+                    ImGui::Spacing();
+
+                    // Rotation 편집
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 1.0f, 0.5f, 1.0f));
+                    ImGui::Text("Rotation");
+                    ImGui::PopStyleColor();
+
+                    ImGui::PushItemWidth(-1);
+                    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.20f, 0.28f, 0.20f, 0.6f));
+                    bool bRotationChanged = false;
+
+                    if (ImGui::IsAnyItemActive())
+                    {
+                        ActiveState->bBoneRotationEditing = true;
+                    }
+
+                    bRotationChanged |= ImGui::DragFloat("##BoneRotX", &ActiveState->EditBoneRotation.X, 0.5f, -180.0f, 180.0f, "X: %.2f°");
+                    bRotationChanged |= ImGui::DragFloat("##BoneRotY", &ActiveState->EditBoneRotation.Y, 0.5f, -180.0f, 180.0f, "Y: %.2f°");
+                    bRotationChanged |= ImGui::DragFloat("##BoneRotZ", &ActiveState->EditBoneRotation.Z, 0.5f, -180.0f, 180.0f, "Z: %.2f°");
+                    ImGui::PopStyleColor();
+                    ImGui::PopItemWidth();
+
+                    if (!ImGui::IsAnyItemActive())
+                    {
+                        ActiveState->bBoneRotationEditing = false;
+                    }
+
+                    if (bRotationChanged)
+                    {
+                        ApplyBoneTransform(ActiveState);
+                        ActiveState->bBoneLinesDirty = true;
+                    }
+
+                    ImGui::Spacing();
+
+                    // Scale 편집
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 1.0f, 1.0f));
+                    ImGui::Text("Scale");
+                    ImGui::PopStyleColor();
+
+                    ImGui::PushItemWidth(-1);
+                    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.20f, 0.20f, 0.28f, 0.6f));
+                    bool bScaleChanged = false;
+                    bScaleChanged |= ImGui::DragFloat("##BoneScaleX", &ActiveState->EditBoneScale.X, 0.01f, 0.001f, 100.0f, "X: %.3f");
+                    bScaleChanged |= ImGui::DragFloat("##BoneScaleY", &ActiveState->EditBoneScale.Y, 0.01f, 0.001f, 100.0f, "Y: %.3f");
+                    bScaleChanged |= ImGui::DragFloat("##BoneScaleZ", &ActiveState->EditBoneScale.Z, 0.01f, 0.001f, 100.0f, "Z: %.3f");
+                    ImGui::PopStyleColor();
+                    ImGui::PopItemWidth();
+
+                    if (bScaleChanged)
+                    {
+                        ApplyBoneTransform(ActiveState);
+                        ActiveState->bBoneLinesDirty = true;
+                    }
+                }
+            }
+            else
+            {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+                ImGui::TextWrapped("Select a bone from the hierarchy to edit its transform properties.");
+                ImGui::PopStyleColor();
+            }
         }
 
         ImGui::EndChild(); // RightPanel

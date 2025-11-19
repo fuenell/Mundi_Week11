@@ -8,8 +8,8 @@ local STATE_JUMP = 3
 local CurrentState = STATE_IDLE
 
 -- 속도 기준값 (엔진 단위에 맞춰 조절하세요)
-local SPEED_STOP_THRESHOLD = 0.01   -- 이보다 느리면 멈춤
-local SPEED_RUN_THRESHOLD  = 0.1 -- 이보다 빠르면 달리기
+local SPEED_STOP_THRESHOLD = 0.5   -- 이보다 느리면 멈춤
+local SPEED_RUN_THRESHOLD  = 4 -- 이보다 빠르면 달리기
 
 local IsInAir = false
 

@@ -1298,10 +1298,6 @@ bool UPropertyRenderer::RenderSkeletalMeshProperty(const FProperty& Prop, void* 
 	// for test
 	UObject* Object = static_cast<UObject*>(Instance);
 	USkeletalMeshComponent* SkeletalMeshComponent = nullptr;
-	if (SkeletalMeshComponent = Cast<USkeletalMeshComponent>(Object))
-	{
-		UE_LOG("SkeletalMeshComponent SkeletalMesh: %s", SkeletalMeshComponent->GetSkeletalMesh() ? SkeletalMeshComponent->GetSkeletalMesh()->GetFilePath().c_str() : "None");
-	}
 
 	FString CurrentPath;
 	if (*MeshPtr)

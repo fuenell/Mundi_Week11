@@ -9,7 +9,7 @@ class UAnimSequenceBase : public UAnimationAsset
 public:
 	DECLARE_CLASS(UAnimSequenceBase, UAnimationAsset)
 
-	UAnimSequenceBase() = default;
+	UAnimSequenceBase();
 	virtual ~UAnimSequenceBase() override = default;
 
 	// DataModel을 가져오는 함수: ResouceManager에서 호출됨
@@ -84,5 +84,6 @@ public:
 
 private:
 	UAnimDataModel* DataModel = nullptr;
+	void EnsureDefaultNotifyTrack();
 
 };

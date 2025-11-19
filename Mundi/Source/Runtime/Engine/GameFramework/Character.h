@@ -74,6 +74,7 @@ public:
 
 	// ───── 복사 관련 ────────────────────────────
 	void DuplicateSubObjects() override;
+	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
 protected:
 	// 내부 업데이트 함수들
@@ -89,11 +90,11 @@ protected:
 	
 	// 캡슐 충돌체 (인간형 캐릭터의 충돌 처리)
 	//UPROPERTY(EditAnywhere, Category="Character|Collision")
-	UCapsuleComponent* CollisionComponent;
+	UCapsuleComponent* CollisionComponent = nullptr;
 
 	// 스켈레탈 메시 컴포넌트
 	//UPROPERTY(EditAnywhere, Category="Character|Mesh")
-	USkeletalMeshComponent* MeshComponent;
+	USkeletalMeshComponent* MeshComponent = nullptr;
 
 	// ───── Movement Properties ─────────────────────────
 	

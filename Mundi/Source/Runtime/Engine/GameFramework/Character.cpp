@@ -104,9 +104,9 @@ void ACharacter::Tick(float DeltaSeconds)
 
 FAABB ACharacter::GetBounds() const
 {
-	if (MeshComponent)
+	if (auto* Current = Cast<USkeletalMeshComponent>(MeshComponent))
 	{
-		return MeshComponent->GetWorldAABB();
+		return Current->GetWorldAABB();
 	}
 
 	return FAABB();
@@ -280,7 +280,45 @@ void ACharacter::DuplicateSubObjects()
 {
 	Super::DuplicateSubObjects();
 
-	// CollisionComponent와 MeshComponent는 OwnedComponents에서 처리됨
-	// 추가 복사 로직이 필요하면 여기에 구현
+	// Find collision component (capsule)
+	for (UActorComponent* Component : OwnedComponents)
+	{
+		if (auto* Comp = Cast<UCapsuleComponent>(Component))
+		{
+			CollisionComponent = Comp;
+			break;
+		}
+	}
+
+	// Find skeletal mesh component
+	for (UActorComponent* Component : OwnedComponents)
+	{
+		if (auto* Comp = Cast<USkeletalMeshComponent>(Component))
+		{
+			MeshComponent = Comp;
+			break;
+		}
+	}
+}
+
+void ACharacter::Serialize(const bool bInIsLoading, JSON& InOutHandle)
+{
+	Super::Serialize(bInIsLoading, InOutHandle);
+
+	if (bInIsLoading)
+	{
+		// Restore collision component from root
+		CollisionComponent = Cast<UCapsuleComponent>(RootComponent);
+		
+		// Find skeletal mesh component among owned components
+		for (UActorComponent* Component : OwnedComponents)
+		{
+			if (auto* Comp = Cast<USkeletalMeshComponent>(Component))
+			{
+				MeshComponent = Comp;
+				break;
+			}
+		}
+	}
 }
 

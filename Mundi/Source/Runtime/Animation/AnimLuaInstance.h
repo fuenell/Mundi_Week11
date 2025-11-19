@@ -21,8 +21,7 @@ public:
 	void SetLooping(bool bIsLooping);
 
 	// Lua에서 호출할 함수들 (바인딩 필요)
-	void PlayAnimationByName(const FString& AnimName, bool bLoop, float Rate);
-	void StopAnimation();
+	void PlayAnimationByName(const FString& AnimationName, bool bLoop, float Rate, bool bForceReset);
 
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
@@ -36,6 +35,8 @@ public:
 
 	void CleanupLuaResources();
 
+	FString GetScriptPath() { return ScriptFilePath; }
+
 protected:
 	UAnimationAsset* CurrentAsset = nullptr; // 재생할 애니메이션. 현재는 UAnimSequence 타입만 할당됨
 
@@ -48,6 +49,7 @@ protected:
 	TMap<FString, bool> BoolParams;
 	TMap<FString, int> IntParams;
 
+	UPROPERTY(EditAnywhere, Category = "Script", ScriptFileExtension = ".lua", Tooltip = "Lua Script 파일 경로입니다")
 	FString ScriptFilePath{};
 
 	sol::state* Lua = nullptr;

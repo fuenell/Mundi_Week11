@@ -35,7 +35,7 @@ private:
 	static bool RenderTextureProperty(const FProperty& Prop, void* Instance);
 	static bool RenderSoundProperty(const FProperty& Prop, void* Instance);
 	static bool RenderSRVProperty(const FProperty& Prop, void* Instance);
-	static bool RenderScriptFileProperty(const FProperty& Prop, void* Instance);
+	static bool RenderScriptFileProperty(const FProperty& Prop, void* Instance, FString TemplateFilePath);
 	static bool RenderCurveProperty(const FProperty& Prop, void* Instance);
 	static bool RenderAnimInstanceProperty(const FProperty& Prop, void* Instance);
 	static bool RenderPointLightCubeShadowMap(class FLightManager* LightManager, class ULightComponent* LightComp, int32 CubeSliceIndex);

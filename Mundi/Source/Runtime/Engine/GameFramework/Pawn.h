@@ -54,7 +54,6 @@ public:
 
 protected:
 	// 이동 컴포넌트 (UMovementComponent 또는 파생 클래스)
-	UPROPERTY(EditAnywhere, Category="Pawn")
 	UMovementComponent* MovementComponent;
 
 	// 입력 누적 벡터 (매 프레임 소비됨)

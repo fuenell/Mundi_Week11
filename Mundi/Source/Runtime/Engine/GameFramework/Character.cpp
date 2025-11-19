@@ -9,10 +9,10 @@
 ACharacter::ACharacter()
 	: MeshComponent(nullptr)
 	, CollisionComponent(nullptr)
-	, WalkSpeed(300.0f)
-	, RunSpeed(600.0f)
+	, WalkSpeed(2.0f)
+	, RunSpeed(2.0f)
 	, GravityScale(9.8f)
-	, JumpVelocity(500.0f)
+	, JumpVelocity(2.0f)
 	, MaxJumpCount(1)
 	, bOrientRotationToMovement(true)
 	, RotationRate(540.0f)
@@ -27,8 +27,6 @@ ACharacter::ACharacter()
 	// 캡슐 충돌체 생성 (인간형 캐릭터의 특징)
 	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>("CapsuleComponent");
 	SetRootComponent(CollisionComponent);
-	CollisionComponent->SetCapsuleHalfHeight(10.0f); // 기본 높이 설정
-	CollisionComponent->SetCapsuleRadius(10.0f);     // 기본 반지름 설정
 
 	// 스켈레탈 메시 컴포넌트 생성
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("SkeletalMeshComponent");
@@ -37,10 +35,6 @@ ACharacter::ACharacter()
 	if (MeshComponent && CollisionComponent)
 	{
 		MeshComponent->SetupAttachment(CollisionComponent, EAttachmentRule::KeepRelative);
-		
-		// 메시 위치 조정 (캡슐 중심에서 약간 아래로)
-		MeshComponent->SetRelativeLocation(FVector(0, 0, -90.0f));
-		MeshComponent->SetRelativeRotation(FQuat::MakeFromEulerZYX(FVector(0, -90, 0)));
 	}
 
 	// 부모의 멤버인 이동 컴포넌트 생성

@@ -170,7 +170,7 @@ void ACharacter::UpdateCamera(float DeltaSeconds)
 
 	// 카메라 회전 계산 (캐릭터 회전과 독립적)
 	FQuat YawRotation = FQuat::FromAxisAngle(FVector(0, 0, 1), DegreesToRadians(CameraYaw));
-	FQuat PitchRotation = FQuat::FromAxisAngle(FVector(0, 1, 0), DegreesToRadians(CameraPitch));
+	FQuat PitchRotation = FQuat::FromAxisAngle(FVector(0, 1, 0), DegreesToRadians(-CameraPitch));
 	FQuat CameraRotation = YawRotation * PitchRotation;
 
 	// 카메라 위치 계산 (캐릭터 뒤쪽으로 배치)

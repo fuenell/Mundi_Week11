@@ -10,7 +10,7 @@ class UAnimNotify_PlaySound : public UAnimNotify
 public:
 	GENERATED_REFLECTION_BODY()
 
-	UAnimNotify_PlaySound() = default;
+	UAnimNotify_PlaySound();
 	virtual ~UAnimNotify_PlaySound() override = default;
 
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;

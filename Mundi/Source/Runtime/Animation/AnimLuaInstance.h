@@ -25,6 +25,8 @@ public:
 
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
+	virtual UAnimSequence* GetAnimSequence() const override;
+
 	void SetFloat(const FString& Name, float Value) override { FloatParams[Name] = Value; }
 	void SetBool(const FString& Name, bool Value) override { BoolParams[Name] = Value; }
 	void SetInt(const FString& Name, int Value) override { IntParams[Name] = Value; }
@@ -40,7 +42,11 @@ public:
 	void BlendToAnimation(const FString& PathFileName, float BlendTime, bool bLoop = true, float Rate = 1.0f);
 
 protected:
-	UAnimSequence* CurrentAnimationAsset = nullptr; // 재생할 애니메이션. 현재는 UAnimSequence 타입만 할당됨
+	// UAnimInstance 가상 함수 오버라이드
+	virtual float GetCurrentAnimTime() const override { return CurrentTime; }
+	virtual bool IsAnimLooping() const override { return bLooping; }
+
+	UAnimationAsset* CurrentAsset = nullptr; // 재생할 애니메이션. 현재는 UAnimSequence 타입만 할당됨
 
 	bool bIsPlaying = false;
 	bool bLooping = true;

@@ -270,6 +270,11 @@ void UAnimLuaInstance::NativeUpdateAnimation(float DeltaSeconds)
 	FinalPose = OutPoseContext;
 }
 
+UAnimSequence* UAnimLuaInstance::GetAnimSequence() const
+{
+	return Cast<UAnimSequence>(CurrentAsset);
+}
+
 void UAnimLuaInstance::SetPlaying(bool bInIsPlaying)
 {
 	bIsPlaying = bInIsPlaying;

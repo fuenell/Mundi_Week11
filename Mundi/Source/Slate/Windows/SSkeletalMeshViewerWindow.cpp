@@ -729,6 +729,30 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
     ImGui::PopStyleColor(3);
 
     ImGui::SameLine();
+
+	// Reverse Play button
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.40f, 0.20f, 0.70f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.50f, 0.30f, 0.80f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.30f, 0.15f, 0.60f, 1.0f));
+
+	if (!bHasAnimationSequence)
+	{
+		ImGui::BeginDisabled();
+	}
+
+	if (ImGui::Button("Reverse", ImVec2(80, 30)))
+	{
+		OnReversePlayButtonPressed();
+	}
+
+	if (!bHasAnimationSequence)
+	{
+		ImGui::EndDisabled();
+	}
+	ImGui::PopStyleColor(3);
+
+	ImGui::SameLine();
+
     ImGui::Spacing();
     ImGui::SameLine();
 
@@ -1172,6 +1196,42 @@ void SSkeletalMeshViewerWindow::OnStopButtonPressed()
         return;
 
 	SkeletalComp->Stop();
+}
+
+void SSkeletalMeshViewerWindow::OnReversePlayButtonPressed()
+{
+	if (!ActiveState || !ActiveState->PreviewActor)
+		return;
+
+	USkeletalMeshComponent* SkeletalComp = ActiveState->PreviewActor->GetSkeletalMeshComponent();
+	if (!SkeletalComp)
+		return;
+
+	UAnimSingleNodeInstance* AnimInstance = SkeletalComp->GetSingleNodeInstance();
+	if (!AnimInstance)
+		return;
+
+	// Get current animation sequence
+	UAnimSequence* AnimSequence = AnimInstance->GetCurrentAnimSequence();
+	if (!AnimSequence)
+		return;
+
+	// Set negative play rate for reverse playback
+	AnimInstance->SetPlayRate(-1.0f);
+	AnimInstance->SetPlaying(true);
+
+	// If at the beginning, jump to the end to play in reverse
+	if (AnimInstance->GetCurrentTime() <= 0.0f)
+	{
+		UAnimDataModel* DataModel = AnimSequence->GetDataModel();
+		if (DataModel)
+		{
+			AnimInstance->SetCurrentTime(DataModel->GetPlayLength(), true);
+		}
+	}
+
+	ActiveState->bAnimationMode = true;
+	UE_LOG("Reverse playback started");
 }
 
 void SSkeletalMeshViewerWindow::OnUpdate(float DeltaSeconds)

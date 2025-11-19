@@ -46,10 +46,3 @@ void UAnimNotify_PlaySound::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 			Sound->GetName().c_str());
 	}
 }
-
-
-
-void UAnimNotify_PlaySound::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
-{
-	// Working in progress
-}

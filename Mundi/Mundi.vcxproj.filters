@@ -2703,6 +2703,9 @@
     <ClInclude Include="Source\Runtime\Animation\AnimLuaInstance.h">
       <Filter>Source\Runtime\AssetManagement</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimNotify.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ThirdParty\Include\DirectXTex\DirectXTex.inl">

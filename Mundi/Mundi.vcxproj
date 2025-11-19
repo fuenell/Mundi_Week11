@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -648,6 +648,7 @@
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Animation\AnimLuaInstance.h" />
+    <ClInclude Include="Source\Runtime\Animation\AnimNotify.h" />
     <ClInclude Include="Source\Runtime\Animation\AnimSequence.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

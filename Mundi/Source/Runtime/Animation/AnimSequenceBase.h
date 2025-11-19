@@ -52,12 +52,35 @@ public:
 	 */
 	void GetNotifiesInRange(float PreviousTime, float CurrentTime, bool bLooping, TArray<FAnimNotifyEvent>& OutEvents) const;
 
+	/**
+	 * @brief: 새 노티파이 트랙을 추가.
+	 * 이미 트랙이 최대 개수에 도달한 경우 추가하지 않으며 false 반환. 추가 성공시 true 반환.
+	 * 트랙 이름의 초기값은 "TrackX" (X는 0부터 시작하는 인덱스) 형태.
+	 */
+	bool AddNotifyTrack();
+
+	/**
+	 * @brief: 특정 인덱스의 노티파이 트랙을 삭제.
+	 * 해당 트랙에 속한 모든 노티파이들도 함께 삭제됨.
+	 * 유효하지 않은 인덱스가 주어졌거나 노티파이가 있는 트랙을 삭제하려는 경우 삭제하지 않으며 false 반환. 삭제 성공시 true 반환.
+	 * 맨 끝 인덱스가 아닌 트랙을 삭제할 경우 그 뒤의 트랙들이 앞으로 한 칸씩 당겨지며, 해당 트랙에 속한 노티파이들의 TrackIndex도 함께 갱신됨.
+	 */
+	bool DeleteNotifyTrack(int32 TrackIndex);
+
+	/**
+	 * @brief: 특정 인덱스의 노티파이 트랙 이름을 변경.
+	 * 유효하지 않은 인덱스가 주어졌거나 중복된 이름이 주어진 경우 변경하지 않으며 false 반환. 변경 성공시 true 반환.
+	 */
+	bool RenameNotifyTrack(int32 TrackIndex, const FName& NewName);
+
 protected:
 	float GetSequenceLength() const;
 	void SortNotifies();
 
 public:
 	TArray<struct FAnimNotifyEvent> Notifies;
+	TArray<FName> NotifyTracks;
+	static constexpr int32 MaxNumNotifyTracks = 4;
 
 private:
 	UAnimDataModel* DataModel = nullptr;

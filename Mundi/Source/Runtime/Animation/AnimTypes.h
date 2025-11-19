@@ -10,6 +10,7 @@ struct FAnimNotifyEvent
 	float TriggerTime = 0.f;
 	float Duration = 0.f;      // NotifyState용 (AnimNotifyState는 아직 미구현)
 	FName NotifyName;
+	uint8 TrackIndex = 0; // 노티파이가 속한 트랙 인덱스
 	UAnimNotify* Notify = nullptr; // 실제 Notify 오브젝트
 
 	bool Serialize(FArchive& Ar)

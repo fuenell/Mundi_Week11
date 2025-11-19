@@ -7,7 +7,7 @@ enum class EAnimationMode : int
 {
 	AnimationSingleNode, // 단일 애니메이션 에셋 재생: 보통 UAnimSingleNodeInstancex타입의 에셋 사용
 	// This is custom type, engine leaves AnimInstance as it is
-	AnimationCustomMode, // 가장 저수준으로 애니메이션을 조작하는 모드 (미구현)
+	AnimationLuaScriptMode, // Lua 스크립트로 애니메이션을 조작하는 모드
 };
 
 class UAnimationAsset;

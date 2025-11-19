@@ -22,6 +22,7 @@
 #include "AnimSingleNodeInstance.h"
 #include "AnimationAsset.h"
 #include "AnimSequenceBase.h"
+#include "AnimLuaInstance.h"
 
 // Disable warnings for third-party library
 #pragma warning(push)
@@ -132,7 +133,7 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 		break;
 
 	case EPropertyType::ScriptFile:
-		bChanged = RenderScriptFileProperty(Property, ObjectInstance);
+		bChanged = RenderScriptFileProperty(Property, ObjectInstance, GDataDir + "/Templates/template.lua");
 		break;
 
 	case EPropertyType::Curve:
@@ -651,7 +652,7 @@ bool UPropertyRenderer::RenderEnumProperty(const FProperty& Prop, void* Instance
 	{
 		static const char* AnimModes[] = {
 			"Use Animation Asset",  // 0
-			"Use Custom Script"     // 1
+			"Use Lua Script"     // 1
 		};
 		Items = AnimModes;
 		ItemCount = IM_ARRAYSIZE(AnimModes);
@@ -840,7 +841,7 @@ bool UPropertyRenderer::RenderSRVProperty(const FProperty& Prop, void* Instance)
 	return RenderSpotLightShadowMap(LightManager, LightComp, AtlasSRV);
 }
 
-bool UPropertyRenderer::RenderScriptFileProperty(const FProperty& Property, void* ObjectInstance)
+bool UPropertyRenderer::RenderScriptFileProperty(const FProperty& Property, void* ObjectInstance, FString TemplateFilePath)
 {
 	// 콤보박스 전용 텍스트 필터를 static으로 선언합니다.
 	static ImGuiTextFilter ScriptComboFilter;
@@ -979,7 +980,7 @@ bool UPropertyRenderer::RenderScriptFileProperty(const FProperty& Property, void
 			FString RelativePath = BaseDir + NewFileName + Extension;
 
 			// 템플릿 파일 경로 정의
-			const FString TemplatePath = GDataDir + "/Templates/template.lua";
+			const FString TemplatePath = TemplateFilePath;
 
 			// 2. 디렉토리 생성 (없을 경우)
 			fs::create_directories(UTF8ToWide(BaseDir));
@@ -987,7 +988,7 @@ bool UPropertyRenderer::RenderScriptFileProperty(const FProperty& Property, void
 			// 3. 템플릿 파일 존재 여부 확인
 			if (!fs::exists(UTF8ToWide(TemplatePath)))
 			{
-				UE_LOG("[error] 템플릿 파일(template.lua)을 찾을 수 없습니다.");
+				UE_LOG("[error] 템플릿 파일 (%s)을 찾을 수 없습니다.", TemplatePath.c_str());
 			}
 			// 4. 생성할 파일이 이미 존재하는지 중복 체크
 			else if (fs::exists(UTF8ToWide(RelativePath)))
@@ -1171,28 +1172,53 @@ bool UPropertyRenderer::RenderAnimInstanceProperty(const FProperty& Prop, void* 
 	// --------------------------------------------------------
 	// CASE B: Lua 스크립트 모드 (UAnimLuaInstance)
 	// --------------------------------------------------------
-	//else if (UAnimLuaInstance* LuaInst = Cast<UAnimLuaInstance>(CurrentInstance))
-	//{
-	//	// 스크립트 경로 표시 (여기서 수정하기보다는 컴포넌트의 AnimScriptFile을 수정하는 게 원칙)
-	//	FString ScriptPath = LuaInst->GetScriptPath();
-	//	ImGui::Text("Script: %s", ScriptPath.c_str());
+	else if (UAnimLuaInstance* LuaInst = Cast<UAnimLuaInstance>(CurrentInstance))
+	{
+		// Lua 인스턴스를 소유한 UAnimLuaInstance에서
+		UObject* OwningComponent = static_cast<UObject*>(Instance);
+		const TArray<FProperty>& AllProperties = LuaInst->GetClass()->GetProperties();
 
-	//	// 스크립트 리로드 버튼 (디버깅용)
-	//	if (ImGui::Button("Reload Script"))
-	//	{
-	//		LuaInst->LoadScript(ScriptPath); // 다시 로드
-	//		// 필요하다면 InitializeAnimation 호출
-	//	}
+		auto It = std::find_if(AllProperties.begin(), AllProperties.end(),
+			[](const FProperty& Prop)
+			{
+				return strcmp(Prop.Name, "ScriptFilePath") == 0;
+			}
+		);
 
-	//	// (확장) Lua 내부 변수(State 등)를 보고 싶다면 여기서 추가 렌더링
-	//	// 예: 현재 스테이트 머신의 상태 표시
-	//	/*
-	//	if (LuaInst->StateMachine)
-	//	{
-	//		ImGui::Text("Current State: %s", LuaInst->StateMachine->GetCurrentStateName().c_str());
-	//	}
-	//	*/
-	//}
+		const FProperty* ScriptFileProp = nullptr;
+		if (It != AllProperties.end())
+		{
+			ScriptFileProp = &(*It);
+		}
+
+		if (ScriptFileProp && ScriptFileProp->Type == EPropertyType::ScriptFile)
+		{
+			// 컴포넌트의 스크립트 프로퍼티를 렌더링합니다.
+			if (RenderScriptFileProperty(*ScriptFileProp, LuaInst, GDataDir + "/Templates/AnimLuaTemplate.lua"))
+			{
+				// 스크립트 경로가 변경되었으므로, 인스턴스에 즉시 리로드합니다.
+				FString NewScriptPath = *ScriptFileProp->GetValuePtr<FString>(LuaInst);
+				LuaInst->LoadScript(NewScriptPath);
+				bChanged = true;
+			}
+		}
+		else
+		{
+			// 프로퍼티를 찾지 못했을 경우, 현재 스크립트 경로를 읽기 전용으로 표시합니다.
+			FString ScriptPath = LuaInst->GetScriptPath();
+			ImGui::Text("Script: %s", ScriptPath.c_str());
+		}
+
+		// 스크립트 리로드 버튼 (스크립트 수정 감지가 없어서)
+		if (ImGui::Button("Reload Script"))
+		{
+			FString ScriptPath = LuaInst->GetScriptPath();
+			if (!ScriptPath.empty())
+			{
+				LuaInst->LoadScript(ScriptPath);
+			}
+		}
+	}
 	// --------------------------------------------------------
 	// CASE C: 기타 (알 수 없는 커스텀 인스턴스)
 	// --------------------------------------------------------

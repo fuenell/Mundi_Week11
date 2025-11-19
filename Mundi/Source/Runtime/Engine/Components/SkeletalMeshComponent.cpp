@@ -427,7 +427,7 @@ bool USkeletalMeshComponent::InitializeAnimScriptInstance()
 		case EAnimationMode::AnimationSingleNode:
 			AnimScriptInstance = NewObject<UAnimSingleNodeInstance>();
 			break;
-		case EAnimationMode::AnimationCustomMode:
+		case EAnimationMode::AnimationLuaScriptMode:
 			AnimScriptInstance = NewObject<UAnimLuaInstance>();
 			break;
 		default:

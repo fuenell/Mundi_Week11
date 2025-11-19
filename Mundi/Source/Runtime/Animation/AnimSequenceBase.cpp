@@ -6,6 +6,11 @@
 
 IMPLEMENT_CLASS(UAnimSequenceBase)
 
+UAnimSequenceBase::UAnimSequenceBase()
+{
+	EnsureDefaultNotifyTrack();
+}
+
 void UAnimSequenceBase::Load(const FString& InFilePath, class ID3D11Device* InDevice)
 {
 	//DataModel = UFbxLoader::GetInstance().LoadAnimationFromFbx(InFilePath, 0);
@@ -16,6 +21,7 @@ void UAnimSequenceBase::Load(const FString& InFilePath, class ID3D11Device* InDe
 	}
 
 	SetFilePath(InFilePath);
+	EnsureDefaultNotifyTrack();
 }
 
 int32 UAnimSequenceBase::AddNotify(const FAnimNotifyEvent& InEvent)
@@ -46,6 +52,8 @@ void UAnimSequenceBase::ClearNotifies()
 
 bool UAnimSequenceBase::AddNotifyTrack()
 {
+	EnsureDefaultNotifyTrack();
+
 	if (NotifyTracks.Num() >= MaxNumNotifyTracks)
 	{
 		return false;
@@ -81,6 +89,8 @@ bool UAnimSequenceBase::AddNotifyTrack()
 
 bool UAnimSequenceBase::DeleteNotifyTrack(int32 TrackIndex)
 {
+	EnsureDefaultNotifyTrack();
+
 	if (!NotifyTracks.IsValidIndex(TrackIndex))
 	{
 		return false;
@@ -92,6 +102,11 @@ bool UAnimSequenceBase::DeleteNotifyTrack(int32 TrackIndex)
 		{
 			return false; // 노티파이가 존재하는 트랙은 삭제 불가
 		}
+	}
+
+	if (TrackIndex == 0 && NotifyTracks.Num() == 1)
+	{
+		return false;
 	}
 
 	NotifyTracks.RemoveAt(TrackIndex);
@@ -110,6 +125,8 @@ bool UAnimSequenceBase::DeleteNotifyTrack(int32 TrackIndex)
 
 bool UAnimSequenceBase::RenameNotifyTrack(int32 TrackIndex, const FName& NewName)
 {
+	EnsureDefaultNotifyTrack();
+
 	if (!NotifyTracks.IsValidIndex(TrackIndex))
 	{
 		return false;
@@ -223,4 +240,12 @@ void UAnimSequenceBase::SortNotifies()
 	{
 		return A.TriggerTime < B.TriggerTime;
 	});
+}
+
+void UAnimSequenceBase::EnsureDefaultNotifyTrack()
+{
+	if (NotifyTracks.IsEmpty())
+	{
+		NotifyTracks.Add(FName("Track0"));
+	}
 }

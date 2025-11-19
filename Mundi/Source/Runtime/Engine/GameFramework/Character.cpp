@@ -6,6 +6,7 @@
 #include "MovementComponent.h"
 #include "InputManager.h"
 #include "World.h"
+#include "AnimInstance.h"
 
 ACharacter::ACharacter()
 	: MeshComponent(nullptr)
@@ -298,6 +299,20 @@ void ACharacter::UpdateMovement(float DeltaSeconds)
 	{
 		FVector DeltaLocation = Velocity * DeltaSeconds;
 		AddActorWorldLocation(DeltaLocation);
+	}
+
+	// --- 애니메이션 인스턴스에 Speed 전달 ---
+	if (MeshComponent)
+	{
+		if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(MeshComponent))
+		{
+			if (UAnimInstance* AnimInstance = SkeletalMeshComponent->GetAnimInstance())
+			{
+				// 수평 속도(애니메이션에서 사용하는 값)
+				const float SpeedValue = GetCurrentSpeed();
+				AnimInstance->SetFloat("Speed", SpeedValue);
+			}
+		}
 	}
 }
 

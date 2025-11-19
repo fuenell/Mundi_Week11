@@ -51,6 +51,16 @@ ViewerState* SkeletalViewerBootstrap::CreateViewerState(const char* Name, UWorld
 void SkeletalViewerBootstrap::DestroyViewerState(ViewerState*& State)
 {
     if (!State) return;
+    if (State->ViewerSRV)
+    {
+        State->ViewerSRV->Release();
+        State->ViewerSRV = nullptr;
+    }
+    if (State->ViewerTexture)
+    {
+        State->ViewerTexture->Release();
+        State->ViewerTexture = nullptr;
+    }
     if (State->Viewport) { delete State->Viewport; State->Viewport = nullptr; }
     if (State->Client) { delete State->Client; State->Client = nullptr; }
     if (State->World) { ObjectFactory::DeleteObject(State->World); State->World = nullptr; }

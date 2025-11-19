@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Frustum.h"
 
 // TODO : Post Processing 떼어내기, 전방선언으로라든지...
@@ -70,7 +70,7 @@ struct FSceneGlobals
 class FSceneRenderer
 {
 public:
-	FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer);
+	FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer, bool bInCompositeToBackBuffer);
 	~FSceneRenderer();
 
 	/** @brief 이 씬 렌더러의 모든 렌더링 파이프라인을 실행합니다. */
@@ -123,7 +123,7 @@ private:
 	/** @brief FXAA 등 화면에서 최종 이미지 품질을 위해 적용되는 효과를 적용하는 패스입니다. */
 	void ApplyScreenEffectsPass();
 
-	void CompositeToBackBuffer();
+	void CompositeToBackBuffer(bool bBlitToBackBuffer);
 
 private:
 	// --- 렌더링 컨텍스트 (외부에서 주입받음) ---
@@ -156,4 +156,6 @@ private:
 	FFadeInOutPass FadeInOutPass;
 	FVignettePass VignettePass; 
 	FGammaPass GammaPass;
+
+	bool bCompositeToBackBuffer = true;
 };

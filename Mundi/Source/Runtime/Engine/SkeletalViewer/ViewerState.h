@@ -1,4 +1,5 @@
 #pragma once
+#include <d3d11.h>
 
 class UWorld; class FViewport; class FViewportClient; class ASkeletalMeshActor; class USkeletalMesh;
 
@@ -40,4 +41,11 @@ public:
     // Animation timeline scrubbing state
     bool bTimelineScrubbing = false;
     bool bWasPlayingBeforeScrub = false;
+
+    // Offscreen 렌더 타겟 (ImGui에 삽입되는 뷰포트)
+    ID3D11Texture2D* ViewerTexture = nullptr;
+    ID3D11ShaderResourceView* ViewerSRV = nullptr;
+    uint32 ViewerTextureWidth = 0;
+    uint32 ViewerTextureHeight = 0;
+    bool bViewportTextureValid = false;
 };

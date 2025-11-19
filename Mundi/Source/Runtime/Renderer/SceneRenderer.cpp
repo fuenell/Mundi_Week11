@@ -50,11 +50,12 @@
 #include "SkinnedMeshComponent.h"
 #include "GPUStats.h"
 
-FSceneRenderer::FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer)
+FSceneRenderer::FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer, bool bInCompositeToBackBuffer)
 	: World(InWorld)
 	, View(InView) // 전달받은 FSceneView 저장
 	, OwnerRenderer(InOwnerRenderer)
 	, RHIDevice(InOwnerRenderer->GetRHIDevice())
+	, bCompositeToBackBuffer(bInCompositeToBackBuffer)
 {
 	//OcclusionCPU = std::make_unique<FOcclusionCullingManagerCPU>();
 
@@ -135,10 +136,10 @@ void FSceneRenderer::Render()
 	// FXAA 등 화면에서 최종 이미지 품질을 위해 적용되는 효과를 적용
 	ApplyScreenEffectsPass();
 
-    // 최종적으로 Scene에 그려진 텍스쳐를 Back 버퍼에 그힌다
-    CompositeToBackBuffer();
+    // 최종적으로 Scene에 그려진 텍스쳐를 Back 버퍼에 그린다 (필요 시 생략)
+    CompositeToBackBuffer(bCompositeToBackBuffer);
 
-    // BackBuffer 위에 라인 오버레이(항상 위)를 그린다
+    // BackBuffer 또는 SceneColor 위에 라인 오버레이(항상 위)를 그린다
     RenderFinalOverlayLines();
 }
 
@@ -1322,8 +1323,19 @@ void FSceneRenderer::RenderOverayEditorPrimitivesPass()
 
 void FSceneRenderer::RenderFinalOverlayLines()
 {
-    // Bind backbuffer for final overlay pass (no depth)
-    RHIDevice->OMSetRenderTargets(ERTVMode::BackBufferWithoutDepth);
+    // Bind 적절한 렌더 타겟 (BackBuffer 또는 SceneColor) for final overlay pass
+    if (bCompositeToBackBuffer)
+    {
+        RHIDevice->OMSetRenderTargets(ERTVMode::BackBufferWithoutDepth);
+    }
+    else
+    {
+        if (ID3D11RenderTargetView* SourceRTV = RHIDevice->GetCurrentSourceRTV())
+        {
+            ID3D11RenderTargetView* RTVs[1] = { SourceRTV };
+            RHIDevice->OMSetCustomRenderTargets(1, RTVs, nullptr);
+        }
+    }
 
     // Set viewport to current view rect to confine drawing to this viewport
     D3D11_VIEWPORT vp = {};
@@ -1627,40 +1639,43 @@ void FSceneRenderer::ApplyScreenEffectsPass()
 }
 
 // 최종 결과물의 실제 BackBuffer에 그리는 함수
-void FSceneRenderer::CompositeToBackBuffer()
+void FSceneRenderer::CompositeToBackBuffer(bool bBlitToBackBuffer)
 {
 	// 1. 최종 결과물을 Source로 만들기 위해 스왑하고, 작업 후 SRV 슬롯 0을 자동 해제하는 가드 생성
 	FSwapGuard SwapGuard(RHIDevice, 0, 1);
 
-	// 2. 렌더 타겟을 백버퍼로 설정 (깊이 버퍼 없음)
-	RHIDevice->OMSetRenderTargets(ERTVMode::BackBufferWithoutDepth);
-
-	// 3. 텍스처 및 샘플러 설정
-	// 이제 RHI_SRV_Index가 아닌, 현재 상태에 맞는 Source SRV를 직접 가져옴
-	ID3D11ShaderResourceView* SourceSRV = RHIDevice->GetCurrentSourceSRV();
-	ID3D11SamplerState* SamplerState = RHIDevice->GetSamplerState(RHI_Sampler_Index::LinearClamp);
-	if (!SourceSRV || !SamplerState)
+	if (bBlitToBackBuffer)
 	{
-		UE_LOG("CompositeToBackBuffer에 필요한 리소스 없음!\n");
-		return; // 가드가 자동으로 스왑을 되돌리고 SRV를 해제해줌
+		// 2. 렌더 타겟을 백버퍼로 설정 (깊이 버퍼 없음)
+		RHIDevice->OMSetRenderTargets(ERTVMode::BackBufferWithoutDepth);
+
+		// 3. 텍스처 및 샘플러 설정
+		// 이제 RHI_SRV_Index가 아닌, 현재 상태에 맞는 Source SRV를 직접 가져옴
+		ID3D11ShaderResourceView* SourceSRV = RHIDevice->GetCurrentSourceSRV();
+		ID3D11SamplerState* SamplerState = RHIDevice->GetSamplerState(RHI_Sampler_Index::LinearClamp);
+		if (!SourceSRV || !SamplerState)
+		{
+			UE_LOG("CompositeToBackBuffer에 필요한 리소스 없음!\n");
+			return; // 가드가 자동으로 스왑을 되돌리고 SRV를 해제해줌
+		}
+
+		// 4. 셰이더 리소스 바인딩
+		RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &SourceSRV);
+		RHIDevice->GetDeviceContext()->PSSetSamplers(0, 1, &SamplerState);
+
+		// 5. 셰이더 준비
+		UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/FullScreenTriangle_VS.hlsl");
+		UShader* BlitPS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/Blit_PS.hlsl");
+		if (!FullScreenTriangleVS || !FullScreenTriangleVS->GetVertexShader() || !BlitPS || !BlitPS->GetPixelShader())
+		{
+			UE_LOG("Blit용 셰이더 없음!\n");
+			return; // 가드가 자동으로 스왑을 되돌리고 SRV를 해제해줌
+		}
+		RHIDevice->PrepareShader(FullScreenTriangleVS, BlitPS);
+
+		// 6. 그리기
+		RHIDevice->DrawFullScreenQuad();
 	}
-
-	// 4. 셰이더 리소스 바인딩
-	RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &SourceSRV);
-	RHIDevice->GetDeviceContext()->PSSetSamplers(0, 1, &SamplerState);
-
-	// 5. 셰이더 준비
-	UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/FullScreenTriangle_VS.hlsl");
-	UShader* BlitPS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/Blit_PS.hlsl");
-	if (!FullScreenTriangleVS || !FullScreenTriangleVS->GetVertexShader() || !BlitPS || !BlitPS->GetPixelShader())
-	{
-		UE_LOG("Blit용 셰이더 없음!\n");
-		return; // 가드가 자동으로 스왑을 되돌리고 SRV를 해제해줌
-	}
-	RHIDevice->PrepareShader(FullScreenTriangleVS, BlitPS);
-
-	// 6. 그리기
-	RHIDevice->DrawFullScreenQuad();
 
 	// 7. 모든 작업이 성공했으므로 Commit
 	SwapGuard.Commit();

@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "FViewportClient.h"
 #include "FViewport.h"
 #include "CameraComponent.h"
@@ -140,8 +140,11 @@ void FViewportClient::Draw(FViewport* Viewport)
 	// 2. 렌더링 호출은 뷰 타입 설정이 모두 끝난 후 마지막에 한 번만 수행
 	World->GetRenderSettings().SetViewMode(ViewMode);
 
+	const FViewportRenderOptions& RenderOptions = Viewport->GetRenderOptions();
+	const FViewportRenderOptions* OptionsPtr = RenderOptions.HasCustomBehavior() ? &RenderOptions : nullptr;
+
 	// 더 명확한 이름의 함수를 호출
-	Renderer->RenderSceneForView(World, &RenderView, Viewport);
+	Renderer->RenderSceneForView(World, &RenderView, Viewport, OptionsPtr);
 }
 
 void FViewportClient::SetupCameraMode()

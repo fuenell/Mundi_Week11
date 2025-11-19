@@ -5,6 +5,11 @@
 #include "Source/Runtime/Core/Object/Actor.h"
 #include "Source/Runtime/Engine/GameFramework/FAudioDevice.h"
 
+UAnimNotify_PlaySound::UAnimNotify_PlaySound()
+{
+	//Sound = UResourceManager::GetInstance().Load<USound>("Data/Audio/HitFireball.wav");
+}
+
 void UAnimNotify_PlaySound::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
 	if (!MeshComp || !Sound)
@@ -44,5 +49,18 @@ void UAnimNotify_PlaySound::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 	{
 		UE_LOG("AnimNotify_PlaySound: Failed to play sound '%s'",
 			Sound->GetName().c_str());
+	}
+}
+
+void UAnimNotify_PlaySound::SetSoundByFileName(const FString& PathFileName)
+{
+	USound* LoadedSound = UResourceManager::GetInstance().Load<USound>(PathFileName);
+	if (LoadedSound)
+	{
+		Sound = LoadedSound;
+	}
+	else
+	{
+		UE_LOG("AnimNotify_PlaySound: Failed to load sound asset: %s", PathFileName.c_str());
 	}
 }

@@ -10,7 +10,7 @@ class UAnimNotify_PlaySound : public UAnimNotify
 public:
 	GENERATED_REFLECTION_BODY()
 
-	UAnimNotify_PlaySound() = default;
+	UAnimNotify_PlaySound();
 	virtual ~UAnimNotify_PlaySound() override = default;
 
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
@@ -24,6 +24,8 @@ public:
 	void SetSound(USound* InSound) { Sound = InSound; }
 	void SetVolumeMultiplier(float InVolumeMultiplier) { VolumeMultiplier = InVolumeMultiplier; }
 	void SetPitch(float InPitch) { Pitch = InPitch; }
+
+	void SetSoundByFileName(const FString& PathFileName);
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Sound")

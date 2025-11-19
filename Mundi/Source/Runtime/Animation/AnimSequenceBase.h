@@ -10,7 +10,7 @@ public:
 	DECLARE_CLASS(UAnimSequenceBase, UAnimationAsset)
 
 	UAnimSequenceBase();
-	virtual ~UAnimSequenceBase() override = default;
+	virtual ~UAnimSequenceBase() override;
 
 	// DataModel을 가져오는 함수: ResouceManager에서 호출됨
 	void Load(const FString& InFilePath, class ID3D11Device* InDevice);
@@ -79,6 +79,7 @@ public:
 protected:
 	
 	void SortNotifies();
+	void ReleaseNotifyEvent(struct FAnimNotifyEvent& Event);
 
 public:
 	TArray<struct FAnimNotifyEvent> Notifies;

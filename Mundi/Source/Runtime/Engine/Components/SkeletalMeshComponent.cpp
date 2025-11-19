@@ -67,15 +67,21 @@ void USkeletalMeshComponent::DuplicateSubObjects()
 	Super::DuplicateSubObjects();
 
 	UAnimInstance* Origin = AnimScriptInstance;
-	AnimScriptInstance = Origin->Duplicate();
-	AnimScriptInstance->Initialize(nullptr);
+	if (AnimScriptInstance)
+	{
+		AnimScriptInstance = Origin->Duplicate();
+		AnimScriptInstance->Initialize(nullptr);
+	}
 }
 
 void USkeletalMeshComponent::OnRegister(UWorld* InWorld)
 {
 	Super::OnRegister(InWorld);
 
-	AnimScriptInstance->Initialize(this);
+	if (AnimScriptInstance)
+	{
+		AnimScriptInstance->Initialize(this);
+	}
 }
 
 void USkeletalMeshComponent::BeginPlay()

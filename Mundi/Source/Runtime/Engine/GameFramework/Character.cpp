@@ -19,7 +19,7 @@ ACharacter::ACharacter()
 	, CameraYaw(0.0f)
 	, CameraPitch(0.0f)
 	, WalkSpeed(2.0f)
-	, RunSpeed(2.0f)
+	, RunSpeed(4.0f)
 	, GravityScale(9.8f)
 	, JumpVelocity(2.0f)
 	, MaxJumpCount(1)
@@ -104,22 +104,22 @@ void ACharacter::Tick(float DeltaSeconds)
 		{
 			UInputManager& InputManager = UInputManager::GetInstance();
 			
-			// 점프 입력
-			if (InputManager.IsKeyPressed(VK_SPACE))
-			{
-				Jump();
-			}
-			else if (InputManager.IsKeyReleased(VK_SPACE))
-			{
-				StopJumping();
-			}
+			//// 점프 입력
+			//if (InputManager.IsKeyPressed(VK_SPACE))
+			//{
+			//	Jump();
+			//}
+			//else if (InputManager.IsKeyReleased(VK_SPACE))
+			//{
+			//	StopJumping();
+			//}
 
-			// 달리기 입력
-			if (InputManager.IsKeyDown(VK_SHIFT))
+			// 달리기 입력 (Shift 눌렀을 때 시작, 땠을 때 정지)
+			if (InputManager.IsKeyPressed(VK_SHIFT))
 			{
 				StartSprinting();
 			}
-			else
+			else if (InputManager.IsKeyReleased(VK_SHIFT))
 			{
 				StopSprinting();
 			}

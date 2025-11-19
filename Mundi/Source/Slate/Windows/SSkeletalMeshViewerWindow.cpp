@@ -15,6 +15,32 @@
 #include "Source/Runtime/Animation/AnimSingleNodeInstance.h"
 #include "Source/Runtime/Animation/AnimSequence.h"
 #include <cstring>
+#include <algorithm>
+
+namespace
+{
+	const TArray<UClass*>& GetAnimNotifyClassList()
+	{
+		static TArray<UClass*> AnimNotifyClasses;
+		static bool bInitialized = false;
+
+		if (!bInitialized)
+		{
+			UClass* BaseClass = UAnimNotify::StaticClass();
+			for (UClass* Class : UClass::GetAllClasses())
+			{
+				if (Class && Class != BaseClass && Class->IsChildOf(BaseClass))
+				{
+					AnimNotifyClasses.Add(Class);
+				}
+			}
+
+			bInitialized = true;
+		}
+
+		return AnimNotifyClasses;
+	}
+}
 
 SSkeletalMeshViewerWindow::SSkeletalMeshViewerWindow()
 {
@@ -653,6 +679,9 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
 	static bool GRenameError = false;
 	static bool GRenameShouldFocus = false;
 	static char GRenameBuffer[64] = {0};
+	static bool GShouldOpenAddNotifyPopup = false;
+	static int32 GPendingAddNotifyTrackIndex = -1;
+	static float GPendingAddNotifyTime = 0.f;
 
     // Playback controls section
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
@@ -796,6 +825,11 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
             GRenameError = false;
             std::memset(GRenameBuffer, 0, sizeof(GRenameBuffer));
             GRenameShouldFocus = false;
+        }
+
+        if (GPendingAddNotifyTrackIndex >= TrackCountRaw)
+        {
+            GPendingAddNotifyTrackIndex = -1;
         }
 
         ImGui::BeginGroup();
@@ -1088,6 +1122,29 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
             ImGui::InvisibleButton("TimelineScrubberTrack", ImVec2(timelineWidth, perTrackHeight));
             bool bLaneHovered = ImGui::IsItemHovered();
             bool bLaneActive = ImGui::IsItemActive();
+            bool bLaneRightClicked = bLaneHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Right);
+
+            if (bLaneRightClicked)
+            {
+                ImVec2 mousePos = ImGui::GetMousePos();
+                float normalizedPos = (mousePos.x - laneMin.x) / timelineWidth;
+                normalizedPos = std::clamp(normalizedPos, 0.0f, 1.0f);
+
+                GPendingAddNotifyTrackIndex = TrackIdx;
+                GPendingAddNotifyTime = normalizedPos * AnimLength;
+
+                ImGui::OpenPopup("TrackLaneContextMenu");
+            }
+
+            if (ImGui::BeginPopup("TrackLaneContextMenu"))
+            {
+                if (ImGui::MenuItem("Add Notify"))
+                {
+                    GShouldOpenAddNotifyPopup = true;
+                }
+
+                ImGui::EndPopup();
+            }
 
             if (bLaneActive || (bLaneHovered && ImGui::IsMouseClicked(0)))
             {
@@ -1127,6 +1184,63 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
             {
                 AnimInstance->SetPlaying(true);
             }
+        }
+
+        if (GShouldOpenAddNotifyPopup)
+        {
+            ImGui::OpenPopup("AddAnimNotifyPopup");
+            GShouldOpenAddNotifyPopup = false;
+        }
+
+        auto ResetPendingAddNotifyState = [&]()
+        {
+            GPendingAddNotifyTrackIndex = -1;
+            GPendingAddNotifyTime = 0.f;
+        };
+
+        if (ImGui::BeginPopupModal("AddAnimNotifyPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("추가할 AnimNotify 클래스를 선택하세요.");
+            if (GPendingAddNotifyTrackIndex >= 0)
+            {
+                ImGui::Text("Track: %d | Time: %.3f s", GPendingAddNotifyTrackIndex, GPendingAddNotifyTime);
+            }
+            ImGui::Separator();
+
+            const TArray<UClass*>& NotifyClasses = GetAnimNotifyClassList();
+            if (NotifyClasses.IsEmpty())
+            {
+                ImGui::Text("등록된 AnimNotify 파생 클래스가 없습니다.");
+            }
+            else
+            {
+                for (UClass* NotifyClass : NotifyClasses)
+                {
+                    if (!NotifyClass)
+                    {
+                        continue;
+                    }
+
+                    const char* Label = (NotifyClass->DisplayName && NotifyClass->DisplayName[0] != '\0')
+                        ? NotifyClass->DisplayName
+                        : NotifyClass->Name;
+
+                    if (ImGui::Selectable(Label, false))
+                    {
+                        UE_LOG("Selected AnimNotify class: %s", Label ? Label : "Unknown");
+                        ResetPendingAddNotifyState();
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+            }
+
+            if (ImGui::Button("닫기", ImVec2(80.0f, 0.0f)))
+            {
+                ResetPendingAddNotifyState();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
         }
 
         // Playhead triangle indicator

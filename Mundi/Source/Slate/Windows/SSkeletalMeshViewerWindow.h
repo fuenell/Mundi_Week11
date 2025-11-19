@@ -58,7 +58,7 @@ private:
     // Layout state
     float LeftPanelRatio = 0.25f;   // 25% of width
     float RightPanelRatio = 0.25f;  // 25% of width
-    float PlaybackBarHeight = 170.0f; // Height of the playback bar at the bottom (increased for timeline)
+    float PlaybackBarBaseHeight = 135.0f; // Base height of the playback bar, additional height based on notify tracks
 	float AnimationModeCheckboxHeight = 40.0f;
 
     // Cached center region used for viewport sizing and input mapping

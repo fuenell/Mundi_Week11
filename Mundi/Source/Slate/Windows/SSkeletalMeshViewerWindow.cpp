@@ -15,6 +15,32 @@
 #include "Source/Runtime/Animation/AnimSingleNodeInstance.h"
 #include "Source/Runtime/Animation/AnimSequence.h"
 #include <cstring>
+#include <algorithm>
+
+namespace
+{
+	const TArray<UClass*>& GetAnimNotifyClassList()
+	{
+		static TArray<UClass*> AnimNotifyClasses;
+		static bool bInitialized = false;
+
+		if (!bInitialized)
+		{
+			UClass* BaseClass = UAnimNotify::StaticClass();
+			for (UClass* Class : UClass::GetAllClasses())
+			{
+				if (Class && Class != BaseClass && Class->IsChildOf(BaseClass))
+				{
+					AnimNotifyClasses.Add(Class);
+				}
+			}
+
+			bInitialized = true;
+		}
+
+		return AnimNotifyClasses;
+	}
+}
 
 SSkeletalMeshViewerWindow::SSkeletalMeshViewerWindow()
 {
@@ -111,7 +137,17 @@ void SSkeletalMeshViewerWindow::OnRender()
         float totalWidth = contentAvail.x;
         
         // Calculate playback bar height based on animation mode
-        float FinalPlaybackBarHeight = (ActiveState && ActiveState->bAnimationMode) ? PlaybackBarHeight : 0.0f;
+        const float PerTrackTimelineHeight = 40.0f;
+        float FinalPlaybackBarHeight = 0.0f;
+        if (ActiveState && ActiveState->bAnimationMode)
+        {
+            USkeletalMeshComponent* PlaybackMeshComp = ActiveState->PreviewActor ? ActiveState->PreviewActor->GetSkeletalMeshComponent() : nullptr;
+            UAnimSingleNodeInstance* PlaybackInstance = PlaybackMeshComp ? PlaybackMeshComp->GetSingleNodeInstance() : nullptr;
+            UAnimSequence* PlaybackAnim = PlaybackInstance ? PlaybackInstance->GetCurrentAnimSequence() : nullptr;
+            int32 NotifyTrackCount = PlaybackAnim ? std::max(1, static_cast<int32>(PlaybackAnim->NotifyTracks.Num())) : 1;
+            int32 VisibleTrackCountForHeight = std::min(NotifyTrackCount, 2);
+            FinalPlaybackBarHeight = PlaybackBarBaseHeight + (VisibleTrackCountForHeight * PerTrackTimelineHeight);
+        }
         float bottomBarsTotalHeight = AnimationModeCheckboxHeight + FinalPlaybackBarHeight;
         
         // Main panels height (subtract bottom bars from available height)
@@ -641,8 +677,11 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
 
 	static int32 GRenameTrackIndex = -1;
 	static bool GRenameError = false;
+	static bool GRenameShouldFocus = false;
 	static char GRenameBuffer[64] = {0};
-	static FString GTrackActionMessage;
+	static bool GShouldOpenAddNotifyPopup = false;
+	static int32 GPendingAddNotifyTrackIndex = -1;
+	static float GPendingAddNotifyTime = 0.f;
 
     // Playback controls section
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
@@ -780,11 +819,18 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
         const int32 TrackCountRaw = NotifyTracks.Num();
         const int32 DisplayTrackCount = TrackCountRaw > 0 ? TrackCountRaw : 1;
 
-        auto ShowTrackActionError = [&](const FString& Message)
+        if (GRenameTrackIndex >= TrackCountRaw)
         {
-            GTrackActionMessage = Message;
-            ImGui::OpenPopup("NotifyTrackActionResultPopup");
-        };
+            GRenameTrackIndex = -1;
+            GRenameError = false;
+            std::memset(GRenameBuffer, 0, sizeof(GRenameBuffer));
+            GRenameShouldFocus = false;
+        }
+
+        if (GPendingAddNotifyTrackIndex >= TrackCountRaw)
+        {
+            GPendingAddNotifyTrackIndex = -1;
+        }
 
         ImGui::BeginGroup();
         
@@ -808,10 +854,7 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
         }
         if (ImGui::Button("+ Track", ImVec2(TrackButtonWidth, 0.0f)))
         {
-            if (!AnimSequence->AddNotifyTrack())
-            {
-                ShowTrackActionError("트랙을 추가할 수 없습니다. 최대 개수에 도달했거나 내부 오류가 발생했습니다.");
-            }
+            AnimSequence->AddNotifyTrack();
         }
         if (bIsTrackCapacityReached)
         {
@@ -822,54 +865,43 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
 
         const float PlayButtonWidth = 80.0f;
         const float TrackLabelColumnWidth = PlayButtonWidth * 2.0f;
-        const float DesiredTrackHeight = 40.0f; // 약 2/3 스케일
+        const float DesiredTrackHeight = 40.0f; // 각 트랙 고정 높이
+        const float TrackLabelPadding = 8.0f;
 
         float totalWidth = ImGui::GetContentRegionAvail().x;
-        float remainingHeight = ImGui::GetContentRegionAvail().y;
-        float availableTimelineHeight = std::max(DesiredTrackHeight, remainingHeight - 10.0f);
-
-        float timelineHeight = std::min(DesiredTrackHeight * DisplayTrackCount, availableTimelineHeight);
-        float perTrackHeight = timelineHeight / static_cast<float>(DisplayTrackCount);
+        float perTrackHeight = DesiredTrackHeight;
+        float timelineHeight = perTrackHeight * static_cast<float>(DisplayTrackCount);
 
         float timelineWidth = std::max(1.0f, totalWidth - TrackLabelColumnWidth);
 
         float frameLabelHeight = ImGui::GetTextLineHeight();
         ImVec2 frameLabelTopPos = ImGui::GetCursorScreenPos();
         ImVec2 timelinePos = ImVec2(frameLabelTopPos.x, frameLabelTopPos.y + frameLabelHeight + 4.0f);
-        ImVec2 timelineSize(totalWidth, timelineHeight);
-        ImVec2 trackAreaPos(timelinePos.x + TrackLabelColumnWidth, timelinePos.y);
-        ImVec2 trackAreaSize(timelineWidth, timelineHeight);
+        ImVec2 trackAreaOrigin = ImVec2(timelinePos.x + TrackLabelColumnWidth, timelinePos.y);
 
         ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-        // Background for label column and track lanes
-        drawList->AddRectFilled(timelinePos, ImVec2(timelinePos.x + TrackLabelColumnWidth, timelinePos.y + timelineHeight), IM_COL32(20, 20, 24, 255));
-        drawList->AddRectFilled(trackAreaPos, ImVec2(trackAreaPos.x + trackAreaSize.x, trackAreaPos.y + trackAreaSize.y), IM_COL32(25, 25, 30, 255));
-
-        // Frame labels (placed above the first timeline row)
-        if (TotalFrames > 0 && AnimLength > 0.0f)
+        bool bHasValidFrames = (TotalFrames > 0 && AnimLength > 0.0f);
+        int32 frameInterval = 1;
+        if (bHasValidFrames)
         {
-            int32 frameInterval = 1;
             if (TotalFrames > 200) frameInterval = 10;
             else if (TotalFrames > 100) frameInterval = 5;
             else if (TotalFrames > 50) frameInterval = 2;
+        }
 
+        // Frame labels (placed above the first timeline row)
+        if (bHasValidFrames)
+        {
             for (int32 Frame = 0; Frame <= TotalFrames; ++Frame)
             {
                 float normalizedPos = static_cast<float>(Frame) / static_cast<float>(TotalFrames);
-                float lineX = trackAreaPos.x + normalizedPos * timelineWidth;
+                float lineX = trackAreaOrigin.x + normalizedPos * timelineWidth;
 
                 bool bIsMajorTick = (Frame % (frameInterval * 5) == 0);
-                bool bIsMinorTick = (Frame % frameInterval == 0);
-
-                ImU32 lineColor;
-                float tickHeight;
 
                 if (bIsMajorTick || Frame == 0 || Frame == TotalFrames)
                 {
-                    lineColor = IM_COL32(140, 160, 180, 200);
-                    tickHeight = timelineHeight;
-
                     char frameLabel[16];
                     sprintf_s(frameLabel, "%d", Frame);
                     ImVec2 textSize = ImGui::CalcTextSize(frameLabel);
@@ -879,72 +911,58 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
                         frameLabel
                     );
                 }
-                else if (bIsMinorTick)
-                {
-                    lineColor = IM_COL32(80, 90, 100, 150);
-                    tickHeight = timelineHeight * 0.6f;
-                }
-                else
-                {
-                    lineColor = IM_COL32(50, 55, 60, 100);
-                    tickHeight = timelineHeight * 0.35f;
-                }
-
-                drawList->AddLine(
-                    ImVec2(lineX, timelinePos.y + (timelineHeight - tickHeight) * 0.5f),
-                    ImVec2(lineX, timelinePos.y + (timelineHeight + tickHeight) * 0.5f),
-                    lineColor,
-                    bIsMajorTick ? 1.5f : 1.0f
-                );
             }
         }
 
-        // Track labels with context menus
-        ImVec2 cursorRestore = ImGui::GetCursorScreenPos();
+        float playheadRatio = (AnimLength > 0.0f) ? (CurrentTime / AnimLength) : 0.0f;
+        float playheadX = trackAreaOrigin.x + playheadRatio * timelineWidth;
+        const float triangleSize = 8.0f;
+
+        bool bAnyTimelineActive = false;
+
         for (int32 TrackIdx = 0; TrackIdx < DisplayTrackCount; ++TrackIdx)
         {
             float rowTop = timelinePos.y + TrackIdx * perTrackHeight;
-            ImVec2 labelCursor = ImVec2(timelinePos.x, rowTop);
-            ImGui::SetCursorScreenPos(labelCursor);
+            ImVec2 labelMin(timelinePos.x, rowTop);
+            ImVec2 labelMax(timelinePos.x + TrackLabelColumnWidth, rowTop + perTrackHeight);
+            ImVec2 laneMin(trackAreaOrigin.x, rowTop);
+            ImVec2 laneMax(trackAreaOrigin.x + timelineWidth, rowTop + perTrackHeight);
+
+            ImU32 labelColor = (TrackIdx % 2 == 0) ? IM_COL32(24, 24, 30, 255) : IM_COL32(28, 28, 34, 255);
+            ImU32 laneColor = (TrackIdx % 2 == 0) ? IM_COL32(27, 27, 33, 255) : IM_COL32(31, 31, 38, 255);
+
+            drawList->AddRectFilled(labelMin, labelMax, labelColor, 4.0f);
+            drawList->AddRectFilled(laneMin, laneMax, laneColor, 4.0f);
+            drawList->AddRect(laneMin, laneMax, IM_COL32(60, 70, 80, 255), 4.0f, 0, 1.1f);
+
+            // Track label interactions
+            ImGui::SetCursorScreenPos(labelMin);
             ImGui::PushID(TrackIdx);
             ImGui::InvisibleButton("NotifyTrackLabel", ImVec2(TrackLabelColumnWidth, perTrackHeight));
+            bool bLabelHovered = ImGui::IsItemHovered();
+            bool bLabelDoubleClicked = bLabelHovered && ImGui::IsMouseDoubleClicked(0);
             if (ImGui::BeginPopupContextItem("NotifyTrackContext"))
             {
                 const bool bHasRealTrack = TrackIdx < TrackCountRaw;
-                if (!bHasRealTrack)
-                {
-                    ImGui::BeginDisabled();
-                }
-
-                if (ImGui::MenuItem("Rename Track"))
-                {
-                    if (bHasRealTrack)
-                    {
-                        GRenameTrackIndex = TrackIdx;
-                        const FString& CurrentName = NotifyTracks[TrackIdx].ToString();
-                        std::memset(GRenameBuffer, 0, sizeof(GRenameBuffer));
-                        strncpy_s(GRenameBuffer, sizeof(GRenameBuffer), CurrentName.c_str(), _TRUNCATE);
-                        GRenameError = false;
-                        ImGui::OpenPopup("RenameNotifyTrackPopup");
-                    }
-                }
 
                 if (ImGui::MenuItem("Delete Track"))
                 {
                     if (bHasRealTrack)
                     {
-                        if (!AnimSequence->DeleteNotifyTrack(TrackIdx))
-                        {
-                            ShowTrackActionError("노티파이가 있는 트랙은 삭제할 수 없습니다.");
-                        }
+                        AnimSequence->DeleteNotifyTrack(TrackIdx);
                     }
                 }
 
-                if (!bHasRealTrack)
-                {
-                    ImGui::EndDisabled();
-                }
                 ImGui::EndPopup();
+            }
+            if (bLabelDoubleClicked && TrackIdx < TrackCountRaw)
+            {
+                GRenameTrackIndex = TrackIdx;
+                const FString& CurrentName = NotifyTracks[TrackIdx].ToString();
+                std::memset(GRenameBuffer, 0, sizeof(GRenameBuffer));
+                strncpy_s(GRenameBuffer, sizeof(GRenameBuffer), CurrentName.c_str(), _TRUNCATE);
+                GRenameError = false;
+                GRenameShouldFocus = true;
             }
             ImGui::PopID();
 
@@ -958,77 +976,208 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
                 TrackLabel = FString("Track ") + std::to_string(TrackIdx);
             }
 
-            ImVec2 textSize = ImGui::CalcTextSize(TrackLabel.c_str());
-            float textY = rowTop + (perTrackHeight - textSize.y) * 0.5f;
-            drawList->AddText(
-                ImVec2(timelinePos.x + 8.0f, textY),
-                IM_COL32(210, 210, 230, 255),
-                TrackLabel.c_str()
-            );
-
-            drawList->AddLine(
-                ImVec2(timelinePos.x, rowTop),
-                ImVec2(timelinePos.x + totalWidth, rowTop),
-                IM_COL32(35, 35, 42, 255)
-            );
-        }
-        ImGui::SetCursorScreenPos(cursorRestore);
-
-        // Draw horizontal separator at bottom of last track row
-        drawList->AddLine(
-            ImVec2(timelinePos.x, timelinePos.y + timelineHeight),
-            ImVec2(timelinePos.x + totalWidth, timelinePos.y + timelineHeight),
-            IM_COL32(35, 35, 42, 255)
-        );
-
-        // Current time indicator across the entire track area
-        float playheadRatio = (AnimLength > 0.0f) ? (CurrentTime / AnimLength) : 0.0f;
-        float playheadX = trackAreaPos.x + playheadRatio * timelineWidth;
-        drawList->AddLine(
-            ImVec2(playheadX, timelinePos.y),
-            ImVec2(playheadX, timelinePos.y + timelineHeight),
-            IM_COL32(255, 80, 80, 255),
-            3.0f
-        );
-        float triangleSize = 8.0f;
-        drawList->AddTriangleFilled(
-            ImVec2(playheadX, timelinePos.y - 2.0f),
-            ImVec2(playheadX - triangleSize, timelinePos.y - 2.0f - triangleSize),
-            ImVec2(playheadX + triangleSize, timelinePos.y - 2.0f - triangleSize),
-            IM_COL32(255, 80, 80, 255)
-        );
-
-        // Invisible button for timeline interaction (only the track lanes)
-        ImGui::SetCursorScreenPos(trackAreaPos);
-        ImGui::InvisibleButton("##TimelineScrubber", trackAreaSize);
-
-        bool bIsHovered = ImGui::IsItemHovered();
-        bool bIsActive = ImGui::IsItemActive();
-
-        if (bIsActive || (bIsHovered && ImGui::IsMouseClicked(0)))
-        {
-            ImVec2 mousePos = ImGui::GetMousePos();
-            float normalizedPos = (mousePos.x - trackAreaPos.x) / timelineWidth;
-            normalizedPos = std::max(0.0f, std::min(1.0f, normalizedPos));
-
-            float newTime = normalizedPos * AnimLength;
-
-            if (!ActiveState->bTimelineScrubbing)
+            bool bIsEditingTrack = (GRenameTrackIndex == TrackIdx);
+            if (bIsEditingTrack)
             {
-                ActiveState->bTimelineScrubbing = true;
-                ActiveState->bWasPlayingBeforeScrub = bIsPlaying;
-                if (bIsPlaying)
+                ImVec2 inputPos = ImVec2(labelMin.x + TrackLabelPadding, rowTop + (perTrackHeight * 0.5f) - (ImGui::GetFrameHeight() * 0.5f));
+                ImGui::SetCursorScreenPos(inputPos);
+                ImGui::PushItemWidth(TrackLabelColumnWidth - TrackLabelPadding * 2.0f);
+                ImGuiInputTextFlags InputFlags = ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue;
+                if (GRenameShouldFocus)
                 {
-                    AnimInstance->SetPlaying(false);
+                    ImGui::SetKeyboardFocusHere();
+                    GRenameShouldFocus = false;
+                }
+                bool bInputConfirmed = ImGui::InputText("##TrackRenameField", GRenameBuffer, sizeof(GRenameBuffer), InputFlags);
+                ImGui::PopItemWidth();
+
+                bool bItemDeactivated = ImGui::IsItemDeactivated();
+                bool bItemDeactivatedAfterEdit = ImGui::IsItemDeactivatedAfterEdit();
+                bool bShouldCommit = bInputConfirmed || bItemDeactivatedAfterEdit;
+                bool bShouldCancel = false;
+
+                if (ImGui::IsItemActive() && ImGui::IsKeyPressed(ImGuiKey_Escape))
+                {
+                    bShouldCancel = true;
+                }
+                else if (bItemDeactivated && !bItemDeactivatedAfterEdit && !bInputConfirmed)
+                {
+                    bShouldCancel = true;
+                }
+
+                auto CommitRename = [&]()
+                {
+                    FString NewName = GRenameBuffer;
+                    if (!NewName.empty() && GRenameTrackIndex >= 0 && GRenameTrackIndex < TrackCountRaw)
+                    {
+                        if (AnimSequence->RenameNotifyTrack(GRenameTrackIndex, FName(NewName)))
+                        {
+                            GRenameTrackIndex = -1;
+                            GRenameError = false;
+                            GRenameShouldFocus = false;
+                            std::memset(GRenameBuffer, 0, sizeof(GRenameBuffer));
+                        }
+                        else
+                        {
+                            GRenameError = true;
+                        }
+                    }
+                    else
+                    {
+                        GRenameError = true;
+                    }
+                };
+
+                auto CancelRename = [&]()
+                {
+                    GRenameTrackIndex = -1;
+                    GRenameError = false;
+                    GRenameShouldFocus = false;
+                    std::memset(GRenameBuffer, 0, sizeof(GRenameBuffer));
+                };
+
+                if (bShouldCommit)
+                {
+                    CommitRename();
+                }
+                else if (bShouldCancel)
+                {
+                    CancelRename();
+                }
+
+                if (GRenameError)
+                {
+                    drawList->AddText(
+                        ImVec2(labelMin.x + TrackLabelPadding, labelMax.y - ImGui::GetTextLineHeight() - 2.0f),
+                        IM_COL32(255, 100, 100, 255),
+                        "중복된 이름입니다."
+                    );
+                }
+            }
+            else
+            {
+                ImVec2 textSize = ImGui::CalcTextSize(TrackLabel.c_str());
+                float textY = rowTop + (perTrackHeight - textSize.y) * 0.5f;
+                drawList->AddText(
+                    ImVec2(labelMin.x + TrackLabelPadding, textY),
+                    IM_COL32(210, 210, 230, 255),
+                    TrackLabel.c_str()
+                );
+            }
+
+            if (bHasValidFrames)
+            {
+                for (int32 Frame = 0; Frame <= TotalFrames; ++Frame)
+                {
+                    float normalizedPos = static_cast<float>(Frame) / static_cast<float>(TotalFrames);
+                    float lineX = laneMin.x + normalizedPos * timelineWidth;
+
+                    bool bIsMajorTick = (Frame % (frameInterval * 5) == 0);
+                    bool bIsMinorTick = (Frame % frameInterval == 0);
+
+                    ImU32 lineColor;
+                    float tickPadding = 4.0f;
+                    float tickStart = laneMin.y + tickPadding;
+                    float tickEnd = laneMax.y - tickPadding;
+
+                    if (bIsMajorTick || Frame == 0 || Frame == TotalFrames)
+                    {
+                        lineColor = IM_COL32(140, 160, 180, 200);
+                    }
+                    else if (bIsMinorTick)
+                    {
+                        lineColor = IM_COL32(80, 90, 100, 150);
+                        float shrink = (tickEnd - tickStart) * 0.25f;
+                        tickStart += shrink;
+                        tickEnd -= shrink;
+                    }
+                    else
+                    {
+                        lineColor = IM_COL32(50, 55, 60, 100);
+                        float shrink = (tickEnd - tickStart) * 0.4f;
+                        tickStart += shrink;
+                        tickEnd -= shrink;
+                    }
+
+                    drawList->AddLine(
+                        ImVec2(lineX, tickStart),
+                        ImVec2(lineX, tickEnd),
+                        lineColor,
+                        bIsMajorTick ? 1.5f : 1.0f
+                    );
                 }
             }
 
-            AnimInstance->SetCurrentTime(newTime);
-            SkeletalComp->ForceRecomputePose();
-            ActiveState->bBoneLinesDirty = true;
+            // Playhead per track
+            drawList->AddLine(
+                ImVec2(playheadX, laneMin.y),
+                ImVec2(playheadX, laneMax.y),
+                IM_COL32(255, 80, 80, 255),
+                3.0f
+            );
+
+            // Interaction per track lane
+            ImGui::SetCursorScreenPos(laneMin);
+            ImGui::PushID(TrackIdx + 100);
+            ImGui::InvisibleButton("TimelineScrubberTrack", ImVec2(timelineWidth, perTrackHeight));
+            bool bLaneHovered = ImGui::IsItemHovered();
+            bool bLaneActive = ImGui::IsItemActive();
+            bool bLaneRightClicked = bLaneHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Right);
+
+            if (bLaneRightClicked)
+            {
+                ImVec2 mousePos = ImGui::GetMousePos();
+                float normalizedPos = (mousePos.x - laneMin.x) / timelineWidth;
+                normalizedPos = std::clamp(normalizedPos, 0.0f, 1.0f);
+
+                GPendingAddNotifyTrackIndex = TrackIdx;
+                GPendingAddNotifyTime = normalizedPos * AnimLength;
+
+                ImGui::OpenPopup("TrackLaneContextMenu");
+            }
+
+            if (ImGui::BeginPopup("TrackLaneContextMenu"))
+            {
+                if (ImGui::MenuItem("Add Notify"))
+                {
+                    GShouldOpenAddNotifyPopup = true;
+                }
+
+                ImGui::EndPopup();
+            }
+
+            if (bLaneActive || (bLaneHovered && ImGui::IsMouseClicked(0)))
+            {
+                ImVec2 mousePos = ImGui::GetMousePos();
+                float normalizedPos = (mousePos.x - laneMin.x) / timelineWidth;
+                normalizedPos = std::max(0.0f, std::min(1.0f, normalizedPos));
+
+                float newTime = normalizedPos * AnimLength;
+
+                if (!ActiveState->bTimelineScrubbing)
+                {
+                    ActiveState->bTimelineScrubbing = true;
+                    ActiveState->bWasPlayingBeforeScrub = bIsPlaying;
+                    if (bIsPlaying)
+                    {
+                        AnimInstance->SetPlaying(false);
+                    }
+                }
+
+                AnimInstance->SetCurrentTime(newTime);
+                SkeletalComp->ForceRecomputePose();
+                ActiveState->bBoneLinesDirty = true;
+            }
+
+            if (bLaneActive)
+            {
+                bAnyTimelineActive = true;
+            }
+
+            ImGui::PopID();
         }
 
-        if (ActiveState->bTimelineScrubbing && !bIsActive)
+        if (ActiveState->bTimelineScrubbing && !bAnyTimelineActive)
         {
             ActiveState->bTimelineScrubbing = false;
             if (ActiveState->bWasPlayingBeforeScrub)
@@ -1037,10 +1186,75 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
             }
         }
 
-        // Border around overall timeline area
+        if (GShouldOpenAddNotifyPopup)
+        {
+            ImGui::OpenPopup("AddAnimNotifyPopup");
+            GShouldOpenAddNotifyPopup = false;
+        }
+
+        auto ResetPendingAddNotifyState = [&]()
+        {
+            GPendingAddNotifyTrackIndex = -1;
+            GPendingAddNotifyTime = 0.f;
+        };
+
+        if (ImGui::BeginPopupModal("AddAnimNotifyPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("추가할 AnimNotify 클래스를 선택하세요.");
+            if (GPendingAddNotifyTrackIndex >= 0)
+            {
+                ImGui::Text("Track: %d | Time: %.3f s", GPendingAddNotifyTrackIndex, GPendingAddNotifyTime);
+            }
+            ImGui::Separator();
+
+            const TArray<UClass*>& NotifyClasses = GetAnimNotifyClassList();
+            if (NotifyClasses.IsEmpty())
+            {
+                ImGui::Text("등록된 AnimNotify 파생 클래스가 없습니다.");
+            }
+            else
+            {
+                for (UClass* NotifyClass : NotifyClasses)
+                {
+                    if (!NotifyClass)
+                    {
+                        continue;
+                    }
+
+                    const char* Label = (NotifyClass->DisplayName && NotifyClass->DisplayName[0] != '\0')
+                        ? NotifyClass->DisplayName
+                        : NotifyClass->Name;
+
+                    if (ImGui::Selectable(Label, false))
+                    {
+                        UE_LOG("Selected AnimNotify class: %s", Label ? Label : "Unknown");
+                        ResetPendingAddNotifyState();
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+            }
+
+            if (ImGui::Button("닫기", ImVec2(80.0f, 0.0f)))
+            {
+                ResetPendingAddNotifyState();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+
+        // Playhead triangle indicator
+        drawList->AddTriangleFilled(
+            ImVec2(playheadX, timelinePos.y - 2.0f),
+            ImVec2(playheadX - triangleSize, timelinePos.y - 2.0f - triangleSize),
+            ImVec2(playheadX + triangleSize, timelinePos.y - 2.0f - triangleSize),
+            IM_COL32(255, 80, 80, 255)
+        );
+
+        // Border around the entire area for clarity
         drawList->AddRect(
             timelinePos,
-            ImVec2(timelinePos.x + timelineSize.x, timelinePos.y + timelineSize.y),
+            ImVec2(timelinePos.x + totalWidth, timelinePos.y + timelineHeight),
             IM_COL32(60, 70, 80, 255),
             0.0f,
             0,
@@ -1050,66 +1264,6 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
         // Advance the cursor past labels + timeline + spacing reserved for frame numbers
         ImGui::SetCursorScreenPos(frameLabelTopPos);
         ImGui::Dummy(ImVec2(totalWidth, (frameLabelHeight + 4.0f) + timelineHeight));
-
-        // Rename track popup
-        if (ImGui::BeginPopupModal("RenameNotifyTrackPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-        {
-            ImGui::Text("새 트랙 이름을 입력하세요.");
-            ImGui::InputText("##RenameTrackInput", GRenameBuffer, sizeof(GRenameBuffer));
-
-            if (GRenameError)
-            {
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
-                ImGui::Text("트랙 이름을 변경할 수 없습니다. 다른 이름을 사용하세요.");
-                ImGui::PopStyleColor();
-            }
-
-            if (ImGui::Button("확인"))
-            {
-                FString NewName = GRenameBuffer;
-                if (!NewName.empty() && GRenameTrackIndex >= 0 && GRenameTrackIndex < TrackCountRaw)
-                {
-                    if (AnimSequence->RenameNotifyTrack(GRenameTrackIndex, FName(NewName)))
-                    {
-                        ImGui::CloseCurrentPopup();
-                        GRenameTrackIndex = -1;
-                        GRenameError = false;
-                        std::memset(GRenameBuffer, 0, sizeof(GRenameBuffer));
-                    }
-                    else
-                    {
-                        GRenameError = true;
-                    }
-                }
-                else
-                {
-                    GRenameError = true;
-                }
-            }
-
-            ImGui::SameLine();
-
-            if (ImGui::Button("취소"))
-            {
-                ImGui::CloseCurrentPopup();
-                GRenameTrackIndex = -1;
-                GRenameError = false;
-            }
-
-            ImGui::EndPopup();
-        }
-
-        // Track action result popup
-        if (ImGui::BeginPopupModal("NotifyTrackActionResultPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-        {
-            ImGui::Text("%s", GTrackActionMessage.c_str());
-            if (ImGui::Button("확인"))
-            {
-                ImGui::CloseCurrentPopup();
-                GTrackActionMessage.clear();
-            }
-            ImGui::EndPopup();
-        }
 
         ImGui::EndGroup();
     }

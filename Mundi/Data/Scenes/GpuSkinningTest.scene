@@ -1,6 +1,6 @@
 {
   "Actors" : {
-    "239" : {
+    "840" : {
       "ObjectName" : "ADirectionalLightActor_1",
       "OwnedComponents" : [{
           "CascadedAreaColorDebugValue" : 0.000000,
@@ -8,7 +8,7 @@
           "CascadedCount" : 4,
           "CascadedLinearBlendingValue" : 0.500000,
           "CascadedOverlapValue" : 0.200000,
-          "Id" : 240,
+          "Id" : 842,
           "Intensity" : 1.000000,
           "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
           "ObjectName" : "UDirectionalLightComponent_1",
@@ -29,16 +29,16 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 240,
+      "RootComponentId" : 842,
       "Tag" : "",
       "Type" : "ADirectionalLightActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "241" : {
+    "843" : {
       "ObjectName" : "AAmbientLightActor_1",
       "OwnedComponents" : [{
-          "Id" : 242,
+          "Id" : 845,
           "Intensity" : 0.100000,
           "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
           "ObjectName" : "UAmbientLightComponent_1",
@@ -58,16 +58,16 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 242,
+      "RootComponentId" : 845,
       "Tag" : "",
       "Type" : "AAmbientLightActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "249" : {
+    "846" : {
       "ObjectName" : "APlayerCameraManager_1",
       "OwnedComponents" : [{
-          "Id" : 250,
+          "Id" : 847,
           "ObjectName" : "USceneComponent_1",
           "ParentId" : 0,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
@@ -79,44 +79,18 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 250,
+      "RootComponentId" : 847,
       "Tag" : "",
       "Type" : "APlayerCameraManager",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "860" : {
+    "848" : {
       "ObjectName" : "스켈레탈 메시_0",
       "OwnedComponents" : [{
-          "Id" : 861,
-          "MaterialSlots" : [{
-              "Type" : "None"
-            }],
-          "ObjectName" : "USkeletalMeshComponent_1",
-          "ParentId" : 0,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "SkeletalMesh" : "Data/Test.fbx",
-          "Type" : "USkeletalMeshComponent",
-          "bBlockComponent" : false,
-          "bCastShadows" : true,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bTickEnabled" : true
-        }],
-      "RootComponentId" : 861,
-      "Tag" : "",
-      "Type" : "ASkeletalMeshActor",
-      "bActorHiddenInGame" : false,
-      "bActorIsActive" : true
-    },
-    "862" : {
-      "ObjectName" : "스켈레탈 메시_1",
-      "OwnedComponents" : [{
-          "Id" : 863,
+          "AnimationMode" : 0,
+          "CurrentAssetPath" : "Data/Untracked/Fall Flat.fbx",
+          "Id" : 852,
           "MaterialSlots" : [{
               "Type" : "None"
             }, {
@@ -126,12 +100,12 @@
               "AssetPath" : "Beta_Joints_MAT1",
               "Type" : "UMaterial"
             }],
-          "ObjectName" : "USkeletalMeshComponent_2",
+          "ObjectName" : "USkeletalMeshComponent_9",
           "ParentId" : 0,
-          "RelativeLocation" : [0.000000, -2.695888, 0.000000],
+          "RelativeLocation" : [-1.161533, 0.677459, 3.033655],
           "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "SkeletalMesh" : "Data/X Bot.fbx",
+          "SkeletalMesh" : "Data/Model/X Bot.fbx",
           "Type" : "USkeletalMeshComponent",
           "bBlockComponent" : false,
           "bCastShadows" : true,
@@ -141,31 +115,33 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 863,
+      "RootComponentId" : 852,
       "Tag" : "",
       "Type" : "ASkeletalMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "864" : {
-      "ObjectName" : "스켈레탈 메시_2",
+    "865" : {
+      "ObjectName" : "스켈레탈 메시_0",
       "OwnedComponents" : [{
-          "Id" : 865,
+          "AnimationMode" : 0,
+          "CurrentAssetPath" : "Data/Model/Animation/Walk.fbx",
+          "Id" : 866,
           "MaterialSlots" : [{
               "Type" : "None"
             }, {
-              "AssetPath" : "Ch01_body",
+              "AssetPath" : "Beta_HighLimbsGeoSG3",
               "Type" : "UMaterial"
             }, {
-              "AssetPath" : "Material_0.001",
+              "AssetPath" : "Beta_Joints_MAT1",
               "Type" : "UMaterial"
             }],
           "ObjectName" : "USkeletalMeshComponent_3",
           "ParentId" : 0,
-          "RelativeLocation" : [0.000000, -5.278317, 0.000000],
+          "RelativeLocation" : [0.173811, -2.612170, 3.295564],
           "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "SkeletalMesh" : "Data/BSH.fbx",
+          "SkeletalMesh" : "Data/Model/X Bot.fbx",
           "Type" : "USkeletalMeshComponent",
           "bBlockComponent" : false,
           "bCastShadows" : true,
@@ -175,34 +151,33 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 865,
+      "RootComponentId" : 866,
       "Tag" : "",
       "Type" : "ASkeletalMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "866" : {
-      "ObjectName" : "스켈레탈 메시_3",
+    "869" : {
+      "ObjectName" : "ASkeletalMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 867,
+          "AnimationMode" : 0,
+          "CurrentAssetPath" : "Data/Model/Animation/Run.fbx",
+          "Id" : 870,
           "MaterialSlots" : [{
               "Type" : "None"
             }, {
-              "AssetPath" : "Ch06_body",
+              "AssetPath" : "Beta_HighLimbsGeoSG3",
               "Type" : "UMaterial"
             }, {
-              "AssetPath" : "Ch06_eyelashes",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Ch06_body1",
+              "AssetPath" : "Beta_Joints_MAT1",
               "Type" : "UMaterial"
             }],
-          "ObjectName" : "USkeletalMeshComponent_4",
+          "ObjectName" : "USkeletalMeshComponent_3",
           "ParentId" : 0,
-          "RelativeLocation" : [0.000000, 2.515852, 0.000000],
+          "RelativeLocation" : [-2.137341, -1.612170, 4.295564],
           "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "SkeletalMesh" : "Data/James/James.fbx",
+          "SkeletalMesh" : "Data/Model/X Bot.fbx",
           "Type" : "USkeletalMeshComponent",
           "bBlockComponent" : false,
           "bCastShadows" : true,
@@ -212,27 +187,34 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 867,
+      "RootComponentId" : 870,
       "Tag" : "",
       "Type" : "ASkeletalMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "868" : {
-      "ObjectName" : "스태틱 메시_0",
+    "890" : {
+      "ObjectName" : "ASkeletalMeshActor_1",
       "OwnedComponents" : [{
-          "Id" : 869,
+          "AnimationMode" : 0,
+          "CurrentAssetPath" : "Data/Model/Animation/Jump.fbx",
+          "Id" : 891,
           "MaterialSlots" : [{
-              "AssetPath" : "texture",
+              "Type" : "None"
+            }, {
+              "AssetPath" : "Beta_HighLimbsGeoSG3",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Beta_Joints_MAT1",
               "Type" : "UMaterial"
             }],
-          "ObjectName" : "UStaticMeshComponent_1",
+          "ObjectName" : "USkeletalMeshComponent_3",
           "ParentId" : 0,
-          "RelativeLocation" : [1.595682, -7.137557, 3.325514],
+          "RelativeLocation" : [-1.137341, -0.612170, 3.720018],
           "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "StaticMesh" : "Data/cube-tex.obj",
-          "Type" : "UStaticMeshComponent",
+          "SkeletalMesh" : "Data/Model/X Bot.fbx",
+          "Type" : "USkeletalMeshComponent",
           "bBlockComponent" : false,
           "bCastShadows" : true,
           "bGenerateOverlapEvents" : true,
@@ -241,20 +223,92 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 869,
+      "RootComponentId" : 891,
       "Tag" : "",
-      "Type" : "AStaticMeshActor",
+      "Type" : "ASkeletalMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "893" : {
+      "ObjectName" : "ASkeletalMeshActor_2",
+      "OwnedComponents" : [{
+          "AnimationMode" : 0,
+          "CurrentAssetPath" : "Data/Untracked/Laying Idle.fbx",
+          "Id" : 894,
+          "MaterialSlots" : [{
+              "Type" : "None"
+            }, {
+              "AssetPath" : "Beta_HighLimbsGeoSG3",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Beta_Joints_MAT1",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "USkeletalMeshComponent_3",
+          "ParentId" : 0,
+          "RelativeLocation" : [-0.137341, -3.974774, 4.131275],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "SkeletalMesh" : "Data/Model/X Bot.fbx",
+          "Type" : "USkeletalMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 894,
+      "Tag" : "",
+      "Type" : "ASkeletalMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "920" : {
+      "ObjectName" : "ASkeletalMeshActor_3",
+      "OwnedComponents" : [{
+          "AnimationMode" : 0,
+          "CurrentAssetPath" : "Data/Model/Animation/Idle.fbx",
+          "Id" : 921,
+          "MaterialSlots" : [{
+              "Type" : "None"
+            }, {
+              "AssetPath" : "Beta_HighLimbsGeoSG3",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Beta_Joints_MAT1",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "USkeletalMeshComponent_3",
+          "ParentId" : 0,
+          "RelativeLocation" : [1.173811, -3.557273, 2.850968],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "SkeletalMesh" : "Data/Model/X Bot.fbx",
+          "Type" : "USkeletalMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 921,
+      "Tag" : "",
+      "Type" : "ASkeletalMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     }
   },
-  "NextUUID" : 870,
+  "NextUUID" : 977,
   "PerspectiveCamera" : {
     "FOV" : [60.000000],
-    "FarClip" : [2000.000000],
-    "Location" : [10.238415, -2.810250, 8.355718],
+    "FarClip" : [1000.000000],
+    "Location" : [5.319561, -3.338819, 7.870698],
     "NearClip" : [0.100000],
-    "Rotation" : [0.000000, 30.200029, 179.899643]
+    "Rotation" : [0.000000, 32.999939, 161.602554]
   },
   "Version" : 1
 }

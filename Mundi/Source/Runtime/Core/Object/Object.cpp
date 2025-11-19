@@ -228,6 +228,35 @@ void UObject::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			}
 			break;
 		}
+		case EPropertyType::Sound:
+		{
+			USound** Value = Prop.GetValuePtr<USound*>(this);
+			if (bInIsLoading)
+			{
+				FString SoundPath;
+				FJsonSerializer::ReadString(InOutHandle, Prop.Name, SoundPath);
+				if (!SoundPath.empty())
+				{
+					*Value = UResourceManager::GetInstance().Load<USound>(SoundPath);
+				}
+				else
+				{
+					*Value = nullptr;
+				}
+			}
+			else
+			{
+				if (*Value)
+				{
+					InOutHandle[Prop.Name] = (*Value)->GetFilePath().c_str();
+				}
+				else
+				{
+					InOutHandle[Prop.Name] = "";
+				}
+			}
+			break;
+		}
 		case EPropertyType::Material:
 		{
 			UMaterial** Value = Prop.GetValuePtr<UMaterial*>(this);

@@ -9,6 +9,30 @@
 
 IMPLEMENT_CLASS(UAnimSequenceBase)
 
+namespace
+{
+	constexpr int32 GAnimNotifyFileMagic = 0x4E544659; // 'NTFY'
+	constexpr int32 GAnimNotifyFileVersion = 2;
+
+	class FNotifySerializeFlagGuard
+	{
+	public:
+		explicit FNotifySerializeFlagGuard(bool bNewValue)
+		{
+			PrevValue = FAnimNotifyEvent::ShouldSerializeNotifyProperties();
+			FAnimNotifyEvent::SetSerializeNotifyProperties(bNewValue);
+		}
+
+		~FNotifySerializeFlagGuard()
+		{
+			FAnimNotifyEvent::SetSerializeNotifyProperties(PrevValue);
+		}
+
+	private:
+		bool PrevValue = false;
+	};
+}
+
 UAnimSequenceBase::UAnimSequenceBase()
 {
 	EnsureDefaultNotifyTrack();
@@ -285,10 +309,18 @@ bool UAnimSequenceBase::SaveNotifies()
 		return false;
 	}
 
+	// 파일 헤더 (매직 + 버전)
+	int32 Magic = GAnimNotifyFileMagic;
+	Ar << Magic;
+
+	int32 FileVersion = GAnimNotifyFileVersion;
+	Ar << FileVersion;
+
 	// 1. Notifies 배열 저장
 	int32 NotifyCount = Notifies.Num();
 	Ar << NotifyCount;
 
+	FNotifySerializeFlagGuard SerializeScope(true);
 	for (FAnimNotifyEvent& Event : Notifies)
 	{
 		if (!Event.Serialize(Ar))
@@ -330,9 +362,21 @@ bool UAnimSequenceBase::LoadNotifies(const FString& InFilePath)
 	// 기존 노티파이 정리
 	ClearNotifies();
 
-	// 1. Notifies 배열 로드
+	// 1. 헤더 + Notifies 배열 로드
+	int32 FileVersion = 1;
 	int32 NotifyCount = 0;
-	Ar << NotifyCount;
+	int32 HeaderValue = 0;
+	Ar << HeaderValue;
+
+	if (HeaderValue == GAnimNotifyFileMagic)
+	{
+		Ar << FileVersion;
+		Ar << NotifyCount;
+	}
+	else
+	{
+		NotifyCount = HeaderValue;
+	}
 
 	if (NotifyCount < 0 || NotifyCount > Serialization::MAX_REASONABLE_ARRAY_SIZE)
 	{
@@ -343,6 +387,9 @@ bool UAnimSequenceBase::LoadNotifies(const FString& InFilePath)
 
 	Notifies.clear();
 	Notifies.reserve(NotifyCount);
+
+	const bool bShouldLoadNotifyProperties = (FileVersion >= GAnimNotifyFileVersion);
+	FNotifySerializeFlagGuard SerializeScope(bShouldLoadNotifyProperties);
 
 	for (int32 i = 0; i < NotifyCount; ++i)
 	{

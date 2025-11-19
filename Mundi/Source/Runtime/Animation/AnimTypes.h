@@ -3,6 +3,8 @@
 #include "AnimNotify.h"
 #include "Archive.h"
 #include "ObjectFactory.h"
+#include "JsonSerializer.h"
+#include <exception>
 #include <cmath>
 //#include "AnimCurveTypes.h"
 
@@ -13,6 +15,17 @@ struct FAnimNotifyEvent
 	FName NotifyName;
 	uint8 TrackIndex = 0; // 노티파이가 속한 트랙 인덱스
 	UAnimNotify* Notify = nullptr; // 실제 Notify 오브젝트
+	inline static bool bSerializeNotifyProperties = false;
+
+	static void SetSerializeNotifyProperties(bool bEnable)
+	{
+		bSerializeNotifyProperties = bEnable;
+	}
+
+	static bool ShouldSerializeNotifyProperties()
+	{
+		return bSerializeNotifyProperties;
+	}
 
 	bool Serialize(FArchive& Ar)
 	{
@@ -20,6 +33,8 @@ struct FAnimNotifyEvent
 		{
 			return false;
 		}
+
+		const bool bSerializeNotifyProps = ShouldSerializeNotifyProperties();
 
 		Ar << TriggerTime;
 		Ar << Duration;
@@ -40,6 +55,15 @@ struct FAnimNotifyEvent
 				// Notify 클래스 이름 저장
 				const FString ClassName = Notify->GetClass()->Name;
 				Serialization::WriteString(Ar, ClassName);
+
+				if (bSerializeNotifyProps)
+				{
+					// Notify 객체의 리플렉션 프로퍼티를 JSON으로 직렬화 후 문자열 저장
+					JSON NotifyJson = JSON::Make(JSON::Class::Object);
+					Notify->Serialize(false, NotifyJson);
+					FString NotifyJsonString = FJsonSerializer::FormatJsonString(NotifyJson, 0);
+					Serialization::WriteString(Ar, NotifyJsonString);
+				}
 			}
 		}
 		else // Loading
@@ -59,12 +83,38 @@ struct FAnimNotifyEvent
 				FString ClassName;
 				Serialization::ReadString(Ar, ClassName);
 
+				// Notify 프로퍼티 JSON 문자열 로드 (지원되는 경우에만)
+				FString NotifyJsonString;
+				if (bSerializeNotifyProps)
+				{
+					Serialization::ReadString(Ar, NotifyJsonString);
+				}
+
 				// 클래스 찾기
 				UClass* NotifyClass = UClass::FindClass(FName(ClassName));
 				if (NotifyClass)
 				{
 					// 새 인스턴스 생성
 					Notify = Cast<UAnimNotify>(ObjectFactory::NewObject(NotifyClass));
+					if (Notify)
+					{
+						if (bSerializeNotifyProps && !NotifyJsonString.empty())
+						{
+							try
+							{
+								JSON NotifyJson = JSON::Load(NotifyJsonString);
+								Notify->Serialize(true, NotifyJson);
+							}
+							catch (const std::exception&)
+							{
+								UE_LOG("FAnimNotifyEvent::Serialize: Failed to parse notify JSON for class %s", ClassName.c_str());
+							}
+						}
+					}
+					else
+					{
+						UE_LOG("FAnimNotifyEvent::Serialize: Failed to instantiate notify of class %s", ClassName.c_str());
+					}
 				}
 				else
 				{

@@ -25,6 +25,8 @@ public:
 	void SetVolumeMultiplier(float InVolumeMultiplier) { VolumeMultiplier = InVolumeMultiplier; }
 	void SetPitch(float InPitch) { Pitch = InPitch; }
 
+	void SetSoundByFileName(const FString& PathFileName);
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Sound")
 	USound* Sound = nullptr;

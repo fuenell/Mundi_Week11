@@ -14,6 +14,7 @@
 #include "Source/Runtime/Engine/Components/SkeletalMeshComponent.h"
 #include "Source/Runtime/Animation/AnimSingleNodeInstance.h"
 #include "Source/Runtime/Animation/AnimSequence.h"
+#include "Source/Runtime/Core/Object/ObjectFactory.h"
 #include <cstring>
 #include <algorithm>
 
@@ -707,6 +708,8 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
 	static bool GShouldOpenAddNotifyPopup = false;
 	static int32 GPendingAddNotifyTrackIndex = -1;
 	static float GPendingAddNotifyTime = 0.f;
+	static bool GIsDraggingNotify = false;
+	static int32 GDraggedNotifyIndex = -1;
 
     // Playback controls section
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
@@ -944,6 +947,8 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
         const float triangleSize = 8.0f;
 
         bool bAnyTimelineActive = false;
+        int32 PendingDeleteNotifyIndex = -1;
+        TArray<FAnimNotifyEvent>& NotifyEvents = AnimSequence->Notifies;
 
         for (int32 TrackIdx = 0; TrackIdx < DisplayTrackCount; ++TrackIdx)
         {
@@ -952,6 +957,7 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
             ImVec2 labelMax(timelinePos.x + TrackLabelColumnWidth, rowTop + perTrackHeight);
             ImVec2 laneMin(trackAreaOrigin.x, rowTop);
             ImVec2 laneMax(trackAreaOrigin.x + timelineWidth, rowTop + perTrackHeight);
+            bool bTrackRightClickConsumed = false;
 
             ImU32 labelColor = (TrackIdx % 2 == 0) ? IM_COL32(24, 24, 30, 255) : IM_COL32(28, 28, 34, 255);
             ImU32 laneColor = (TrackIdx % 2 == 0) ? IM_COL32(27, 27, 33, 255) : IM_COL32(31, 31, 38, 255);
@@ -1133,6 +1139,145 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
                 }
             }
 
+            // Draw notify diamonds + labels
+            const float DiamondHalfWidth = 6.0f;
+            const float DiamondHalfHeight = std::min(perTrackHeight * 0.4f, 10.0f);
+            const float LabelPaddingX = 6.0f;
+            const float LabelPaddingY = 3.0f;
+            for (int32 EventIdx = 0; EventIdx < NotifyEvents.Num(); ++EventIdx)
+            {
+                FAnimNotifyEvent& EventRef = NotifyEvents[EventIdx];
+                if (static_cast<int32>(EventRef.TrackIndex) != TrackIdx)
+                {
+                    continue;
+                }
+
+                float normalizedTime = (AnimLength > 0.0f) ? EventRef.TriggerTime / AnimLength : 0.0f;
+                normalizedTime = std::clamp(normalizedTime, 0.0f, 1.0f);
+
+                float centerX = laneMin.x + normalizedTime * timelineWidth;
+                float centerY = rowTop + perTrackHeight * 0.5f;
+
+                const float HitBoxPadding = 8.0f;
+                ImVec2 hitMin(centerX - (DiamondHalfWidth + HitBoxPadding), centerY - (DiamondHalfHeight + HitBoxPadding));
+                ImVec2 hitMax(centerX + (DiamondHalfWidth + HitBoxPadding), centerY + (DiamondHalfHeight + HitBoxPadding));
+
+                ImGui::SetCursorScreenPos(hitMin);
+                ImGui::PushID((TrackIdx * 1000) + EventIdx);
+                ImGui::InvisibleButton("NotifyMarkerHitProxy", ImVec2(hitMax.x - hitMin.x, hitMax.y - hitMin.y));
+                bool bMarkerHovered = ImGui::IsItemHovered();
+
+                if (bMarkerHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                {
+                    GDraggedNotifyIndex = EventIdx;
+                    GIsDraggingNotify = true;
+                    if (!ActiveState->bTimelineScrubbing)
+                    {
+                        ActiveState->bTimelineScrubbing = true;
+                        ActiveState->bWasPlayingBeforeScrub = bIsPlaying;
+                        if (bIsPlaying)
+                        {
+                            AnimInstance->SetPlaying(false);
+                        }
+                    }
+                }
+
+                if (bMarkerHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                {
+                    bTrackRightClickConsumed = true;
+                }
+
+                if (GIsDraggingNotify && GDraggedNotifyIndex == EventIdx)
+                {
+                    bAnyTimelineActive = true;
+                    if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                    {
+                        ImVec2 mousePos = ImGui::GetMousePos();
+                        float normalizedPos = (mousePos.x - laneMin.x) / timelineWidth;
+                        normalizedPos = std::clamp(normalizedPos, 0.0f, 1.0f);
+                        float newTime = normalizedPos * AnimLength;
+                        EventRef.SetTriggerTime(newTime, AnimLength);
+                    }
+                    else
+                    {
+                        AnimSequence->RefreshNotifyPositions();
+                        GIsDraggingNotify = false;
+                        GDraggedNotifyIndex = -1;
+                    }
+                }
+
+                if (ImGui::BeginPopupContextItem("NotifyMarkerContext"))
+                {
+                    if (ImGui::MenuItem("Delete Notify"))
+                    {
+                        PendingDeleteNotifyIndex = EventIdx;
+                    }
+                    ImGui::EndPopup();
+                }
+
+                ImGui::PopID();
+
+                normalizedTime = (AnimLength > 0.0f) ? EventRef.TriggerTime / AnimLength : 0.0f;
+                normalizedTime = std::clamp(normalizedTime, 0.0f, 1.0f);
+                centerX = laneMin.x + normalizedTime * timelineWidth;
+                float centerYUpdated = rowTop + perTrackHeight * 0.5f;
+
+                FString NotifyLabel = EventRef.NotifyName.ToString();
+                if (NotifyLabel.empty() && EventRef.Notify && EventRef.Notify->GetClass())
+                {
+                    const UClass* NotifyClass = EventRef.Notify->GetClass();
+                    if (NotifyClass->DisplayName && NotifyClass->DisplayName[0] != '\0')
+                    {
+                        NotifyLabel = NotifyClass->DisplayName;
+                    }
+                    else if (NotifyClass->Name)
+                    {
+                        NotifyLabel = NotifyClass->Name;
+                    }
+                }
+                if (NotifyLabel.empty())
+                {
+                    NotifyLabel = "AnimNotify";
+                }
+
+                ImVec2 textSize = ImGui::CalcTextSize(NotifyLabel.c_str());
+                float labelHeight = textSize.y + LabelPaddingY * 2.0f;
+                float labelWidth = textSize.x + LabelPaddingX * 2.0f;
+
+                const float LabelDiamondGap = 6.0f;
+                ImVec2 rectMin(centerX + LabelDiamondGap, centerYUpdated - labelHeight * 0.5f);
+                ImVec2 rectMax(rectMin.x + labelWidth, rectMin.y + labelHeight);
+
+                if (rectMax.x > laneMax.x - 4.0f)
+                {
+                    float delta = rectMax.x - (laneMax.x - 4.0f);
+                    rectMin.x -= delta;
+                    rectMax.x -= delta;
+                }
+
+                ImU32 LabelBg = IM_COL32(40, 45, 60, 204);
+                ImU32 LabelBorder = IM_COL32(200, 210, 230, 220);
+                ImU32 LabelTextColor = IM_COL32(235, 240, 255, 255);
+
+                drawList->AddRectFilled(rectMin, rectMax, LabelBg, 4.0f);
+                drawList->AddRect(rectMin, rectMax, LabelBorder, 4.0f, 0, 1.0f);
+                drawList->AddText(
+                    ImVec2(rectMin.x + LabelPaddingX, rectMin.y + LabelPaddingY),
+                    LabelTextColor,
+                    NotifyLabel.c_str()
+                );
+
+                ImVec2 p0(centerX, centerYUpdated - DiamondHalfHeight);
+                ImVec2 p1(centerX + DiamondHalfWidth, centerYUpdated);
+                ImVec2 p2(centerX, centerYUpdated + DiamondHalfHeight);
+                ImVec2 p3(centerX - DiamondHalfWidth, centerYUpdated);
+
+                ImU32 DiamondFill = IM_COL32(255, 190, 80, 204);
+                ImU32 DiamondOutline = IM_COL32(0, 0, 0, 220);
+                drawList->AddQuadFilled(p0, p1, p2, p3, DiamondFill);
+                drawList->AddQuad(p0, p1, p2, p3, DiamondOutline, 1.2f);
+            }
+
             // Playhead per track
             drawList->AddLine(
                 ImVec2(playheadX, laneMin.y),
@@ -1148,6 +1293,10 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
             bool bLaneHovered = ImGui::IsItemHovered();
             bool bLaneActive = ImGui::IsItemActive();
             bool bLaneRightClicked = bLaneHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Right);
+            if (bTrackRightClickConsumed)
+            {
+                bLaneRightClicked = false;
+            }
 
             if (bLaneRightClicked)
             {
@@ -1202,6 +1351,13 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
             ImGui::PopID();
         }
 
+        if (PendingDeleteNotifyIndex >= 0 && PendingDeleteNotifyIndex < NotifyEvents.Num())
+        {
+            AnimSequence->RemoveNotify(PendingDeleteNotifyIndex);
+            GIsDraggingNotify = false;
+            GDraggedNotifyIndex = -1;
+        }
+
         if (ActiveState->bTimelineScrubbing && !bAnyTimelineActive)
         {
             ActiveState->bTimelineScrubbing = false;
@@ -1252,7 +1408,41 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
 
                     if (ImGui::Selectable(Label, false))
                     {
-                        UE_LOG("Selected AnimNotify class: %s", Label ? Label : "Unknown");
+                        if (AnimSequence)
+                        {
+                            const int32 SafeTrackCount = std::max(TrackCountRaw, 1);
+                            int32 TargetTrackIndex = (GPendingAddNotifyTrackIndex >= 0) ? GPendingAddNotifyTrackIndex : 0;
+                            TargetTrackIndex = std::clamp(TargetTrackIndex, 0, SafeTrackCount - 1);
+                            TargetTrackIndex = std::clamp(TargetTrackIndex, 0, UAnimSequenceBase::MaxNumNotifyTracks - 1);
+
+                            FAnimNotifyEvent NewEvent;
+                            NewEvent.TrackIndex = static_cast<uint8>(TargetTrackIndex);
+                            const float SequenceLength = AnimLength;
+                            const float RawTime = GPendingAddNotifyTime;
+                            if (SequenceLength > 0.0f)
+                            {
+                                NewEvent.TriggerTime = std::clamp(RawTime, 0.0f, SequenceLength);
+                            }
+                            else
+                            {
+                                NewEvent.TriggerTime = std::max(0.0f, RawTime);
+                            }
+
+                            if (Label && Label[0] != '\0')
+                            {
+                                NewEvent.NotifyName = FName(Label);
+                            }
+                            else
+                            {
+                                NewEvent.NotifyName = FName("AnimNotify");
+                            }
+
+                            UObject* CreatedObject = ObjectFactory::NewObject(NotifyClass);
+                            NewEvent.Notify = CreatedObject ? static_cast<UAnimNotify*>(CreatedObject) : nullptr;
+
+                            AnimSequence->AddNotify(NewEvent);
+                        }
+
                         ResetPendingAddNotifyState();
                         ImGui::CloseCurrentPopup();
                     }

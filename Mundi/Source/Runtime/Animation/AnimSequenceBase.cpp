@@ -2,6 +2,7 @@
 #include "AnimSequenceBase.h"
 
 #include "FBXLoader.h"
+#include "Source/Runtime/Core/Object/ObjectFactory.h"
 #include <algorithm>
 
 IMPLEMENT_CLASS(UAnimSequenceBase)
@@ -9,6 +10,11 @@ IMPLEMENT_CLASS(UAnimSequenceBase)
 UAnimSequenceBase::UAnimSequenceBase()
 {
 	EnsureDefaultNotifyTrack();
+}
+
+UAnimSequenceBase::~UAnimSequenceBase()
+{
+	ClearNotifies();
 }
 
 void UAnimSequenceBase::Load(const FString& InFilePath, class ID3D11Device* InDevice)
@@ -42,11 +48,16 @@ void UAnimSequenceBase::RemoveNotify(int32 Index)
 		return;
 	}
 
+	ReleaseNotifyEvent(Notifies[Index]);
 	Notifies.RemoveAt(Index);
 }
 
 void UAnimSequenceBase::ClearNotifies()
 {
+	for (FAnimNotifyEvent& Event : Notifies)
+	{
+		ReleaseNotifyEvent(Event);
+	}
 	Notifies.clear();
 }
 
@@ -240,6 +251,15 @@ void UAnimSequenceBase::SortNotifies()
 	{
 		return A.TriggerTime < B.TriggerTime;
 	});
+}
+
+void UAnimSequenceBase::ReleaseNotifyEvent(FAnimNotifyEvent& Event)
+{
+	if (Event.Notify)
+	{
+		ObjectFactory::DeleteObject(Event.Notify);
+		Event.Notify = nullptr;
+	}
 }
 
 void UAnimSequenceBase::EnsureDefaultNotifyTrack()

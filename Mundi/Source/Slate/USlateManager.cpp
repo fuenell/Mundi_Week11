@@ -424,10 +424,7 @@ void USlateManager::Render()
 
 void USlateManager::RenderAfterUI()
 {
-    if (SkeletalViewerWindow)
-    {
-        SkeletalViewerWindow->OnRenderViewport();
-    }
+    // Skeletal mesh viewer는 이제 ImGui 내부에서 자체 렌더링을 수행한다.
 }
 
 void USlateManager::Update(float DeltaSeconds)

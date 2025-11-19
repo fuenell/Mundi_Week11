@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "RHIDevice.h"
 #include "LineDynamicMesh.h"
 
@@ -12,6 +12,7 @@ class UBillboardComponent;
 class UPrimitiveComponent;
 class UCameraComponent;
 class FSceneView;
+struct FViewportRenderOptions;
 
 struct FMaterialSlot;
 
@@ -23,7 +24,7 @@ public:
 	~URenderer();
 
 public:
-	void RenderSceneForView(UWorld* InWorld, FSceneView* InView, FViewport* InViewport);
+	void RenderSceneForView(UWorld* InWorld, FSceneView* InView, FViewport* InViewport, const FViewportRenderOptions* InRenderOptions = nullptr);
 
 	void BeginFrame();
 	void EndFrame();

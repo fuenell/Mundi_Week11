@@ -53,6 +53,7 @@ SSkeletalMeshViewerWindow::~SSkeletalMeshViewerWindow()
     for (int i = 0; i < Tabs.Num(); ++i)
     {
         ViewerState* State = Tabs[i];
+        ReleaseRenderTarget(State);
         SkeletalViewerBootstrap::DestroyViewerState(State);
     }
     Tabs.Empty();
@@ -429,6 +430,30 @@ void SSkeletalMeshViewerWindow::OnRender()
         ImVec2 rectMin = childPos;
         ImVec2 rectMax(childPos.x + childSize.x, childPos.y + childSize.y);
         CenterRect.Left = rectMin.x; CenterRect.Top = rectMin.y; CenterRect.Right = rectMax.x; CenterRect.Bottom = rectMax.y; CenterRect.UpdateMinMax();
+
+        // 뷰포트 크기/라인 데이터를 최신 상태로 유지
+        OnRenderViewport();
+
+        // 렌더 타겟을 갱신하고 결과 텍스처를 ImGui에 표시
+        if (ActiveState && ActiveState->Viewport)
+        {
+            RenderActiveViewportToTexture(static_cast<uint32>(std::max(1.0f, childSize.x)), static_cast<uint32>(std::max(1.0f, childSize.y)));
+        }
+
+        if (ActiveState && ActiveState->ViewerSRV && ActiveState->bViewportTextureValid)
+        {
+            ImGui::SetCursorPos(ImVec2(0, 0));
+            ImGui::Image(
+                (void*)ActiveState->ViewerSRV,
+                ImVec2(childSize.x, childSize.y),
+                ImVec2(0, 0),
+                ImVec2(1, 1));
+        }
+        else
+        {
+            ImGui::SetCursorPos(ImVec2(childSize.x * 0.5f - 60.0f, childSize.y * 0.5f - 10.0f));
+            ImGui::TextUnformatted("Viewport 미사용");
+        }
         ImGui::EndChild();
 
         ImGui::SameLine(0, 0);
@@ -1513,9 +1538,110 @@ void SSkeletalMeshViewerWindow::OnRenderViewport()
 			ActiveState->bBoneLinesDirty = false;
         }
 
-        // 뷰포트 렌더링 (ImGui보다 먼저)
-        ActiveState->Viewport->Render();
+        // 실제 렌더링은 ImGui 패널 안에서 텍스처를 갱신할 때 수행된다
     }
+}
+
+bool SSkeletalMeshViewerWindow::EnsureRenderTarget(ViewerState* State, uint32 Width, uint32 Height)
+{
+    if (!State || !Device || Width == 0 || Height == 0)
+    {
+        return false;
+    }
+
+    if (State->ViewerTexture &&
+        State->ViewerTextureWidth == Width &&
+        State->ViewerTextureHeight == Height)
+    {
+        return true;
+    }
+
+    ReleaseRenderTarget(State);
+
+    D3D11_TEXTURE2D_DESC Desc = {};
+    Desc.Width = Width;
+    Desc.Height = Height;
+    Desc.MipLevels = 1;
+    Desc.ArraySize = 1;
+    Desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+    Desc.SampleDesc.Count = 1;
+    Desc.Usage = D3D11_USAGE_DEFAULT;
+    Desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+    HRESULT hr = Device->CreateTexture2D(&Desc, nullptr, &State->ViewerTexture);
+    if (FAILED(hr))
+    {
+        UE_LOG("SSkeletalMeshViewerWindow: 렌더 타겟 생성 실패 (%u x %u)", Width, Height);
+        return false;
+    }
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+    SRVDesc.Format = Desc.Format;
+    SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    SRVDesc.Texture2D.MostDetailedMip = 0;
+    SRVDesc.Texture2D.MipLevels = 1;
+
+    hr = Device->CreateShaderResourceView(State->ViewerTexture, &SRVDesc, &State->ViewerSRV);
+    if (FAILED(hr))
+    {
+        State->ViewerTexture->Release();
+        State->ViewerTexture = nullptr;
+        UE_LOG("SSkeletalMeshViewerWindow: 렌더 타겟 SRV 생성 실패");
+        return false;
+    }
+
+    State->ViewerTextureWidth = Width;
+    State->ViewerTextureHeight = Height;
+    return true;
+}
+
+void SSkeletalMeshViewerWindow::ReleaseRenderTarget(ViewerState* State)
+{
+    if (!State) return;
+
+    if (State->ViewerSRV)
+    {
+        State->ViewerSRV->Release();
+        State->ViewerSRV = nullptr;
+    }
+
+    if (State->ViewerTexture)
+    {
+        State->ViewerTexture->Release();
+        State->ViewerTexture = nullptr;
+    }
+
+    State->ViewerTextureWidth = 0;
+    State->ViewerTextureHeight = 0;
+    State->bViewportTextureValid = false;
+}
+
+void SSkeletalMeshViewerWindow::RenderActiveViewportToTexture(uint32 Width, uint32 Height)
+{
+    if (!ActiveState || !ActiveState->Viewport || Width == 0 || Height == 0)
+    {
+        if (ActiveState)
+        {
+            ActiveState->bViewportTextureValid = false;
+        }
+        return;
+    }
+
+    if (!EnsureRenderTarget(ActiveState, Width, Height))
+    {
+        ActiveState->bViewportTextureValid = false;
+        return;
+    }
+
+    FViewportRenderOptions RenderOptions;
+    RenderOptions.bCompositeToBackBuffer = false;
+    RenderOptions.bCaptureSceneColor = true;
+    RenderOptions.CaptureTexture = ActiveState->ViewerTexture;
+
+    ActiveState->Viewport->SetRenderOptions(RenderOptions);
+    ActiveState->Viewport->Render();
+    ActiveState->Viewport->ResetRenderOptions();
+    ActiveState->bViewportTextureValid = true;
 }
 
 void SSkeletalMeshViewerWindow::OpenNewTab(const char* Name)
@@ -1532,6 +1658,7 @@ void SSkeletalMeshViewerWindow::CloseTab(int Index)
 {
     if (Index < 0 || Index >= Tabs.Num()) return;
     ViewerState* State = Tabs[Index];
+    ReleaseRenderTarget(State);
     SkeletalViewerBootstrap::DestroyViewerState(State);
     Tabs.RemoveAt(Index);
     if (Tabs.Num() == 0) { ActiveTabIndex = -1; ActiveState = nullptr; }

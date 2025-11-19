@@ -209,6 +209,8 @@ public:
     // RTV Getters
     ID3D11RenderTargetView* GetBackBufferRTV() const { return BackBufferRTV; }
 
+	ID3D11RenderTargetView* GetCurrentSourceRTV() const { return SceneColorRTVs[SourceIndex]; }
+
 private:
 	void CreateDeviceAndSwapChain(HWND hWindow); // 여기서 디바이스, 디바이스 컨택스트, 스왑체인, 뷰포트를 초기화한다
 	void CreateFrameBuffer();

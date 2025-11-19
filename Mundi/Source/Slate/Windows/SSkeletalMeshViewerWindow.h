@@ -82,4 +82,8 @@ private:
     void ApplyBoneTransform(ViewerState* State);
 
     void ExpandToSelectedBone(ViewerState* State, int32 BoneIndex);
+
+    bool EnsureRenderTarget(ViewerState* State, uint32 Width, uint32 Height);
+    void ReleaseRenderTarget(ViewerState* State);
+    void RenderActiveViewportToTexture(uint32 Width, uint32 Height);
 };

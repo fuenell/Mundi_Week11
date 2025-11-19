@@ -1,9 +1,21 @@
-﻿#pragma once
+#pragma once
 #include "Object.h"
 #include "Vector.h"
 #include <d3d11.h>
 
 class FViewportClient;
+
+struct FViewportRenderOptions
+{
+    bool bCompositeToBackBuffer = true;
+    bool bCaptureSceneColor = false;
+    ID3D11Texture2D* CaptureTexture = nullptr;
+
+    bool HasCustomBehavior() const
+    {
+        return !bCompositeToBackBuffer || (bCaptureSceneColor && CaptureTexture != nullptr);
+    }
+};
 
 /**
  * @brief 뷰포트 클래스 - UE의 FViewport를 모방
@@ -41,6 +53,10 @@ public:
     
     FVector2D GetViewportMousePosition() { return ViewportMousePosition; }
 
+    void SetRenderOptions(const FViewportRenderOptions& InOptions) { RenderOptions = InOptions; }
+    void ResetRenderOptions() { RenderOptions = FViewportRenderOptions(); }
+    const FViewportRenderOptions& GetRenderOptions() const { return RenderOptions; }
+
     // 마우스/키보드 입력 처리
     void ProcessMouseMove(int32 X, int32 Y);
     void ProcessMouseButtonDown(int32 X, int32 Y, int32 Button);
@@ -63,5 +79,6 @@ private:
     FViewportClient* ViewportClient = nullptr;
 
     FVector2D ViewportMousePosition{};
-};
 
+    FViewportRenderOptions RenderOptions;
+};

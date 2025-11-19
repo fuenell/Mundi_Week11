@@ -69,13 +69,58 @@ void URenderer::EndFrame()
 	RHIDevice->Present();
 }
 
-void URenderer::RenderSceneForView(UWorld* World, FSceneView* View, FViewport* Viewport)
+void URenderer::RenderSceneForView(UWorld* World, FSceneView* View, FViewport* Viewport, const FViewportRenderOptions* InRenderOptions)
 {
+	if (!World || !View || !Viewport) return;
+
+	const bool bCompositeToBackBuffer = !InRenderOptions || InRenderOptions->bCompositeToBackBuffer;
+
 	// 씬을 그리는 FSceneRenderer 를 생성합니다.
-	FSceneRenderer SceneRenderer(World, View, this);
+	FSceneRenderer SceneRenderer(World, View, this, bCompositeToBackBuffer);
 
 	// 실제로 렌더를 수행합니다.
 	SceneRenderer.Render();
+
+	const bool bSkippedBackBufferComposite = InRenderOptions && !InRenderOptions->bCompositeToBackBuffer;
+
+	if (InRenderOptions && InRenderOptions->bCaptureSceneColor && InRenderOptions->CaptureTexture)
+	{
+		ID3D11ShaderResourceView* SourceSRV = RHIDevice->GetCurrentSourceSRV();
+		if (SourceSRV)
+		{
+			ID3D11Resource* SourceResource = nullptr;
+			SourceSRV->GetResource(&SourceResource);
+			if (SourceResource)
+			{
+				const FViewportRect& ViewRect = View->ViewRect;
+				if (ViewRect.Width() > 0 && ViewRect.Height() > 0)
+				{
+					D3D11_BOX SrcBox = {};
+					SrcBox.left = ViewRect.MinX;
+					SrcBox.right = ViewRect.MaxX;
+					SrcBox.top = ViewRect.MinY;
+					SrcBox.bottom = ViewRect.MaxY;
+					SrcBox.front = 0;
+					SrcBox.back = 1;
+
+					RHIDevice->GetDeviceContext()->CopySubresourceRegion(
+						InRenderOptions->CaptureTexture,
+						0,
+						0, 0, 0,
+						SourceResource,
+						0,
+						&SrcBox);
+				}
+
+				SourceResource->Release();
+			}
+		}
+	}
+
+	if (bSkippedBackBufferComposite)
+	{
+		RHIDevice->OMSetRenderTargets(ERTVMode::BackBufferWithDepth);
+	}
 }
 
 UPrimitiveComponent* URenderer::GetPrimitiveCollided(int MouseX, int MouseY) const

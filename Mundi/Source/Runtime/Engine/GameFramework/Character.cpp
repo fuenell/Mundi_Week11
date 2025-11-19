@@ -2,6 +2,7 @@
 #include "Character.h"
 #include "SkeletalMeshComponent.h"
 #include "CapsuleComponent.h"
+#include "CameraComponent.h"
 #include "MovementComponent.h"
 #include "InputManager.h"
 #include "World.h"
@@ -9,6 +10,13 @@
 ACharacter::ACharacter()
 	: MeshComponent(nullptr)
 	, CollisionComponent(nullptr)
+	, CameraComponent(nullptr)
+	, CameraOffset(FVector(0, 0, 5.0f))
+	, CameraDistance(12.0f)
+	, CameraTurnRate(2.0f)
+	, CameraLookUpRate(2.0f)
+	, CameraYaw(0.0f)
+	, CameraPitch(0.0f)
 	, WalkSpeed(2.0f)
 	, RunSpeed(2.0f)
 	, GravityScale(9.8f)
@@ -37,6 +45,14 @@ ACharacter::ACharacter()
 		MeshComponent->SetupAttachment(CollisionComponent, EAttachmentRule::KeepRelative);
 	}
 
+	// 3인칭 카메라 컴포넌트 생성
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
+	if (CameraComponent && CollisionComponent)
+	{
+		CameraComponent->SetupAttachment(CollisionComponent, EAttachmentRule::KeepRelative);
+		CameraComponent->SetRelativeLocation(CameraOffset);
+	}
+
 	// 부모의 멤버인 이동 컴포넌트 생성
 	UMovementComponent* TempMovementComponent = CreateDefaultSubobject<UMovementComponent>("MovementComponent");
 	SetMovementComponent(TempMovementComponent);
@@ -52,6 +68,11 @@ void ACharacter::BeginPlay()
 
 	// 초기 지면 위치 저장
 	LastGroundZ = GetActorLocation().Z;
+
+	// 카메라 초기 회전 설정 (캐릭터의 현재 회전 기준)
+	FQuat ActorRot = GetActorRotation();
+	CameraYaw = 0.0f;  // 초기에는 캐릭터 정면을 향함
+	CameraPitch = 0.0f;
 }
 
 void ACharacter::Tick(float DeltaSeconds)
@@ -73,6 +94,9 @@ void ACharacter::Tick(float DeltaSeconds)
 
 		// 회전 업데이트
 		UpdateRotation(DeltaSeconds);
+
+		// 카메라 업데이트
+		UpdateCamera(DeltaSeconds);
 
 		// 추가 입력 처리 (점프 등)
 		if (bIsPlayerControlled)
@@ -98,6 +122,14 @@ void ACharacter::Tick(float DeltaSeconds)
 			{
 				StopSprinting();
 			}
+
+			// 마우스 회전 입력 (카메라 회전)
+			FVector2D MouseDelta = InputManager.GetMouseDelta();
+			if (MouseDelta.X != 0.0f || MouseDelta.Y != 0.0f)
+			{
+				AddCameraYaw(MouseDelta.X * 0.05f);
+				AddCameraPitch(-MouseDelta.Y * 0.05f);
+			}
 		}
 	}
 }
@@ -118,12 +150,44 @@ void ACharacter::SetupPlayerInput()
 	// 추가 입력 바인딩이 필요하면 여기에 구현
 }
 
+void ACharacter::AddCameraYaw(float Value)
+{
+	CameraYaw += Value * CameraTurnRate;
+	// Yaw는 제한 없이 자유롭게 회전
+}
+
+void ACharacter::AddCameraPitch(float Value)
+{
+	CameraPitch += Value * CameraLookUpRate;
+	// Pitch는 -89도에서 89도로 제한 (위아래 제한)
+	CameraPitch = FMath::Clamp(CameraPitch, -89.0f, 89.0f);
+}
+
+void ACharacter::UpdateCamera(float DeltaSeconds)
+{
+	if (!CameraComponent) return;
+
+	// 카메라 회전 계산 (캐릭터 회전과 독립적)
+	FQuat YawRotation = FQuat::FromAxisAngle(FVector(0, 0, 1), DegreesToRadians(CameraYaw));
+	FQuat PitchRotation = FQuat::FromAxisAngle(FVector(0, 1, 0), DegreesToRadians(CameraPitch));
+	FQuat CameraRotation = YawRotation * PitchRotation;
+
+	// 카메라 위치 계산 (캐릭터 뒤쪽으로 배치)
+	FVector CameraLocalOffset = CameraRotation.RotateVector(FVector(-CameraDistance, 0, 0));
+	FVector TargetLocation = GetActorLocation() + CameraOffset + CameraLocalOffset;
+
+	// 카메라 위치와 회전 설정
+	CameraComponent->SetWorldLocation(TargetLocation);
+	CameraComponent->SetWorldRotation(CameraRotation);
+}
+
 void ACharacter::MoveForward(float Value)
 {
 	if (Value != 0.0f)
 	{
-		// 카메라 방향 기준 전방 이동 (수평면)
-		FVector Forward = GetActorForward();
+		// 카메라가 바라보는 방향 기준 전방 이동 (수평면)
+		FQuat CameraRotation = FQuat::FromAxisAngle(FVector(0, 0, 1), DegreesToRadians(CameraYaw));
+		FVector Forward = CameraRotation.RotateVector(FVector(1, 0, 0));
 		Forward.Z = 0.0f;
 		Forward = Forward.GetSafeNormal();
 		
@@ -136,8 +200,9 @@ void ACharacter::MoveRight(float Value)
 {
 	if (Value != 0.0f)
 	{
-		// 카메라 방향 기준 오른쪽 이동 (수평면)
-		FVector Right = GetActorRight();
+		// 카메라가 바라보는 방향 기준 오른쪽 이동 (수평면)
+		FQuat CameraRotation = FQuat::FromAxisAngle(FVector(0, 0, 1), DegreesToRadians(CameraYaw));
+		FVector Right = CameraRotation.RotateVector(FVector(0, 1, 0));
 		Right.Z = 0.0f;
 		Right = Right.GetSafeNormal();
 		
@@ -299,6 +364,16 @@ void ACharacter::DuplicateSubObjects()
 			break;
 		}
 	}
+
+	// Find camera component
+	for (UActorComponent* Component : OwnedComponents)
+	{
+		if (auto* Comp = Cast<UCameraComponent>(Component))
+		{
+			CameraComponent = Comp;
+			break;
+		}
+	}
 }
 
 void ACharacter::Serialize(const bool bInIsLoading, JSON& InOutHandle)
@@ -318,7 +393,26 @@ void ACharacter::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 				MeshComponent = Comp;
 				break;
 			}
+			else if (auto* Comp = Cast<UCameraComponent>(Component))
+			{
+				CameraComponent = Comp;
+				break;
+			}
 		}
+
+		// Load camera settings
+		FJsonSerializer::ReadFloat(InOutHandle, "CameraDistance", CameraDistance, 300.0f);
+		FJsonSerializer::ReadFloat(InOutHandle, "CameraYaw", CameraYaw, 0.0f);
+		FJsonSerializer::ReadFloat(InOutHandle, "CameraPitch", CameraPitch, 0.0f);
+		FJsonSerializer::ReadVector(InOutHandle, "CameraOffset", CameraOffset, FVector(0, 0, 60));
+	}
+	else
+	{
+		// Save camera settings
+		InOutHandle["CameraDistance"] = CameraDistance;
+		InOutHandle["CameraYaw"] = CameraYaw;
+		InOutHandle["CameraPitch"] = CameraPitch;
+		InOutHandle["CameraOffset"] = FJsonSerializer::VectorToJson(CameraOffset);
 	}
 }
 

@@ -4,6 +4,7 @@
 
 class USkeletalMeshComponent;
 class UCapsuleComponent;
+class UCameraComponent;
 
 UCLASS(DisplayName = "Character", Description = "인간형 캐릭터의 움직임이 내장된 Pawn입니다.")
 class ACharacter : public APawn
@@ -29,6 +30,14 @@ public:
 	// ───── Collision ─────────────────────────
 	// 캡슐 충돌체 접근 (인간형 캐릭터 전용)
 	UCapsuleComponent* GetCapsuleComponent() const { return CollisionComponent; }
+
+	// ───── Camera ─────────────────────────
+	// 카메라 컴포넌트 접근
+	UCameraComponent* GetCameraComponent() const { return CameraComponent; }
+	
+	// 카메라 회전 제어 (마우스 입력)
+	void AddCameraYaw(float Value);
+	void AddCameraPitch(float Value);
 
 	// ───── Movement ─────────────────────────
 	// 캐릭터 전용 이동 함수들
@@ -81,6 +90,7 @@ protected:
 	void UpdateMovement(float DeltaSeconds);
 	void ApplyGravity(float DeltaSeconds);
 	void UpdateRotation(float DeltaSeconds);
+	void UpdateCamera(float DeltaSeconds);
 
 	// 충돌 체크
 	void CheckGroundStatus();
@@ -89,12 +99,34 @@ protected:
 	// ───── Character-Specific Components ─────────────────────────
 	
 	// 캡슐 충돌체 (인간형 캐릭터의 충돌 처리)
-	//UPROPERTY(EditAnywhere, Category="Character|Collision")
 	UCapsuleComponent* CollisionComponent = nullptr;
 
 	// 스켈레탈 메시 컴포넌트
-	//UPROPERTY(EditAnywhere, Category="Character|Mesh")
 	USkeletalMeshComponent* MeshComponent = nullptr;
+
+	// 3인칭 카메라 컴포넌트
+	UCameraComponent* CameraComponent = nullptr;
+
+	// ───── Camera Properties ─────────────────────────
+	
+	// 카메라 오프셋 (캐릭터 기준)
+	UPROPERTY(EditAnywhere, Category="Character|Camera")
+	FVector CameraOffset;
+
+	// 카메라 거리 (캐릭터로부터의 거리)
+	UPROPERTY(EditAnywhere, Category="Character|Camera", Range="0.0, 1000.0")
+	float CameraDistance;
+
+	// 카메라 회전 속도
+	UPROPERTY(EditAnywhere, Category="Character|Camera", Range="0.1, 10.0")
+	float CameraTurnRate;
+
+	UPROPERTY(EditAnywhere, Category="Character|Camera", Range="0.1, 10.0")
+	float CameraLookUpRate;
+
+	// 카메라 회전 각도 (독립적으로 관리)
+	float CameraYaw;
+	float CameraPitch;
 
 	// ───── Movement Properties ─────────────────────────
 	

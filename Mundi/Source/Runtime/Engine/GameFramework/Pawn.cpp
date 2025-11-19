@@ -6,7 +6,7 @@
 APawn::APawn()
 	: MovementComponent(nullptr)
 	, PendingMovementInput(FVector::Zero())
-	, bIsPlayerControlled(false)
+	, bIsPlayerControlled(true)
 	, ViewRotation(FQuat::Identity())
 	, TurnRate(2.0f)
 	, LookUpRate(2.0f)
@@ -55,10 +55,10 @@ void APawn::Tick(float DeltaSeconds)
 		UInputManager& InputManager = UInputManager::GetInstance();
 
 		// 디버그: 키 입력 상태 확인
-		bool bUpPressed = InputManager.IsKeyDown(VK_UP);
-		bool bDownPressed = InputManager.IsKeyDown(VK_DOWN);
-		bool bLeftPressed = InputManager.IsKeyDown(VK_LEFT);
-		bool bRightPressed = InputManager.IsKeyDown(VK_RIGHT);
+		bool bUpPressed = InputManager.IsKeyDown('W');
+		bool bDownPressed = InputManager.IsKeyDown('S');
+		bool bLeftPressed = InputManager.IsKeyDown('A');
+		bool bRightPressed = InputManager.IsKeyDown('D');
 
 		/*if (bUpPressed || bDownPressed || bLeftPressed || bRightPressed)
 		{
@@ -87,12 +87,12 @@ void APawn::Tick(float DeltaSeconds)
 		}
 
 		// 마우스 회전
-		FVector2D MouseDelta = InputManager.GetMouseDelta();
-		if (MouseDelta.X != 0.0f || MouseDelta.Y != 0.0f)
-		{
-			Turn(MouseDelta.X * 0.05f);  // 마우스 감도 조절
-			LookUp(-MouseDelta.Y * 0.05f);
-		}
+		//FVector2D MouseDelta = InputManager.GetMouseDelta();
+		//if (MouseDelta.X != 0.0f || MouseDelta.Y != 0.0f)
+		//{
+		//	Turn(MouseDelta.X * 0.05f);  // 마우스 감도 조절
+		//	LookUp(-MouseDelta.Y * 0.05f);
+		//}
 	}
 
 	// 누적된 입력을 이동 컴포넌트에 전달

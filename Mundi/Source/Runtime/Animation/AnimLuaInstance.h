@@ -3,7 +3,7 @@
 #include "LuaCoroutineScheduler.h"
 #include "UAnimLuaInstance.generated.h"
 
-class UAnimationAsset;
+class UAnimSequence;
 
 class UAnimLuaInstance : public UAnimInstance
 {
@@ -25,6 +25,8 @@ public:
 
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
+	virtual UAnimSequence* GetAnimSequence() const override;
+
 	void SetFloat(const FString& Name, float Value) override { FloatParams[Name] = Value; }
 	void SetBool(const FString& Name, bool Value) override { BoolParams[Name] = Value; }
 	void SetInt(const FString& Name, int Value) override { IntParams[Name] = Value; }
@@ -37,8 +39,14 @@ public:
 
 	FString GetScriptPath() { return ScriptFilePath; }
 
+	void BlendToAnimation(const FString& PathFileName, float BlendTime, bool bLoop = true, float Rate = 1.0f);
+
 protected:
-	UAnimationAsset* CurrentAsset = nullptr; // 재생할 애니메이션. 현재는 UAnimSequence 타입만 할당됨
+	// UAnimInstance 가상 함수 오버라이드
+	virtual float GetCurrentAnimTime() const override { return CurrentTime; }
+	virtual bool IsAnimLooping() const override { return bLooping; }
+
+	UAnimSequence* CurrentAnimationAsset = nullptr; // 재생할 애니메이션. 현재는 UAnimSequence 타입만 할당됨
 
 	bool bIsPlaying = false;
 	bool bLooping = true;
@@ -59,4 +67,14 @@ protected:
 	sol::protected_function FuncUpdateAnimation{};
 
 	bool bIsLuaCleanedUp = true;
+
+	// 블렌딩을 위한 추가 변수
+	UAnimSequence* BlendAnimationAsset = nullptr; // 이전 애니메이션
+	float BlendAnimationTime = 0.0f;              // 이전 애니메이션의 재생 시간
+	float BlendAnimationPlayRate = 1.0f;
+	bool bBlendAnimationLooping = false;
+
+	bool bIsBlending = false;             // 현재 블렌딩 중인가?
+	float CurrentBlendTime = 0.0f;        // 현재 블렌딩 진행 시간
+	float TotalBlendDuration = 0.2f;      // 목표 블렌딩 시간 (초)
 };

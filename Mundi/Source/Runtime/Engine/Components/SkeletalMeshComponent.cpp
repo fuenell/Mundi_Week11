@@ -106,6 +106,9 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
             CurrentLocalSpacePose = OutPose.LocalTransforms;
             ForceRecomputePose();
         }
+
+		AnimScriptInstance->CheckAnimNotifyQueue();
+		AnimScriptInstance->TriggerAnimNotifies(DeltaTime);
     }
     
     //// FOR TEST ////

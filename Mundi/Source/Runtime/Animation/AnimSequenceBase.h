@@ -73,8 +73,11 @@ public:
 	 */
 	bool RenameNotifyTrack(int32 TrackIndex, const FName& NewName);
 
-protected:
+	float GetRateScale() const { return RateScale; }
 	float GetSequenceLength() const;
+
+protected:
+	
 	void SortNotifies();
 
 public:
@@ -85,5 +88,8 @@ public:
 private:
 	UAnimDataModel* DataModel = nullptr;
 	void EnsureDefaultNotifyTrack();
+
+	/** Number for tweaking playback rate of this animation globally. */
+	float RateScale = 1.0f;
 
 };

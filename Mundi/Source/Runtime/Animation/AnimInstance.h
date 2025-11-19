@@ -5,6 +5,7 @@
 
 class FSkeleton;
 class USkeletalMeshComponent;
+class UAnimSequence;
 
 // 애니메이션을 실행하는 인스턴스. 보통 이것을 상속받아 사용
 class UAnimInstance : public UObject
@@ -17,6 +18,16 @@ public:
 
 	virtual void Initialize(USkeletalMeshComponent* InOwningComponent);
 
+	virtual UAnimSequence* GetAnimSequence() const { return nullptr; }
+
+	/**
+	 * @brief: 현재 프레임에 실행할 애니메이션 노티파이 이벤트를 NotifyQueue에 추가
+	 */
+	void CheckAnimNotifyQueue();
+
+	/**
+	 * @brief: NotifyQueue에 쌓인 애니메이션 노티파이 이벤트들을 실행
+	 */
 	void TriggerAnimNotifies(float DeltaSeconds);
 
 	// 각 상속 클래스마다의 특수한 애니메이션 업데이트 로직
@@ -39,7 +50,16 @@ public:
 	UWorld* GetWorld() const;
 
 protected:
+	// 상속 클래스에서 현재 시간과 루핑 정보를 가져오는 헬퍼 함수들
+	virtual float GetCurrentAnimTime() const { return 0.0f; }
+	virtual bool IsAnimLooping() const { return false; }
+
+	TArray<FAnimNotifyEvent> NotifyQueue; // 현재 프레임에 실행할 애니메이션 노티파이 이벤트 큐
+
 	FPoseContext FinalPose; // 최종 포즈 데이터
+
+	// 애니메이션 시간 추적 (노티파이 트리거를 위해)
+	float PreviousTime = 0.0f; // 이전 프레임의 애니메이션 시간
 
 	/*
 		TODO: 이 변수의 각 Bone의 Name과, 애니메이션 에셋이 가진 DataModel의 Track의 Name과 매칭시켜야 함.

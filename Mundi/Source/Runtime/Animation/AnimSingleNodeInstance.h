@@ -34,7 +34,13 @@ public:
 
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
+	virtual UAnimSequence* GetAnimSequence() const override;
+
 protected:
+	// UAnimInstance 가상 함수 오버라이드
+	virtual float GetCurrentAnimTime() const override { return CurrentTime; }
+	virtual bool IsAnimLooping() const override { return bLooping; }
+
 	UAnimationAsset* CurrentAsset = nullptr; // 재생할 애니메이션. 현재는 UAnimSequence 타입만 할당됨
 
 	bool bIsPlaying = false;

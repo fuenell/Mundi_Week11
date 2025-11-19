@@ -105,6 +105,21 @@ struct FPoseContext
 {
 	TArray<FTransform> LocalTransforms; // 어떤 애니메이션의 어떤 시점의 본 로컬 트랜스폼 배열
 	// TODO: 애니메이션 커브
+
+	static FPoseContext Lerp(const FPoseContext& A, const FPoseContext& B, float Progress)
+	{
+		FPoseContext Result;
+		// Todo: 길이가 다른 경우 남은 트랜스폼을 복사 or 아이덴티티로 채우기 or 블렌드 실패 처리?
+		int32 Count = std::min(A.LocalTransforms.Num(), B.LocalTransforms.Num());
+		Result.LocalTransforms.SetNum(Count);
+
+		for (int32 Index = 0; Index < Count; ++Index)
+		{
+			Result.LocalTransforms[Index] = FTransform::Lerp(A.LocalTransforms[Index], B.LocalTransforms[Index], Progress);
+		}
+
+		return Result;
+	}
 };
 
 // Input 용

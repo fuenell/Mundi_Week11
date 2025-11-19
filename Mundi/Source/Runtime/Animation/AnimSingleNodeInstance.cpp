@@ -126,6 +126,11 @@ void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 }
 
+UAnimSequence* UAnimSingleNodeInstance::GetAnimSequence() const
+{
+	return GetCurrentAnimSequence();
+}
+
 void UAnimSingleNodeInstance::SetPlaying(bool bInIsPlaying)
 {
 	bIsPlaying = bInIsPlaying;

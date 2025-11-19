@@ -54,9 +54,14 @@ void UAnimLuaInstance::LoadScript(const FString& Path)
 
 	// 애니메이션 재생 함수 바인딩
 	// Lua에서 호출: PlayAnimationByName("Run", true, 1.0, false)
-	Env.set_function("PlayAnimationByName", [this](const FString& Key, bool bLoop, float Rate, bool bForceReset)
+	Env.set_function("PlayAnimationByName", [this](const FString& AnimationPath, bool bLoop, float Rate, bool bForceReset)
 		{
-			this->PlayAnimationByName(Key, bLoop, Rate, bForceReset);
+			this->PlayAnimationByName(AnimationPath, bLoop, Rate, bForceReset);
+		});
+
+	Env.set_function("BlendToAnimation", [this](const FString& AnimationPath, float BlendTime, bool bLoop, float Rate)
+		{
+			this->BlendToAnimation(AnimationPath, BlendTime, bLoop, Rate);
 		});
 
 	// Lua에서 호출: StopAnimation()
@@ -154,59 +159,115 @@ void UAnimLuaInstance::NativeUpdateAnimation(float DeltaSeconds)
 		if (!Result.valid()) { sol::error Err = Result; UE_LOG("[Lua][error] %s\n", Err.what()); }
 	}
 
-	if (UAnimSequence* AnimSequence = Cast<UAnimSequence>(CurrentAsset))
+	UAnimDataModel* DataModel = (CurrentAnimationAsset) ? CurrentAnimationAsset->GetDataModel() : nullptr;
+	if (!DataModel)
 	{
-		// 2. 애니메이션 길이 가져오기
-		UAnimDataModel* DataModel = AnimSequence->GetDataModel();
-		if (!DataModel)
+		return;
+	}
+
+	if (bIsPlaying)
+	{
+		// 현재 시간 업데이트
+		CurrentTime += DeltaSeconds * PlayRate;
+
+		float AnimLength = DataModel->GetPlayLength();
+
+		// 루핑 또는 클램핑 처리
+		if (bLooping)
 		{
-			return;
-		}
-
-		if (bIsPlaying)
-		{
-			// 1. 현재 시간 업데이트
-			CurrentTime += DeltaSeconds * PlayRate;
-
-			float AnimLength = DataModel->GetPlayLength();
-
-			// 3. 루핑 또는 클램핑 처리
-			if (bLooping)
+			// 루핑: 애니메이션 길이를 넘으면 처음으로 되돌림
+			if (AnimLength > 0.0f)
 			{
-				// 루핑: 애니메이션 길이를 넘으면 처음으로 되돌림
-				if (AnimLength > 0.0f)
+				CurrentTime = fmodf(CurrentTime, AnimLength);
+				if (CurrentTime < 0.0f)
 				{
-					CurrentTime = fmodf(CurrentTime, AnimLength);
-					if (CurrentTime < 0.0f)
+					CurrentTime += AnimLength;
+				}
+			}
+		}
+		else
+		{
+			// 논루핑: 애니메이션 길이를 넘으면 마지막 프레임에 고정
+			if (CurrentTime >= AnimLength)
+			{
+				CurrentTime = AnimLength;
+				bIsPlaying = false; // 애니메이션 종료
+			}
+		}
+	}
+
+	// 애니메이션 포즈 추출을 위한 컨텍스트 설정
+	FAnimExtractContext ExtractContext;
+	ExtractContext.CurrentTime = CurrentTime;
+	ExtractContext.bLooping = bLooping;
+	ExtractContext.Skeleton = Skeleton;
+
+	// 애니메이션 포즈 추출
+	FPoseContext OutPoseContext;
+	CurrentAnimationAsset->GetAnimationPose(OutPoseContext, ExtractContext);
+
+	// 애니메이션 블렌딩용 포즈 계산
+	if (bIsBlending)
+	{
+		UAnimDataModel* BlendDataModel = (BlendAnimationAsset) ? BlendAnimationAsset->GetDataModel() : nullptr;
+		if (BlendDataModel)
+		{
+			if (bIsPlaying)
+			{
+				BlendAnimationTime += DeltaSeconds * BlendAnimationPlayRate;
+				CurrentBlendTime += DeltaSeconds;
+
+				float AnimLength = BlendDataModel->GetPlayLength();
+
+				// 루핑 또는 클램핑 처리
+				if (bBlendAnimationLooping)
+				{
+					// 루핑: 애니메이션 길이를 넘으면 처음으로 되돌림
+					if (AnimLength > 0.0f)
 					{
-						CurrentTime += AnimLength;
+						BlendAnimationTime = fmodf(BlendAnimationTime, AnimLength);
+						if (BlendAnimationTime < 0.0f)
+						{
+							BlendAnimationTime += AnimLength;
+						}
+					}
+				}
+				else
+				{
+					// 논루핑: 애니메이션 길이를 넘으면 마지막 프레임에 고정
+					if (BlendAnimationTime >= AnimLength)
+					{
+						BlendAnimationTime = AnimLength;
 					}
 				}
 			}
+
+			// 애니메이션 포즈 추출을 위한 컨텍스트 설정
+			FAnimExtractContext BlendExtractContext;
+			BlendExtractContext.CurrentTime = BlendAnimationTime;
+			BlendExtractContext.bLooping = bBlendAnimationLooping;
+			BlendExtractContext.Skeleton = Skeleton;
+
+			// 애니메이션 포즈 추출
+			FPoseContext BlendPoseContext;
+			BlendAnimationAsset->GetAnimationPose(BlendPoseContext, BlendExtractContext);
+
+			// 블렌드 처리
+			float BlendProgress = CurrentBlendTime / TotalBlendDuration;
+			if (1.0f <= BlendProgress)
+			{
+				// 블렌드가 끝나면 OutPoseContext를 그대로 사용
+				bIsBlending = false;
+			}
 			else
 			{
-				// 논루핑: 애니메이션 길이를 넘으면 마지막 프레임에 고정
-				if (CurrentTime >= AnimLength)
-				{
-					CurrentTime = AnimLength;
-					bIsPlaying = false; // 애니메이션 종료
-				}
+				OutPoseContext = FPoseContext::Lerp(BlendPoseContext, OutPoseContext, BlendProgress);
 			}
 		}
-
-		// 4. 애니메이션 포즈 추출을 위한 컨텍스트 설정
-		FAnimExtractContext ExtractContext;
-		ExtractContext.CurrentTime = CurrentTime;
-		ExtractContext.bLooping = bLooping;
-		ExtractContext.Skeleton = Skeleton;
-
-		// 5. 애니메이션 포즈 추출
-		FPoseContext OutPoseContext;
-		AnimSequence->GetAnimationPose(OutPoseContext, ExtractContext);
-
-		// 6. 최종 포즈 저장
-		FinalPose = OutPoseContext;
 	}
+
+	// 최종 포즈 저장
+	FinalPose = OutPoseContext;
 }
 
 void UAnimLuaInstance::SetPlaying(bool bInIsPlaying)
@@ -219,13 +280,15 @@ void UAnimLuaInstance::SetLooping(bool bIsLooping)
 	bLooping = bIsLooping;
 }
 
-void UAnimLuaInstance::PlayAnimationByName(const FString& PathFileName, bool bLoop, float Rate, bool bForceReset)
+void UAnimLuaInstance::PlayAnimationByName(const FString& AnimationPath, bool bLoop, float Rate, bool bForceReset)
 {
-	UAnimSequence* NewAnimAsset = UResourceManager::GetInstance().Load<UAnimSequence>(PathFileName);
+	// Todo: 블렌드 취소 코드 필요
+
+	UAnimSequence* NewAnimAsset = UResourceManager::GetInstance().Load<UAnimSequence>(AnimationPath);
 	if (!NewAnimAsset) return;
 
 	// 강제 리셋이 꺼져있고(false), 이미 같은 애니메이션이 재생 중이라면 -> 무시
-	if (!bForceReset && CurrentAsset == NewAnimAsset && bIsPlaying)
+	if (!bForceReset && CurrentAnimationAsset == NewAnimAsset && bIsPlaying)
 	{
 		// 속도나 루프 설정은 바뀔 수 있으니 갱신
 		if (PlayRate != Rate) PlayRate = Rate;
@@ -234,11 +297,42 @@ void UAnimLuaInstance::PlayAnimationByName(const FString& PathFileName, bool bLo
 	}
 
 	// 여기까지 왔으면 (다른 애니메이션이거나 OR 강제 리셋이거나)
-	CurrentAsset = NewAnimAsset;
+	CurrentAnimationAsset = NewAnimAsset;
 	bLooping = bLoop;
 	PlayRate = Rate;
 
 	CurrentTime = 0.0f; // 0초부터 다시 시작
+	bIsPlaying = true;
+}
+
+void UAnimLuaInstance::BlendToAnimation(const FString& AnimationPath, float BlendTime, bool bLoop, float Rate)
+{
+	UAnimSequence* NewAnim = UResourceManager::GetInstance().Load<UAnimSequence>(AnimationPath);
+	if (!NewAnim || NewAnim == CurrentAnimationAsset) return; // 로드 실패하거나 이미 재생 중이면 무시
+
+	if (BlendTime <= KINDA_SMALL_NUMBER)
+	{
+		// 블렌딩 시간이 없으면 즉시 교체 (기존 PlayAnimationByName 로직)
+		PlayAnimationByName(AnimationPath, bLoop, Rate, true);
+		return;
+	}
+
+	// 1. 현재 상태를 백업
+	BlendAnimationAsset = CurrentAnimationAsset;
+	BlendAnimationTime = CurrentTime;
+	BlendAnimationPlayRate = PlayRate;
+	bBlendAnimationLooping = bLooping;
+
+	// 2. 새로운 애니메이션을 Target(현재 상태)으로 설정
+	CurrentAnimationAsset = NewAnim;
+	CurrentTime = 0.0f;
+	bLooping = bLoop;
+	PlayRate = Rate;
+
+	// 3. 블렌딩 시작 설정
+	bIsBlending = true;
+	CurrentBlendTime = 0.0f;
+	TotalBlendDuration = BlendTime;
 	bIsPlaying = true;
 }
 

@@ -1,4 +1,5 @@
-﻿#include "pch.h"
+#include "pch.h"
+#include "AnimSingleNodeInstance.h"
 
 FString UObject::GetName()
 {
@@ -37,6 +38,7 @@ void UObject::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			break;
 		}
 		case EPropertyType::Int32:
+		case EPropertyType::Enum:
 		{
 			int32* Value = Prop.GetValuePtr<int32>(this);
 			if (bInIsLoading)

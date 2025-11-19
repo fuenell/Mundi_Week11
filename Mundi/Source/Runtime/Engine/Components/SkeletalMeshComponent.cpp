@@ -23,6 +23,45 @@ USkeletalMeshComponent::~USkeletalMeshComponent()
 	}
 }
 
+void USkeletalMeshComponent::Serialize(bool bInIsLoading, JSON& InOutHandle)
+{
+	Super::Serialize(bInIsLoading, InOutHandle);
+
+	if (bInIsLoading)
+	{
+		// NOTE: Super::Serialize()에서 AnimationMode를 잘 불러오지만
+		// 중간에 SetSkeletalMesh()가 호출되면서 AnimationMode가 0으로 초기화 되어서 다시 로드
+		const TArray<FProperty>& AllProperties = GetClass()->GetProperties();
+		auto It = std::find_if(AllProperties.begin(), AllProperties.end(),
+			[](const FProperty& Prop)
+			{
+				return strcmp(Prop.Name, "AnimationMode") == 0;
+			}
+		);
+		const FProperty* AnimationModeProp = nullptr;
+		if (It != AllProperties.end())
+		{
+			AnimationModeProp = &(*It);
+		}
+
+		int32* Value = AnimationModeProp->GetValuePtr<int32>(this);
+		int32 ReadValue;
+		if (FJsonSerializer::ReadInt32(InOutHandle, AnimationModeProp->Name, ReadValue))
+		{
+			*Value = ReadValue;
+
+			// 불러오기
+			ClearAnimScriptInstance();
+			SetAnimationMode(AnimationMode, true);
+		}
+	}
+
+	if (AnimScriptInstance)
+	{
+		AnimScriptInstance->Serialize(bInIsLoading, InOutHandle);
+	}
+}
+
 void USkeletalMeshComponent::DuplicateSubObjects()
 {
 	Super::DuplicateSubObjects();

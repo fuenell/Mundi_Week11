@@ -15,6 +15,8 @@ public:
 	UAnimSingleNodeInstance() = default;
 	virtual ~UAnimSingleNodeInstance() override = default;
 
+	void Serialize(bool bInIsLoading, JSON& InOutHandle) override;
+
 	void SetPlaying(bool bIsPlaying);
 	void SetLooping(bool bIsLooping);
 	void SetCurrentTime(float InTime, bool bForceDirty = false);

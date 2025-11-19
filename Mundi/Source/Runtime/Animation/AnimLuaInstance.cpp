@@ -16,9 +16,6 @@ void UAnimLuaInstance::Initialize(USkeletalMeshComponent* InOwningComponent)
 {
 	Super::Initialize(InOwningComponent);
 
-	// ==================[테스트용 고정 스크립트]==================
-	ScriptFilePath = "Data/Scripts/PlayerAnim.lua";
-
 	if (ScriptFilePath.empty() == false)
 	{
 		LoadScript(ScriptFilePath);

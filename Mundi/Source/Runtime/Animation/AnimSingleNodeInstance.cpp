@@ -6,6 +6,25 @@
 
 IMPLEMENT_CLASS(UAnimSingleNodeInstance)
 
+void UAnimSingleNodeInstance::Serialize(bool bInIsLoading, JSON& InOutHandle)
+{
+	if (bInIsLoading)
+	{
+		FString ReadValue;
+		if (FJsonSerializer::ReadString(InOutHandle, "CurrentAssetPath", ReadValue))
+		{
+			GetOwningComponent()->PlayAnimationByFileName(ReadValue, true);
+		}
+	}
+	else
+	{
+		if (CurrentAsset)
+		{
+			InOutHandle["CurrentAssetPath"] = CurrentAsset->GetFilePath();
+		}
+	}
+}
+
 void UAnimSingleNodeInstance::SetAnimationAsset(UAnimationAsset* NewAsset, bool bIsLooping, float InPlayRate)
 {
 	if (NewAsset != CurrentAsset)

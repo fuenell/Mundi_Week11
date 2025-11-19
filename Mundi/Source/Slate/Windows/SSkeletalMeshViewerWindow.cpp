@@ -15,6 +15,7 @@
 #include "Source/Runtime/Animation/AnimSingleNodeInstance.h"
 #include "Source/Runtime/Animation/AnimSequence.h"
 #include "Source/Runtime/Core/Object/ObjectFactory.h"
+#include "Source/Slate/Widgets/PropertyRenderer.h"
 #include <cstring>
 #include <algorithm>
 
@@ -594,9 +595,13 @@ void SSkeletalMeshViewerWindow::OnRender()
                     ImGui::Text("> Selected Notify");
                     ImGui::PopStyleColor();
 
+					ImGuiStyle& Style = ImGui::GetStyle();
+					ImVec2 PrevSpacing = Style.ItemSpacing;
+					ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(PrevSpacing.x, PrevSpacing.y + 3.0f));
+
                     ImGui::Spacing();
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.90f, 0.95f, 1.00f, 1.0f));
-                    ImGui::TextWrapped("%s", NotifyDisplayName.c_str());
+                    ImGui::TextWrapped("Notify Event: %s", NotifyDisplayName.c_str());
                     ImGui::PopStyleColor();
 
                     ImGui::Spacing();
@@ -605,7 +610,7 @@ void SSkeletalMeshViewerWindow::OnRender()
                     ImGui::PopStyleColor();
 
                     ImGui::Spacing();
-                    ImGui::Text("Notify Name");
+                    ImGui::Text("Notify Event Name");
                     ImGui::PushItemWidth(-1);
                     if (ImGui::InputText("##NotifyNameField", ActiveState->EditNotifyName, sizeof(ActiveState->EditNotifyName)))
                     {
@@ -664,6 +669,31 @@ void SSkeletalMeshViewerWindow::OnRender()
                         ActiveState->EditNotifyDuration = SelectedEvent->Duration;
                     }
                     ImGui::PopItemWidth();
+
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    UAnimNotify* SelectedNotifyObject = SelectedEvent->Notify;
+                    if (SelectedNotifyObject)
+                    {
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.80f, 0.90f, 1.0f, 1.0f));
+                        const UClass* NotifyClass = SelectedNotifyObject->GetClass();
+                        const char* NotifyClassName = NotifyClass ? NotifyClass->Name : "UAnimNotify";
+                        ImGui::Text("Notify: %s", NotifyClassName);
+                        ImGui::PopStyleColor();
+
+                    ImGui::Spacing();
+					
+                    UPropertyRenderer::RenderAllPropertiesWithInheritance(SelectedNotifyObject);
+                    ImGui::PopStyleVar();
+                    }
+                    else
+                    {
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.5f, 0.5f, 1.0f));
+                        ImGui::TextWrapped("이 노티파이 이벤트에는 연결된 UAnimNotify 객체가 없습니다. 타임라인에서 Delete 후 다시 추가해 주세요.");
+                        ImGui::PopStyleColor();
+                    }
                 }
             }
         }

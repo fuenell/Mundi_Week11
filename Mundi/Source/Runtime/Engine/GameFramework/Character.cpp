@@ -40,6 +40,10 @@ ACharacter::ACharacter()
 		MeshComponent->SetRelativeLocation(FVector(0, 0, -90.0f));
 		MeshComponent->SetRelativeRotation(FQuat::MakeFromEulerZYX(FVector(0, -90, 0)));
 	}
+
+	// 부모의 멤버인 이동 컴포넌트 생성
+	UMovementComponent* TempMovementComponent = CreateDefaultSubobject<UMovementComponent>("MovementComponent");
+	SetMovementComponent(TempMovementComponent);
 }
 
 ACharacter::~ACharacter()

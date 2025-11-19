@@ -455,8 +455,34 @@ void FSceneRenderer::RenderShadowDepthPass(FShadowRenderRequest& ShadowRequest, 
 	UShader* DepthVS = UResourceManager::GetInstance().Load<UShader>("Shaders/Shadows/DepthOnly_VS.hlsl");
 	if (!DepthVS || !DepthVS->GetVertexShader()) return;
 
-	FShaderVariant* ShaderVariant = DepthVS->GetOrCompileShaderVariant();
-	if (!ShaderVariant) return;
+	TArray<FShaderMacro> BaseShaderMacros;
+	if (View)
+	{
+		BaseShaderMacros = View->ViewShaderMacros;
+	}
+
+	FShaderVariant* CpuShaderVariant = DepthVS->GetOrCompileShaderVariant(BaseShaderMacros);
+	if (!CpuShaderVariant) return;
+
+	bool bHasGpuSkinningBatch = false;
+	for (const FMeshBatchElement& Batch : InShadowBatches)
+	{
+		if (Batch.SkinningMode == ESkinningMode::GPU &&
+			Batch.SkinningMatrixSRV && Batch.SkinningNormalMatrixSRV)
+		{
+			bHasGpuSkinningBatch = true;
+			break;
+		}
+	}
+
+	FShaderVariant* GpuShaderVariant = nullptr;
+	TArray<FShaderMacro> GpuShaderMacros;
+	if (bHasGpuSkinningBatch)
+	{
+		GpuShaderMacros = BaseShaderMacros;
+		GpuShaderMacros.Add(FShaderMacro("USE_GPU_SKINNING", "1"));
+		GpuShaderVariant = DepthVS->GetOrCompileShaderVariant(GpuShaderMacros);
+	}
 
 	// vsm용 픽셀 셰이더
 	UShader* DepthPs = UResourceManager::GetInstance().Load<UShader>("Shaders/Shadows/DepthOnly_PS.hlsl");
@@ -466,8 +492,7 @@ void FSceneRenderer::RenderShadowDepthPass(FShadowRenderRequest& ShadowRequest, 
 	if (!ShaderVarianVSM) return;
 
 	// 2. 파이프라인 설정
-	RHIDevice->GetDeviceContext()->IASetInputLayout(ShaderVariant->InputLayout);
-	RHIDevice->GetDeviceContext()->VSSetShader(ShaderVariant->VertexShader, nullptr, 0);
+	// VS/InputLayout은 GPU/CPU 스키닝 여부에 따라 드로우 루프에서 교체한다.
 
     EShadowAATechnique ShadowAAType = World->GetRenderSettings().GetShadowAATechnique();
 	switch (ShadowAAType)
@@ -494,10 +519,56 @@ void FSceneRenderer::RenderShadowDepthPass(FShadowRenderRequest& ShadowRequest, 
 	ID3D11Buffer* CurrentIndexBuffer = nullptr;
 	UINT CurrentVertexStride = 0;
 	D3D11_PRIMITIVE_TOPOLOGY CurrentTopology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+	FShaderVariant* CurrentShaderVariant = nullptr;
+	ID3D11ShaderResourceView* CurrentSkinningSRV = nullptr;
+	ID3D11ShaderResourceView* CurrentSkinningNormalSRV = nullptr;
+	ESkinningMode CurrentSkinningMode = ESkinningMode::CPU;
+	constexpr UINT SkinningSrvSlot = 12;
+	constexpr UINT SkinningNormalSrvSlot = 13;
 
 	for (const FMeshBatchElement& Batch : InShadowBatches)
 	{
-		// 셰이더/픽셀 상태 변경 불필요
+		const bool bUsesGpuSkinning =
+			(Batch.SkinningMode == ESkinningMode::GPU &&
+				Batch.SkinningMatrixSRV && Batch.SkinningNormalMatrixSRV &&
+				GpuShaderVariant);
+		FShaderVariant* DesiredVariant = bUsesGpuSkinning ? GpuShaderVariant : CpuShaderVariant;
+		if (!DesiredVariant)
+		{
+			continue;
+		}
+
+		if (DesiredVariant != CurrentShaderVariant)
+		{
+			RHIDevice->GetDeviceContext()->IASetInputLayout(DesiredVariant->InputLayout);
+			RHIDevice->GetDeviceContext()->VSSetShader(DesiredVariant->VertexShader, nullptr, 0);
+			CurrentShaderVariant = DesiredVariant;
+		}
+
+		if (bUsesGpuSkinning)
+		{
+			if (CurrentSkinningMode != ESkinningMode::GPU ||
+				CurrentSkinningSRV != Batch.SkinningMatrixSRV ||
+				CurrentSkinningNormalSRV != Batch.SkinningNormalMatrixSRV)
+			{
+				ID3D11ShaderResourceView* MatrixSrv[1] = { Batch.SkinningMatrixSRV };
+				ID3D11ShaderResourceView* NormalSrv[1] = { Batch.SkinningNormalMatrixSRV };
+				RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningSrvSlot, 1, MatrixSrv);
+				RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningNormalSrvSlot, 1, NormalSrv);
+				CurrentSkinningSRV = Batch.SkinningMatrixSRV;
+				CurrentSkinningNormalSRV = Batch.SkinningNormalMatrixSRV;
+				CurrentSkinningMode = ESkinningMode::GPU;
+			}
+		}
+		else if (CurrentSkinningMode == ESkinningMode::GPU)
+		{
+			ID3D11ShaderResourceView* NullSrv[1] = { nullptr };
+			RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningSrvSlot, 1, NullSrv);
+			RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningNormalSrvSlot, 1, NullSrv);
+			CurrentSkinningSRV = nullptr;
+			CurrentSkinningNormalSRV = nullptr;
+			CurrentSkinningMode = ESkinningMode::CPU;
+		}
 
 		// IA 상태 변경
 		if (Batch.VertexBuffer != CurrentVertexBuffer ||
@@ -522,6 +593,13 @@ void FSceneRenderer::RenderShadowDepthPass(FShadowRenderRequest& ShadowRequest, 
 
 		// 드로우 콜
 		RHIDevice->GetDeviceContext()->DrawIndexed(Batch.IndexCount, Batch.StartIndex, Batch.BaseVertexIndex);
+	}
+
+	if (CurrentSkinningMode == ESkinningMode::GPU)
+	{
+		ID3D11ShaderResourceView* NullSrv[1] = { nullptr };
+		RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningSrvSlot, 1, NullSrv);
+		RHIDevice->GetDeviceContext()->VSSetShaderResources(SkinningNormalSrvSlot, 1, NullSrv);
 	}
 }
 

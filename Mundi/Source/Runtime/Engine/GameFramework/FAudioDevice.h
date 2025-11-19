@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 
 #include <xaudio2.h>
@@ -6,6 +6,7 @@
 #include <Vector.h>
 #pragma comment(lib, "xaudio2.lib")
 class USound;
+class UWorld;
 
 // Minimal XAudio2 device bootstrap and 3D helpers
 class FAudioDevice
@@ -17,6 +18,7 @@ public:
     static void Update();
 
     static IXAudio2SourceVoice* PlaySound3D(USound* SoundToPlay, const FVector& EmitterPosition, float Volume = 1.0f, bool bIsLooping = false);
+    static IXAudio2SourceVoice* PlaySound2D(USound* SoundToPlay, float Volume = 1.0f, bool bIsLooping = false);
     static void StopSound(IXAudio2SourceVoice* pSourceVoice);
 
     static void SetListenerPosition(const FVector& Position, const FVector& ForwardVec, const FVector& UpVec);

@@ -1,4 +1,4 @@
-﻿// Minimal XAudio2 device bootstrap and 3D helpers
+// Minimal XAudio2 device bootstrap and 3D helpers
 #include "pch.h"
 #include "Object.h"
 #include "FAudioDevice.h"
@@ -192,12 +192,103 @@ IXAudio2SourceVoice* FAudioDevice::PlaySound3D(USound* SoundToPlay, const FVecto
     return voice;
 }
 
+IXAudio2SourceVoice* FAudioDevice::PlaySound2D(USound* SoundToPlay, float Volume, bool bIsLooping)
+{
+    if (!pXAudio2 || !pMasteringVoice || !SoundToPlay)
+    {
+        UE_LOG("[Audio] PlaySound2D: Invalid parameters (pXAudio2=%p, pMasteringVoice=%p, SoundToPlay=%p)",
+            pXAudio2, pMasteringVoice, SoundToPlay);
+        return nullptr;
+    }
+
+    const WAVEFORMATEX& fmt = SoundToPlay->GetWaveFormat();
+    const uint8* pcm = SoundToPlay->GetPCMData();
+    const uint32 size = SoundToPlay->GetPCMSize();
+    
+    if (!pcm || size == 0)
+    {
+        UE_LOG("[Audio] PlaySound2D: Invalid sound data for '%s'", SoundToPlay->GetName().c_str());
+        return nullptr;
+    }
+
+    // Create source voice
+    IXAudio2SourceVoice* voice = nullptr;
+    HRESULT hr = pXAudio2->CreateSourceVoice(&voice, &fmt);
+    if (FAILED(hr) || !voice)
+    {
+        UE_LOG("[Audio] PlaySound2D: CreateSourceVoice failed: 0x%08x", static_cast<UINT32>(hr));
+        return nullptr;
+    }
+
+    // Setup audio buffer
+    XAUDIO2_BUFFER buf{};
+    buf.pAudioData = pcm;
+    buf.AudioBytes = size;
+    
+    if (bIsLooping)
+    {
+        // Loop entire buffer. LoopBegin/LoopLength are in samples (per channel).
+        // For PCM, one frame = nBlockAlign bytes (all channels), so per-channel sample count equals frames.
+        if (fmt.nBlockAlign > 0)
+        {
+            const uint32 totalFrames = size / fmt.nBlockAlign;
+            if (totalFrames > 0)
+            {
+                buf.LoopBegin = 0;
+                buf.LoopLength = totalFrames; // per-channel samples
+                buf.LoopCount = XAUDIO2_LOOP_INFINITE;
+                buf.Flags = 0; // do not mark EOS when looping
+            }
+            else
+            {
+                buf.Flags = XAUDIO2_END_OF_STREAM;
+            }
+        }
+        else
+        {
+            buf.Flags = XAUDIO2_END_OF_STREAM;
+        }
+    }
+    else
+    {
+        buf.Flags = XAUDIO2_END_OF_STREAM;
+    }
+
+    // Submit buffer
+    hr = voice->SubmitSourceBuffer(&buf);
+    if (FAILED(hr))
+    {
+        UE_LOG("[Audio] PlaySound2D: SubmitSourceBuffer failed: 0x%08x", static_cast<UINT32>(hr));
+        voice->DestroyVoice();
+        return nullptr;
+    }
+
+    // Set volume
+    voice->SetVolume(Volume);
+
+    // Start playback
+    hr = voice->Start(0);
+    if (FAILED(hr))
+    {
+        UE_LOG("[Audio] PlaySound2D: Start voice failed: 0x%08x", static_cast<UINT32>(hr));
+        voice->DestroyVoice();
+        return nullptr;
+    }
+
+    UE_LOG("[Audio] PlaySound2D: Playing sound '%s' with volume %.2f",
+        SoundToPlay->GetName().c_str(), Volume);
+
+    return voice;
+}
+
 void FAudioDevice::SetListenerPosition(const FVector& Position, const FVector& ForwardVec, const FVector& UpVec)
 {
     Listener.Position = X3DAUDIO_VECTOR{ Position.X, Position.Y, Position.Z };
     Listener.OrientFront = X3DAUDIO_VECTOR{ ForwardVec.X, ForwardVec.Y, ForwardVec.Z };
     Listener.OrientTop = X3DAUDIO_VECTOR{ UpVec.X, UpVec.Y, UpVec.Z };
-}void FAudioDevice::UpdateSoundPosition(IXAudio2SourceVoice* pSourceVoice, const FVector& EmitterPosition)
+}
+
+void FAudioDevice::UpdateSoundPosition(IXAudio2SourceVoice* pSourceVoice, const FVector& EmitterPosition)
 {
     if (!pSourceVoice || !pMasteringVoice)
     {

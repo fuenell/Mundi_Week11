@@ -168,15 +168,20 @@ public:
     }
 
     /** 크기 관련 */
-    int32 Num() const
-    {
-        return static_cast<int32>(this->size());
-    }
+	int32 Num() const
+	{
+		return static_cast<int32>(this->size());
+	}
 
-    bool IsEmpty() const
-    {
-        return this->empty();
-    }
+	bool IsValidIndex(int32 Index) const
+	{
+		return Index >= 0 && Index < Num();
+	}
+
+	bool IsEmpty() const
+	{
+		return this->empty();
+	}
 
     void Empty()
     {

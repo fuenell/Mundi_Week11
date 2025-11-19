@@ -45,6 +45,7 @@ struct FAnimNotifyEvent
 	{
 		TriggerTime = NewTime;
 		NormalizeTriggerTime(SequenceLength);
+		ClampDurationToSequence(SequenceLength);
 	}
 
 	float GetEndTriggerTime() const
@@ -70,6 +71,31 @@ struct FAnimNotifyEvent
 			Normalized += SequenceLength;
 		}
 		TriggerTime = Normalized;
+	}
+
+	void ClampDurationToSequence(float SequenceLength)
+	{
+		if (Duration < 0.f)
+		{
+			Duration = 0.f;
+		}
+
+		if (SequenceLength <= 0.f)
+		{
+			return;
+		}
+
+		const float MaxDuration = SequenceLength - TriggerTime;
+		if (MaxDuration <= 0.f)
+		{
+			Duration = 0.f;
+			return;
+		}
+
+		if (Duration > MaxDuration)
+		{
+			Duration = MaxDuration;
+		}
 	}
 };
 

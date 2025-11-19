@@ -102,6 +102,11 @@ public:
 	 */
 	void PlayDefaultAnimation();
 
+	/**
+	 * @brief AnimScriptInstance가 SingleNodeInstance인 경우, 지정된 시간의 애니메이션 포즈로 뼈 트랜스폼 설정
+	 */
+	void SetBoneTransformsToAnimationPose(float InTime);
+
 protected:
 	/**
 	 * @brief 현재 애니메이션 인스턴스를 정리
@@ -113,10 +118,6 @@ protected:
 	 */
 	bool InitializeAnimScriptInstance();
 
-	/**
-	 * @brief AnimScriptInstance가 SingleNodeInstance인 경우, 지정된 시간의 애니메이션 포즈로 뼈 트랜스폼 설정
-	 */
-	void SetBoneTransformsToAnimationPose(float InTime);
 // Editor Section
 protected:
 

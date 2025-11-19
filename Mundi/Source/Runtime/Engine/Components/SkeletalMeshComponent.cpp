@@ -267,8 +267,6 @@ void USkeletalMeshComponent::SetAnimation(UAnimationAsset* NewAnimToPlay)
 	{
 		SingleNodeInstance->SetAnimationAsset(NewAnimToPlay, false);
 		SingleNodeInstance->SetPlaying(false);
-
-		SetBoneTransformsToAnimationPose(0.0f);
 	}
 	else if (AnimScriptInstance != nullptr)
 	{

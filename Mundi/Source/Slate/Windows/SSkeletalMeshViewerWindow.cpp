@@ -809,9 +809,7 @@ void SSkeletalMeshViewerWindow::OnPlayButtonPressed()
     if (!SkeletalComp)
         return;
 
-	SkeletalComp->SetEnableAnimation(true);
 	SkeletalComp->PlayDefaultAnimation();
-
 	ActiveState->bAnimationMode = true;
 }
 

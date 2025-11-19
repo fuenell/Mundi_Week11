@@ -2,6 +2,7 @@
 #include "AnimSingleNodeInstance.h"
 #include "AnimationAsset.h"
 #include "AnimSequence.h"
+#include "SkeletalMeshComponent.h"
 
 IMPLEMENT_CLASS(UAnimSingleNodeInstance)
 
@@ -11,6 +12,11 @@ void UAnimSingleNodeInstance::SetAnimationAsset(UAnimationAsset* NewAsset, bool 
 	{
 		CurrentAsset = NewAsset;
 		CurrentTime = 0.0f; // 새 애니메이션 시작 시 시간 초기화
+
+		if(USkeletalMeshComponent* SkelComp = GetOwningComponent())
+		{
+			SkelComp->SetBoneTransformsToAnimationPose(0.0f);
+		}
 	}
 	bLooping = bIsLooping;
 	PlayRate = InPlayRate;

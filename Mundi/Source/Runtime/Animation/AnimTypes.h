@@ -1,12 +1,102 @@
 #pragma once
 #include "Name.h"
+#include "AnimNotify.h"
+#include "Archive.h"
+#include <cmath>
 //#include "AnimCurveTypes.h"
 
 struct FAnimNotifyEvent
 {
-	float TriggerTime;
-	float Duration;
+	float TriggerTime = 0.f;
+	float Duration = 0.f;      // NotifyState용 (AnimNotifyState는 아직 미구현)
 	FName NotifyName;
+	UAnimNotify* Notify = nullptr; // 실제 Notify 오브젝트
+
+	bool Serialize(FArchive& Ar)
+	{
+		if (!Ar.IsLoading() && !Ar.IsSaving())
+		{
+			return false;
+		}
+
+		Ar << TriggerTime;
+		Ar << Duration;
+
+		if (Ar.IsSaving())
+		{
+			const FString NotifyNameStr = NotifyName.ToString();
+			Serialization::WriteString(Ar, NotifyNameStr);
+		}
+		else
+		{
+			FString NotifyNameStr;
+			Serialization::ReadString(Ar, NotifyNameStr);
+			NotifyName = FName(NotifyNameStr);
+
+			// 직렬화 데이터에는 실제 노티파이 인스턴스를 저장하지 않으므로
+			// 로딩 시점에는 nullptr로 초기화한 뒤 런타임에서 재지정한다.
+			Notify = nullptr;
+		}
+
+		return true;
+	}
+
+	void SetTriggerTime(float NewTime, float SequenceLength)
+	{
+		TriggerTime = NewTime;
+		NormalizeTriggerTime(SequenceLength);
+		ClampDurationToSequence(SequenceLength);
+	}
+
+	float GetEndTriggerTime() const
+	{
+		return TriggerTime + Duration;
+	}
+
+	void NormalizeTriggerTime(float SequenceLength)
+	{
+		if (SequenceLength <= 0.f)
+		{
+			if (TriggerTime < 0.f)
+			{
+				TriggerTime = 0.f;
+			}
+			return;
+		}
+
+		// 음수거나 SequenceLength보다 TriggerTime이 큰 경우 대비해 정규화
+		float Normalized = std::fmod(TriggerTime, SequenceLength);
+		if (Normalized < 0.f)
+		{
+			Normalized += SequenceLength;
+		}
+		TriggerTime = Normalized;
+	}
+
+	void ClampDurationToSequence(float SequenceLength)
+	{
+		if (Duration < 0.f)
+		{
+			Duration = 0.f;
+		}
+
+		if (SequenceLength <= 0.f)
+		{
+			return;
+		}
+
+		const float MaxDuration = SequenceLength - TriggerTime;
+		if (MaxDuration <= 0.f)
+		{
+			Duration = 0.f;
+			return;
+		}
+
+		if (Duration > MaxDuration)
+		{
+			Duration = MaxDuration;
+		}
+	}
 };
 
 // Output 용

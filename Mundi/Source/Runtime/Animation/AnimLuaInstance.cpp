@@ -272,7 +272,7 @@ void UAnimLuaInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 UAnimSequence* UAnimLuaInstance::GetAnimSequence() const
 {
-	return Cast<UAnimSequence>(CurrentAsset);
+	return CurrentAnimationAsset;
 }
 
 void UAnimLuaInstance::SetPlaying(bool bInIsPlaying)

@@ -46,7 +46,7 @@ protected:
 	virtual float GetCurrentAnimTime() const override { return CurrentTime; }
 	virtual bool IsAnimLooping() const override { return bLooping; }
 
-	UAnimationAsset* CurrentAsset = nullptr; // 재생할 애니메이션. 현재는 UAnimSequence 타입만 할당됨
+	UAnimSequence* CurrentAnimationAsset = nullptr; // 재생할 애니메이션. 현재는 UAnimSequence 타입만 할당됨
 
 	bool bIsPlaying = false;
 	bool bLooping = true;

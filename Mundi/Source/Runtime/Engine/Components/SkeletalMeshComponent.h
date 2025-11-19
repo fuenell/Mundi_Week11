@@ -26,6 +26,7 @@ public:
     void TickComponent(float DeltaTime) override;
     void SetSkeletalMesh(const FString& PathFileName) override;
 
+	void Serialize(bool bInIsLoading, JSON& InOutHandle) override;
 	void DuplicateSubObjects() override;
 	void OnRegister(UWorld* InWorld) override;
 

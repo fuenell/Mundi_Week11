@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -374,7 +374,7 @@
     </ClCompile>
     <ClCompile Include="Source\Runtime\Animation\AnimSequenceBase.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimSingleNodeInstance.cpp" />
-    <ClCompile Include="Source\Runtime\AssetManagement\AnimLuaInstance.cpp">
+    <ClCompile Include="Source\Runtime\Animation\AnimLuaInstance.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="Source\Runtime\AssetManagement\DynamicMesh.cpp" />
@@ -670,7 +670,7 @@
     <ClInclude Include="Source\Runtime\Animation\AnimTypes.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\AssetManagement\AnimLuaInstance.h">
+    <ClInclude Include="Source\Runtime\Animation\AnimLuaInstance.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Source\Runtime\AssetManagement\Cube.h" />

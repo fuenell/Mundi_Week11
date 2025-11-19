@@ -666,8 +666,10 @@
     <ClCompile Include="Generated\UAnimNotify_PlaySound.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\AssetManagement\AnimLuaInstance.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimNotify_PlaySound.cpp">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimLuaInstance.cpp">
       <Filter>Source\Runtime\Animation</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2713,8 +2715,10 @@
     <ClInclude Include="Generated\UAnimNotify_PlaySound.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\AssetManagement\AnimLuaInstance.h" />
     <ClInclude Include="Source\Runtime\Animation\AnimNotify_PlaySound.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimLuaInstance.h">
       <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
   </ItemGroup>

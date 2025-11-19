@@ -660,10 +660,16 @@
     <ClCompile Include="Generated\UAnimSingleNodeInstance.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\AnimLuaInstance.cpp">
-      <Filter>Source\Runtime\AssetManagement</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Animation\AnimNotify.cpp">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\UAnimNotify_PlaySound.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimNotify_PlaySound.cpp">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimLuaInstance.cpp">
       <Filter>Source\Runtime\Animation</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2703,10 +2709,16 @@
     <ClInclude Include="Generated\UAnimSingleNodeInstance.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\AnimLuaInstance.h">
-      <Filter>Source\Runtime\AssetManagement</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Animation\AnimNotify.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UAnimNotify_PlaySound.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimNotify_PlaySound.h">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimLuaInstance.h">
       <Filter>Source\Runtime\Animation</Filter>
     </ClInclude>
   </ItemGroup>

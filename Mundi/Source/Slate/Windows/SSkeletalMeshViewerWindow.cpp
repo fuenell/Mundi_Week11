@@ -947,6 +947,7 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
         const float triangleSize = 8.0f;
 
         bool bAnyTimelineActive = false;
+        bool bClickedNotifyMarkerThisFrame = false;
         int32 PendingDeleteNotifyIndex = -1;
         TArray<FAnimNotifyEvent>& NotifyEvents = AnimSequence->Notifies;
 
@@ -1169,22 +1170,46 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
 
                 if (bMarkerHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
-                    GDraggedNotifyIndex = EventIdx;
-                    GIsDraggingNotify = true;
-                    if (!ActiveState->bTimelineScrubbing)
-                    {
-                        ActiveState->bTimelineScrubbing = true;
-                        ActiveState->bWasPlayingBeforeScrub = bIsPlaying;
-                        if (bIsPlaying)
-                        {
-                            AnimInstance->SetPlaying(false);
-                        }
-                    }
+                    ActiveState->SelectedNotifyIndex = EventIdx;
+                    ActiveState->SelectedNotifyObject = EventRef.Notify;
+                    bClickedNotifyMarkerThisFrame = true;
                 }
 
                 if (bMarkerHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
                 {
                     bTrackRightClickConsumed = true;
+                }
+
+                bool bIsSelected = false;
+                if (ActiveState)
+                {
+                    if (ActiveState->SelectedNotifyObject)
+                    {
+                        bIsSelected = (EventRef.Notify == ActiveState->SelectedNotifyObject);
+                    }
+                    else
+                    {
+                        bIsSelected = (ActiveState->SelectedNotifyIndex == EventIdx);
+                    }
+                }
+
+                bool bMarkerActive = ImGui::IsItemActive();
+                if (bIsSelected && bMarkerActive && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 2.0f))
+                {
+                    if (!GIsDraggingNotify || GDraggedNotifyIndex != EventIdx)
+                    {
+                        GDraggedNotifyIndex = EventIdx;
+                        GIsDraggingNotify = true;
+                        if (!ActiveState->bTimelineScrubbing)
+                        {
+                            ActiveState->bTimelineScrubbing = true;
+                            ActiveState->bWasPlayingBeforeScrub = bIsPlaying;
+                            if (bIsPlaying)
+                            {
+                                AnimInstance->SetPlaying(false);
+                            }
+                        }
+                    }
                 }
 
                 if (GIsDraggingNotify && GDraggedNotifyIndex == EventIdx)
@@ -1255,8 +1280,8 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
                     rectMax.x -= delta;
                 }
 
-                ImU32 LabelBg = IM_COL32(40, 45, 60, 204);
-                ImU32 LabelBorder = IM_COL32(200, 210, 230, 220);
+                ImU32 LabelBg = bIsSelected ? IM_COL32(70, 55, 30, 235) : IM_COL32(40, 45, 60, 204);
+                ImU32 LabelBorder = bIsSelected ? IM_COL32(255, 170, 70, 255) : IM_COL32(200, 210, 230, 220);
                 ImU32 LabelTextColor = IM_COL32(235, 240, 255, 255);
 
                 drawList->AddRectFilled(rectMin, rectMax, LabelBg, 4.0f);
@@ -1272,8 +1297,8 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
                 ImVec2 p2(centerX, centerYUpdated + DiamondHalfHeight);
                 ImVec2 p3(centerX - DiamondHalfWidth, centerYUpdated);
 
-                ImU32 DiamondFill = IM_COL32(255, 190, 80, 204);
-                ImU32 DiamondOutline = IM_COL32(0, 0, 0, 220);
+                ImU32 DiamondFill = bIsSelected ? IM_COL32(255, 210, 120, 255) : IM_COL32(255, 190, 80, 204);
+                ImU32 DiamondOutline = bIsSelected ? IM_COL32(255, 170, 70, 255) : IM_COL32(0, 0, 0, 220);
                 drawList->AddQuadFilled(p0, p1, p2, p3, DiamondFill);
                 drawList->AddQuad(p0, p1, p2, p3, DiamondOutline, 1.2f);
             }
@@ -1351,11 +1376,28 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
             ImGui::PopID();
         }
 
+        ImVec2 timelineMin = timelinePos;
+        ImVec2 timelineMax = ImVec2(timelinePos.x + totalWidth, timelinePos.y + timelineHeight);
+        bool bMouseInTimeline = ImGui::IsMouseHoveringRect(timelineMin, timelineMax, false);
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && bMouseInTimeline && !bClickedNotifyMarkerThisFrame)
+        {
+            if (ActiveState)
+            {
+                ActiveState->SelectedNotifyIndex = -1;
+                ActiveState->SelectedNotifyObject = nullptr;
+            }
+        }
+
         if (PendingDeleteNotifyIndex >= 0 && PendingDeleteNotifyIndex < NotifyEvents.Num())
         {
             AnimSequence->RemoveNotify(PendingDeleteNotifyIndex);
             GIsDraggingNotify = false;
             GDraggedNotifyIndex = -1;
+            if (ActiveState)
+            {
+                ActiveState->SelectedNotifyIndex = -1;
+                ActiveState->SelectedNotifyObject = nullptr;
+            }
         }
 
         if (ActiveState->bTimelineScrubbing && !bAnyTimelineActive)

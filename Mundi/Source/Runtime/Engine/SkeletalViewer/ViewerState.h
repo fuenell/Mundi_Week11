@@ -1,7 +1,7 @@
 #pragma once
 #include <d3d11.h>
 
-class UWorld; class FViewport; class FViewportClient; class ASkeletalMeshActor; class USkeletalMesh;
+class UWorld; class FViewport; class FViewportClient; class ASkeletalMeshActor; class USkeletalMesh; class UAnimNotify;
 
 class ViewerState
 {
@@ -48,4 +48,8 @@ public:
     uint32 ViewerTextureWidth = 0;
     uint32 ViewerTextureHeight = 0;
     bool bViewportTextureValid = false;
+
+    // Anim notify selection
+    int32 SelectedNotifyIndex = -1;
+    UAnimNotify* SelectedNotifyObject = nullptr;
 };

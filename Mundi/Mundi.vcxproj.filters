@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -665,6 +665,9 @@
     </ClCompile>
     <ClCompile Include="Source\Runtime\Animation\AnimNotify.cpp">
       <Filter>Source\Runtime\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\UAnimNotify_PlaySound.generated.cpp">
+      <Filter>Generated</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2708,6 +2711,9 @@
     </ClInclude>
     <ClInclude Include="Source\Runtime\Animation\AnimNotify.h">
       <Filter>Source\Runtime\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UAnimNotify_PlaySound.generated.h">
+      <Filter>Generated</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -365,13 +365,18 @@
     <ClCompile Include="Source\Runtime\Animation\AnimInstance.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\AnimLuaInstance.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimNotify.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\AnimNotify_PlaySound.cpp">
+      <DeploymentContent>false</DeploymentContent>
+    </ClCompile>
     <ClCompile Include="Source\Runtime\Animation\AnimSequence.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Animation\AnimSequenceBase.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimSingleNodeInstance.cpp" />
+    <ClCompile Include="Source\Runtime\AssetManagement\AnimLuaInstance.cpp">
+      <DeploymentContent>false</DeploymentContent>
+    </ClCompile>
     <ClCompile Include="Source\Runtime\AssetManagement\DynamicMesh.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\Line.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\LineDynamicMesh.cpp" />
@@ -621,6 +626,7 @@
     <ClCompile Include="Generated\UAnimInstance.generated.cpp" />
     <ClCompile Include="Generated\UAnimLuaInstance.generated.cpp" />
     <ClCompile Include="Generated\UAnimSingleNodeInstance.generated.cpp" />
+    <ClCompile Include="Generated\UAnimNotify_PlaySound.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -648,8 +654,10 @@
     <ClInclude Include="Source\Runtime\Animation\AnimInstance.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\AnimLuaInstance.h" />
     <ClInclude Include="Source\Runtime\Animation\AnimNotify.h" />
+    <ClInclude Include="Source\Runtime\Animation\AnimNotify_PlaySound.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
     <ClInclude Include="Source\Runtime\Animation\AnimSequence.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
@@ -660,6 +668,9 @@
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Animation\AnimTypes.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\AssetManagement\AnimLuaInstance.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Source\Runtime\AssetManagement\Cube.h" />
@@ -1316,6 +1327,7 @@
     <ClInclude Include="Generated\UAnimInstance.generated.h" />
     <ClInclude Include="Generated\UAnimLuaInstance.generated.h" />
     <ClInclude Include="Generated\UAnimSingleNodeInstance.generated.h" />
+    <ClInclude Include="Generated\UAnimNotify_PlaySound.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Shaders\Common\LightingBuffers.hlsl" />

@@ -37,16 +37,54 @@ void APawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	// 디버그: 입력 조건 확인
+	//static int DebugCounter = 0;
+	//if (++DebugCounter % 60 == 0)  // 1초마다 출력 (60fps 기준)
+	//{
+	//	char debugMsg[256];
+	//	sprintf_s(debugMsg, "APawn Input Check - PlayerControlled: %d, World: %p, PIE: %d\n",
+	//		bIsPlayerControlled,
+	//		GetWorld(),
+	//		GetWorld() ? GetWorld()->bPie : 0);
+	//	UE_LOG(debugMsg);
+	//}
+
 	// 플레이어 제어 중일 때 입력 처리
 	if (bIsPlayerControlled && GetWorld() && GetWorld()->bPie)
 	{
 		UInputManager& InputManager = UInputManager::GetInstance();
 
+		// 디버그: 키 입력 상태 확인
+		bool bUpPressed = InputManager.IsKeyDown(VK_UP);
+		bool bDownPressed = InputManager.IsKeyDown(VK_DOWN);
+		bool bLeftPressed = InputManager.IsKeyDown(VK_LEFT);
+		bool bRightPressed = InputManager.IsKeyDown(VK_RIGHT);
+
+		/*if (bUpPressed || bDownPressed || bLeftPressed || bRightPressed)
+		{
+			char keyMsg[128];
+			sprintf_s(keyMsg, "Arrow Keys - Up:%d Down:%d Left:%d Right:%d\n",
+				bUpPressed, bDownPressed, bLeftPressed, bRightPressed);
+			UE_LOG(keyMsg);
+		}*/
+
 		// 이동 입력
-		if (InputManager.IsKeyDown('W')) MoveForward(1.0f);
-		if (InputManager.IsKeyDown('S')) MoveForward(-1.0f);
-		if (InputManager.IsKeyDown('A')) MoveRight(-1.0f);
-		if (InputManager.IsKeyDown('D')) MoveRight(1.0f);
+		if (bUpPressed)
+		{
+			MoveForward(1.0f);
+		}
+		if (bDownPressed)
+		{
+			MoveForward(-1.0f);
+		}
+		if (bLeftPressed)
+		{
+			MoveRight(-1.0f);
+		}
+		if (bRightPressed)
+		{
+			MoveRight(1.0f);
+		}
 
 		// 마우스 회전
 		FVector2D MouseDelta = InputManager.GetMouseDelta();
@@ -58,11 +96,12 @@ void APawn::Tick(float DeltaSeconds)
 	}
 
 	// 누적된 입력을 이동 컴포넌트에 전달
-	if (MovementComponent && !PendingMovementInput.IsZero())
-	{
-		FVector InputVector = ConsumeMovementInputVector();
-		MovementComponent->SetVelocity(InputVector);
-	}
+	//if (MovementComponent && !PendingMovementInput.IsZero())
+	//{
+	//	FVector InputVector = ConsumeMovementInputVector();
+	//	//UE_LOG("Applying Movement Input: %.2f, %.2f, %.2f\n", InputVector.X, InputVector.Y, InputVector.Z);
+	//	MovementComponent->SetVelocity(InputVector);
+	//}
 }
 
 void APawn::EndPlay()
@@ -75,6 +114,7 @@ void APawn::MoveForward(float Value)
 	if (Value != 0.0f)
 	{
 		// 전방 벡터를 기준으로 이동
+		UE_LOG("MoveForward called with Value: %f\n", Value);
 		FVector Forward = GetActorForward();
 		Forward.Z = 0.0f;  // 수평 이동만
 		Forward = Forward.GetSafeNormal();
@@ -135,6 +175,7 @@ void APawn::AddMovementInput(const FVector& WorldDirection, float ScaleValue)
 FVector APawn::ConsumeMovementInputVector()
 {
 	FVector Result = PendingMovementInput;
+	UE_LOG("Consuming Movement Input: %.2f, %.2f, %.2f\n", Result.X, Result.Y, Result.Z);
 	PendingMovementInput = FVector::Zero();
 	return Result;
 }

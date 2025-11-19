@@ -28,7 +28,7 @@ public:
 
 	// ───── Collision ─────────────────────────
 	// 캡슐 충돌체 접근 (인간형 캐릭터 전용)
-	//UCapsuleComponent* GetCapsuleComponent() const { return CollisionComponent; }
+	UCapsuleComponent* GetCapsuleComponent() const { return CollisionComponent; }
 
 	// ───── Movement ─────────────────────────
 	// 캐릭터 전용 이동 함수들

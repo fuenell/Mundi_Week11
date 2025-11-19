@@ -27,6 +27,8 @@ ACharacter::ACharacter()
 	// 캡슐 충돌체 생성 (인간형 캐릭터의 특징)
 	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>("CapsuleComponent");
 	SetRootComponent(CollisionComponent);
+	CollisionComponent->SetCapsuleHalfHeight(10.0f); // 기본 높이 설정
+	CollisionComponent->SetCapsuleRadius(10.0f);     // 기본 반지름 설정
 
 	// 스켈레탈 메시 컴포넌트 생성
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("SkeletalMeshComponent");
@@ -104,6 +106,21 @@ void ACharacter::Tick(float DeltaSeconds)
 			}
 		}
 	}
+}
+
+FAABB ACharacter::GetBounds() const
+{
+	if (MeshComponent)
+	{
+		return MeshComponent->GetWorldAABB();
+	}
+
+	if (CollisionComponent)
+	{
+		return CollisionComponent->GetWorldAABB();
+	}
+
+	return FAABB();
 }
 
 void ACharacter::SetupPlayerInput()

@@ -113,8 +113,6 @@ class Property:
                 return 'ADD_PROPERTY_TEXTURE'
             elif 'ustaticmesh' in type_lower:
                 return 'ADD_PROPERTY_STATICMESH'
-			elif 'uskeletalmeshcomponent' in type_lower:
-                return 'ADD_PROPERTY'
             elif 'uskeletalmesh' in type_lower:
                 return 'ADD_PROPERTY_SKELETALMESH'
             elif 'umaterial' in type_lower:

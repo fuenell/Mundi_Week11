@@ -18,6 +18,9 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
+	// AActor
+	FAABB GetBounds() const override;
+
 	// ───── Mesh ─────────────────────────
 	// 스켈레탈 메시 접근
 	USkeletalMeshComponent* GetMesh() const { return MeshComponent; }
@@ -25,7 +28,7 @@ public:
 
 	// ───── Collision ─────────────────────────
 	// 캡슐 충돌체 접근 (인간형 캐릭터 전용)
-	UCapsuleComponent* GetCapsuleComponent() const { return CollisionComponent; }
+	//UCapsuleComponent* GetCapsuleComponent() const { return CollisionComponent; }
 
 	// ───── Movement ─────────────────────────
 	// 캐릭터 전용 이동 함수들
@@ -85,11 +88,11 @@ protected:
 	// ───── Character-Specific Components ─────────────────────────
 	
 	// 캡슐 충돌체 (인간형 캐릭터의 충돌 처리)
-	UPROPERTY(EditAnywhere, Category="Character|Collision")
+	//UPROPERTY(EditAnywhere, Category="Character|Collision")
 	UCapsuleComponent* CollisionComponent;
 
 	// 스켈레탈 메시 컴포넌트
-	UPROPERTY(EditAnywhere, Category="Character|Mesh")
+	//UPROPERTY(EditAnywhere, Category="Character|Mesh")
 	USkeletalMeshComponent* MeshComponent;
 
 	// ───── Movement Properties ─────────────────────────

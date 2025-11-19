@@ -39,7 +39,7 @@ private:
 
     // Animation playback controls
     void RenderAnimationModeCheckbox();
-    void RenderPlaybackBar();
+    void RenderPlaybackBar(float AvailableHeight);
     void OnPlayButtonPressed();
     void OnPauseButtonPressed();
     void OnStopButtonPressed();
@@ -58,6 +58,7 @@ private:
     float LeftPanelRatio = 0.25f;   // 25% of width
     float RightPanelRatio = 0.25f;  // 25% of width
     float PlaybackBarHeight = 170.0f; // Height of the playback bar at the bottom (increased for timeline)
+	float AnimationModeCheckboxHeight = 40.0f;
 
     // Cached center region used for viewport sizing and input mapping
     FRect CenterRect;

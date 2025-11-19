@@ -110,8 +110,11 @@ void SSkeletalMeshViewerWindow::OnRender()
         float totalWidth = contentAvail.x;
         
         // Calculate playback bar height based on animation mode
-        float playbackBarHeight = (ActiveState && ActiveState->bAnimationMode) ? PlaybackBarHeight : 40.0f;
-        float totalHeight = contentAvail.y - playbackBarHeight;
+        float FinalPlaybackBarHeight = (ActiveState && ActiveState->bAnimationMode) ? PlaybackBarHeight : 0.0f;
+        float bottomBarsTotalHeight = AnimationModeCheckboxHeight + FinalPlaybackBarHeight;
+        
+        // Main panels height (subtract bottom bars from available height)
+        float totalHeight = contentAvail.y - bottomBarsTotalHeight;
 
         float leftWidth = totalWidth * LeftPanelRatio;
         float rightWidth = totalWidth * RightPanelRatio;
@@ -183,7 +186,7 @@ void SSkeletalMeshViewerWindow::OnRender()
                     {
                         ActiveState->PreviewActor->SetSkeletalMesh(Path);
                         ActiveState->CurrentMesh = Mesh;
-                        ActiveState->LoadedMeshPath = Path;  // Track for resource unloading
+                        ActiveState->LoadedMeshPath = Path;
                         if (auto* Skeletal = ActiveState->PreviewActor->GetSkeletalMeshComponent())
                         {
                             Skeletal->SetVisibility(ActiveState->bShowMesh);
@@ -380,9 +383,9 @@ void SSkeletalMeshViewerWindow::OnRender()
         }
         ImGui::EndChild();
 
-        ImGui::SameLine(0, 0); // No spacing between panels
+        ImGui::SameLine(0, 0);
 
-        // Center panel (viewport area) — draw with border to see the viewport area
+        // Center panel
         ImGui::BeginChild("SkeletalMeshViewport", ImVec2(centerWidth, totalHeight), true, ImGuiWindowFlags_NoScrollbar);
         ImVec2 childPos = ImGui::GetWindowPos();
         ImVec2 childSize = ImGui::GetWindowSize();
@@ -391,9 +394,9 @@ void SSkeletalMeshViewerWindow::OnRender()
         CenterRect.Left = rectMin.x; CenterRect.Top = rectMin.y; CenterRect.Right = rectMax.x; CenterRect.Bottom = rectMax.y; CenterRect.UpdateMinMax();
         ImGui::EndChild();
 
-        ImGui::SameLine(0, 0); // No spacing between panels
+        ImGui::SameLine(0, 0);
 
-        // Right panel - Bone Properties
+        // Right panel
         ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
         ImGui::BeginChild("RightPanel", ImVec2(rightWidth, totalHeight), true);
         ImGui::PopStyleVar();
@@ -537,7 +540,7 @@ void SSkeletalMeshViewerWindow::OnRender()
         // Render the playback bar only if animation mode is enabled
         if (ActiveState && ActiveState->bAnimationMode)
         {
-            RenderPlaybackBar();
+            RenderPlaybackBar(FinalPlaybackBarHeight);
         }
     }
     ImGui::End();
@@ -569,7 +572,7 @@ void SSkeletalMeshViewerWindow::RenderAnimationModeCheckbox()
 
 	// Animation Mode checkbox container
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.12f, 0.12f, 0.15f, 1.0f));
-	ImGui::BeginChild("AnimationModeCheckbox", ImVec2(0, 40.0f), true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	ImGui::BeginChild("AnimationModeCheckbox", ImVec2(0, AnimationModeCheckboxHeight), true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 	ImGui::PopStyleColor();
 
 	// Center the checkbox vertically - calculate proper offset
@@ -613,7 +616,7 @@ void SSkeletalMeshViewerWindow::RenderAnimationModeCheckbox()
 	ImGui::EndChild();
 }
 
-void SSkeletalMeshViewerWindow::RenderPlaybackBar()
+void SSkeletalMeshViewerWindow::RenderPlaybackBar(float AvailableHeight)
 {
     if (!ActiveState || !ActiveState->PreviewActor)
         return;
@@ -622,10 +625,9 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
     if (!SkeletalComp)
         return;
 
-    // Playback bar background
+    // Playback bar background - use the available height
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.15f, 0.15f, 0.18f, 1.0f));
-    ImGui::BeginChild("PlaybackBar", ImVec2(0, PlaybackBarHeight - 40.0f), true, ImGuiWindowFlags_NoScrollbar);
-    //ImGui::BeginChild("PlaybackBar", ImVec2(0, 0), true, ImGuiWindowFlags_NoScrollbar);
+    ImGui::BeginChild("PlaybackBar", ImVec2(0, AvailableHeight), true, ImGuiWindowFlags_NoScrollbar);
     ImGui::PopStyleColor();
 
     // Get animation instance
@@ -636,7 +638,7 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
 
     bool bIsPlaying = AnimInstance && AnimInstance->IsPlaying();
 
-    // Center the controls vertically for buttons section
+    // Playback controls section
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
     ImGui::Spacing();
 
@@ -731,41 +733,151 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
 
     ImGui::EndGroup();
 
-    // Timeline section
+    // Timeline section (Unreal Engine style)
     if (bHasAnimationSequence)
     {
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
 
-        float AnimLength = AnimSequence->GetDataModel()->GetPlayLength();
+        float AnimLength = AnimDataModel->GetPlayLength();
         float CurrentTime = AnimInstance->GetCurrentTime();
+        const FFrameRate& FrameRate = AnimDataModel->GetFrameRate();
+        float FrameRateFloat = FrameRate.ToFloat();
+        int32 TotalFrames = static_cast<int32>(AnimLength * FrameRateFloat);
 
-        // Timeline slider
         ImGui::BeginGroup();
         
-        // Time display
+        // Time display with frame info
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.9f, 1.0f));
-        ImGui::Text("Time: %.2f / %.2f", CurrentTime, AnimLength);
+        int32 CurrentFrame = static_cast<int32>(CurrentTime * FrameRateFloat);
+        ImGui::Text("Time: %.2f / %.2f s | Frame: %d / %d (%.1f fps)", 
+                    CurrentTime, AnimLength, CurrentFrame, TotalFrames, FrameRateFloat);
         ImGui::PopStyleColor();
 
-        // Timeline slider
-        ImGui::PushItemWidth(-1.0f);
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.20f, 0.22f, 0.25f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 0.27f, 0.30f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.30f, 0.32f, 0.35f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.40f, 0.70f, 1.00f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.50f, 0.80f, 1.00f, 1.0f));
+        ImGui::Spacing();
 
-        float TimelineValue = CurrentTime;
-        bool bWasDragging = ActiveState->bTimelineScrubbing;
+        // Custom timeline rendering area - use remaining available space
+        float timelineWidth = ImGui::GetContentRegionAvail().x;
+        float remainingHeight = ImGui::GetContentRegionAvail().y;
+        float timelineHeight = std::max(60.0f, remainingHeight - 10.0f); // At least 60px, with 10px padding
         
-        if (ImGui::SliderFloat("##Timeline", &TimelineValue, 0.0f, AnimLength, ""))
+        ImVec2 timelinePos = ImGui::GetCursorScreenPos();
+        ImVec2 timelineSize(timelineWidth, timelineHeight);
+        
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+        
+        // Timeline background (darker)
+        ImU32 bgColor = IM_COL32(25, 25, 30, 255);
+        drawList->AddRectFilled(timelinePos, ImVec2(timelinePos.x + timelineSize.x, timelinePos.y + timelineSize.y), bgColor);
+        
+        // Draw frame lines and labels
+        if (TotalFrames > 0 && AnimLength > 0.0f)
         {
-            // User is scrubbing the timeline
+            float scrubAreaHeight = timelineHeight - 20.0f; // Reserve space for frame numbers
+            float scrubStartY = timelinePos.y + 20.0f;
+            
+            // Determine frame interval for drawing based on zoom level
+            int32 frameInterval = 1;
+            if (TotalFrames > 200) frameInterval = 10;
+            else if (TotalFrames > 100) frameInterval = 5;
+            else if (TotalFrames > 50) frameInterval = 2;
+            
+            // Draw frame markers
+            for (int32 Frame = 0; Frame <= TotalFrames; ++Frame)
+            {
+                float normalizedPos = static_cast<float>(Frame) / static_cast<float>(TotalFrames);
+                float lineX = timelinePos.x + normalizedPos * timelineWidth;
+                
+                bool bIsMajorTick = (Frame % (frameInterval * 5) == 0);
+                bool bIsMinorTick = (Frame % frameInterval == 0);
+                
+                if (bIsMajorTick || Frame == 0 || Frame == TotalFrames)
+                {
+                    // Major tick - full height with brighter color
+                    ImU32 lineColor = IM_COL32(140, 160, 180, 200);
+                    drawList->AddLine(
+                        ImVec2(lineX, scrubStartY),
+                        ImVec2(lineX, scrubStartY + scrubAreaHeight),
+                        lineColor,
+                        1.5f
+                    );
+                    
+                    // Draw frame number
+                    char frameLabel[16];
+                    sprintf_s(frameLabel, "%d", Frame);
+                    ImVec2 textSize = ImGui::CalcTextSize(frameLabel);
+                    drawList->AddText(
+                        ImVec2(lineX - textSize.x * 0.5f, timelinePos.y + 2),
+                        IM_COL32(180, 190, 200, 255),
+                        frameLabel
+                    );
+                }
+                else if (bIsMinorTick)
+                {
+                    // Minor tick - medium height
+                    ImU32 lineColor = IM_COL32(80, 90, 100, 150);
+                    float tickHeight = scrubAreaHeight * 0.5f;
+                    drawList->AddLine(
+                        ImVec2(lineX, scrubStartY + (scrubAreaHeight - tickHeight) * 0.5f),
+                        ImVec2(lineX, scrubStartY + (scrubAreaHeight - tickHeight) * 0.5f + tickHeight),
+                        lineColor,
+                        1.0f
+                    );
+                }
+                else
+                {
+                    // Subtle tick for every frame
+                    ImU32 lineColor = IM_COL32(50, 55, 60, 100);
+                    float tickHeight = scrubAreaHeight * 0.25f;
+                    drawList->AddLine(
+                        ImVec2(lineX, scrubStartY + (scrubAreaHeight - tickHeight) * 0.5f),
+                        ImVec2(lineX, scrubStartY + (scrubAreaHeight - tickHeight) * 0.5f + tickHeight),
+                        lineColor,
+                        0.5f
+                    );
+                }
+            }
+            
+            // Draw current time indicator (red playhead)
+            float playheadX = timelinePos.x + (CurrentTime / AnimLength) * timelineWidth;
+            
+            // Playhead line
+            drawList->AddLine(
+                ImVec2(playheadX, timelinePos.y),
+                ImVec2(playheadX, timelinePos.y + timelineHeight),
+                IM_COL32(255, 80, 80, 255),
+                3.0f
+            );
+            
+            // Playhead triangle at top
+            float triangleSize = 8.0f;
+            drawList->AddTriangleFilled(
+                ImVec2(playheadX, timelinePos.y),
+                ImVec2(playheadX - triangleSize, timelinePos.y + triangleSize),
+                ImVec2(playheadX + triangleSize, timelinePos.y + triangleSize),
+                IM_COL32(255, 80, 80, 255)
+            );
+        }
+        
+        // Invisible button for timeline interaction
+        ImGui::SetCursorScreenPos(timelinePos);
+        ImGui::InvisibleButton("##TimelineScrubber", timelineSize);
+        
+        bool bIsHovered = ImGui::IsItemHovered();
+        bool bIsActive = ImGui::IsItemActive();
+        
+        // Handle timeline scrubbing
+        if (bIsActive || (bIsHovered && ImGui::IsMouseClicked(0)))
+        {
+            ImVec2 mousePos = ImGui::GetMousePos();
+            float normalizedPos = (mousePos.x - timelinePos.x) / timelineWidth;
+            normalizedPos = std::max(0.0f, std::min(1.0f, normalizedPos));
+            
+            float newTime = normalizedPos * AnimLength;
+            
             if (!ActiveState->bTimelineScrubbing)
             {
-                // Start scrubbing - pause if playing
                 ActiveState->bTimelineScrubbing = true;
                 ActiveState->bWasPlayingBeforeScrub = bIsPlaying;
                 if (bIsPlaying)
@@ -773,26 +885,35 @@ void SSkeletalMeshViewerWindow::RenderPlaybackBar()
                     AnimInstance->SetPlaying(false);
                 }
             }
-
-            // Update animation to the scrubbed time
-            AnimInstance->SetCurrentTime(TimelineValue);
+            
+            AnimInstance->SetCurrentTime(newTime);
             SkeletalComp->ForceRecomputePose();
             ActiveState->bBoneLinesDirty = true;
         }
-
-        // Check if user released the slider
-        if (bWasDragging && !ImGui::IsItemActive())
+        
+        // Release scrubbing
+        if (ActiveState->bTimelineScrubbing && !bIsActive)
         {
             ActiveState->bTimelineScrubbing = false;
-            // Resume playing if it was playing before scrubbing
             if (ActiveState->bWasPlayingBeforeScrub)
             {
                 AnimInstance->SetPlaying(true);
             }
         }
-
-        ImGui::PopStyleColor(5);
-        ImGui::PopItemWidth();
+        
+        // Draw border around timeline
+        drawList->AddRect(
+            timelinePos,
+            ImVec2(timelinePos.x + timelineSize.x, timelinePos.y + timelineSize.y),
+            IM_COL32(60, 70, 80, 255),
+            0.0f,
+            0,
+            1.5f
+        );
+        
+        // Move cursor past the timeline
+        ImGui::SetCursorScreenPos(ImVec2(timelinePos.x, timelinePos.y + timelineHeight));
+        ImGui::Dummy(ImVec2(timelineWidth, 0));
 
         ImGui::EndGroup();
     }

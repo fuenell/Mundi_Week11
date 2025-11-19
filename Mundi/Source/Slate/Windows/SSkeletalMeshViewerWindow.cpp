@@ -618,6 +618,19 @@ void SSkeletalMeshViewerWindow::OnRender()
     // If window was closed via X button, notify the manager to clean up
     if (!bIsOpen)
     {
+		if (!ActiveState || !ActiveState->PreviewActor)
+			return;
+
+		USkeletalMeshComponent* SkeletalComp = ActiveState->PreviewActor->GetSkeletalMeshComponent();
+		if (!SkeletalComp)
+			return;
+
+		// Get animation instance
+		UAnimSingleNodeInstance* AnimInstance = SkeletalComp->GetSingleNodeInstance();
+		UAnimSequence* AnimSequence = AnimInstance ? AnimInstance->GetCurrentAnimSequence() : nullptr;
+
+		AnimSequence->SaveNotifies();
+
         USlateManager::GetInstance().CloseSkeletalMeshViewer();
     }
 

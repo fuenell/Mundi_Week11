@@ -2,6 +2,7 @@
 #include "Name.h"
 #include "AnimNotify.h"
 #include "Archive.h"
+#include "ObjectFactory.h"
 #include <cmath>
 //#include "AnimCurveTypes.h"
 
@@ -22,21 +23,60 @@ struct FAnimNotifyEvent
 
 		Ar << TriggerTime;
 		Ar << Duration;
+		Ar << TrackIndex;
 
 		if (Ar.IsSaving())
 		{
+			// NotifyName 저장
 			const FString NotifyNameStr = NotifyName.ToString();
 			Serialization::WriteString(Ar, NotifyNameStr);
+
+			// Notify 객체 저장
+			bool bHasNotify = (Notify != nullptr);
+			Ar << bHasNotify;
+
+			if (bHasNotify)
+			{
+				// Notify 클래스 이름 저장
+				const FString ClassName = Notify->GetClass()->Name;
+				Serialization::WriteString(Ar, ClassName);
+			}
 		}
-		else
+		else // Loading
 		{
+			// NotifyName 로드
 			FString NotifyNameStr;
 			Serialization::ReadString(Ar, NotifyNameStr);
 			NotifyName = FName(NotifyNameStr);
 
-			// 직렬화 데이터에는 실제 노티파이 인스턴스를 저장하지 않으므로
-			// 로딩 시점에는 nullptr로 초기화한 뒤 런타임에서 재지정한다.
-			Notify = nullptr;
+			// Notify 객체 로드
+			bool bHasNotify = false;
+			Ar << bHasNotify;
+
+			if (bHasNotify)
+			{
+				// Notify 클래스 이름 로드
+				FString ClassName;
+				Serialization::ReadString(Ar, ClassName);
+
+				// 클래스 찾기
+				UClass* NotifyClass = UClass::FindClass(FName(ClassName));
+				if (NotifyClass)
+				{
+					// 새 인스턴스 생성
+					Notify = Cast<UAnimNotify>(ObjectFactory::NewObject(NotifyClass));
+				}
+				else
+				{
+					// 클래스를 찾지 못한 경우 경고
+					UE_LOG("FAnimNotifyEvent::Serialize: Failed to find class: %s", ClassName.c_str());
+					Notify = nullptr;
+				}
+			}
+			else
+			{
+				Notify = nullptr;
+			}
 		}
 
 		return true;

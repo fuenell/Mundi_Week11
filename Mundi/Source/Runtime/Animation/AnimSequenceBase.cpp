@@ -3,6 +3,8 @@
 
 #include "FBXLoader.h"
 #include "Source/Runtime/Core/Object/ObjectFactory.h"
+#include "Source/Runtime/Core/Misc/WindowsBinWriter.h"
+#include "Source/Runtime/Core/Misc/WindowsBinReader.h"
 #include <algorithm>
 
 IMPLEMENT_CLASS(UAnimSequenceBase)
@@ -28,6 +30,8 @@ void UAnimSequenceBase::Load(const FString& InFilePath, class ID3D11Device* InDe
 
 	SetFilePath(InFilePath);
 	EnsureDefaultNotifyTrack();
+
+	LoadNotifies(InFilePath + ".notifies");
 }
 
 int32 UAnimSequenceBase::AddNotify(const FAnimNotifyEvent& InEvent)
@@ -268,4 +272,116 @@ void UAnimSequenceBase::EnsureDefaultNotifyTrack()
 	{
 		NotifyTracks.Add(FName("Track0"));
 	}
+}
+
+bool UAnimSequenceBase::SaveNotifies()
+{
+	FString InFilePath = GetFilePath() + ".notifies";
+
+	FWindowsBinWriter Ar(InFilePath);
+	if (!Ar.IsSaving())
+	{
+		UE_LOG("UAnimSequenceBase::SaveNotifies: Failed to open file for writing: %s", InFilePath.c_str());
+		return false;
+	}
+
+	// 1. Notifies 배열 저장
+	int32 NotifyCount = Notifies.Num();
+	Ar << NotifyCount;
+
+	for (FAnimNotifyEvent& Event : Notifies)
+	{
+		if (!Event.Serialize(Ar))
+		{
+			UE_LOG("UAnimSequenceBase::SaveNotifies: Failed to serialize notify event");
+			Ar.Close();
+			return false;
+		}
+	}
+
+	// 2. NotifyTracks 배열 저장
+	int32 TrackCount = NotifyTracks.Num();
+	Ar << TrackCount;
+
+	for (const FName& TrackName : NotifyTracks)
+	{
+		FString TrackNameStr = TrackName.ToString();
+		Serialization::WriteString(Ar, TrackNameStr);
+	}
+
+	// 3. RateScale 저장
+	Ar << RateScale;
+
+	Ar.Close();
+	UE_LOG("UAnimSequenceBase::SaveNotifies: Successfully saved %d notifies and %d tracks to %s", 
+		NotifyCount, TrackCount, InFilePath.c_str());
+	return true;
+}
+
+bool UAnimSequenceBase::LoadNotifies(const FString& InFilePath)
+{
+	FWindowsBinReader Ar(InFilePath);
+	if (!Ar.IsOpen() || !Ar.IsLoading())
+	{
+		UE_LOG("UAnimSequenceBase::LoadNotifies: Failed to open file for reading: %s", InFilePath.c_str());
+		return false;
+	}
+
+	// 기존 노티파이 정리
+	ClearNotifies();
+
+	// 1. Notifies 배열 로드
+	int32 NotifyCount = 0;
+	Ar << NotifyCount;
+
+	if (NotifyCount < 0 || NotifyCount > Serialization::MAX_REASONABLE_ARRAY_SIZE)
+	{
+		UE_LOG("UAnimSequenceBase::LoadNotifies: Invalid notify count: %d", NotifyCount);
+		Ar.Close();
+		return false;
+	}
+
+	Notifies.clear();
+	Notifies.reserve(NotifyCount);
+
+	for (int32 i = 0; i < NotifyCount; ++i)
+	{
+		FAnimNotifyEvent Event;
+		if (!Event.Serialize(Ar))
+		{
+			UE_LOG("UAnimSequenceBase::LoadNotifies: Failed to deserialize notify event at index %d", i);
+			Ar.Close();
+			return false;
+		}
+		Notifies.Add(Event);
+	}
+
+	// 2. NotifyTracks 배열 로드
+	int32 TrackCount = 0;
+	Ar << TrackCount;
+
+	if (TrackCount < 0 || TrackCount > MaxNumNotifyTracks)
+	{
+		UE_LOG("UAnimSequenceBase::LoadNotifies: Invalid track count: %d", TrackCount);
+		Ar.Close();
+		return false;
+	}
+
+	NotifyTracks.clear();
+	NotifyTracks.reserve(TrackCount);
+
+	for (int32 i = 0; i < TrackCount; ++i)
+	{
+		FString TrackNameStr;
+		Serialization::ReadString(Ar, TrackNameStr);
+		NotifyTracks.Add(FName(TrackNameStr));
+	}
+
+	// 3. RateScale 로드
+	Ar << RateScale;
+
+	Ar.Close();
+	UE_LOG("UAnimSequenceBase::LoadNotifies: Successfully loaded %d notifies and %d tracks from %s", 
+		NotifyCount, TrackCount, InFilePath.c_str());
+	return true;
 }

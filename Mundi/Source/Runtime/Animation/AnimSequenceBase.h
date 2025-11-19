@@ -2,6 +2,7 @@
 #include "AnimationAsset.h"
 #include "AnimDataModel.h"
 #include "AnimTypes.h"
+#include "AnimNotify.h"
 
 class UAnimSequenceBase : public UAnimationAsset
 {

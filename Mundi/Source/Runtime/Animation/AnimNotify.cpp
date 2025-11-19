@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "AnimNotify.h"
 #include "SkeletalMeshComponent.h"
+#include "AnimSequenceBase.h"
+
+IMPLEMENT_CLASS(UAnimNotify)
 
 void UAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {

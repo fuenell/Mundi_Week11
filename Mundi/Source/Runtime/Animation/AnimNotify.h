@@ -1,6 +1,7 @@
+#pragma once
 #include "Object.h"
-#include "AnimSequenceBase.h"
 
+class UAnimSequenceBase;
 class USkeletalMeshComponent;
 
 class UAnimNotify : public UObject

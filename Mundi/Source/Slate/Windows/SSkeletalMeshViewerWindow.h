@@ -75,7 +75,10 @@ private:
 
 public:
     bool IsOpen() const { return bIsOpen; }
-    void Close() { bIsOpen = false; }
+    void Close()
+	{
+		bIsOpen = false;
+	}
 
 private:
     void UpdateBoneTransformFromSkeleton(ViewerState* State);

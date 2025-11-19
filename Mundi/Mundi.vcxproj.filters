@@ -663,6 +663,9 @@
     <ClCompile Include="Source\Runtime\Animation\AnimLuaInstance.cpp">
       <Filter>Source\Runtime\AssetManagement</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimNotify.cpp">
+      <Filter>Source\Runtime\Animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

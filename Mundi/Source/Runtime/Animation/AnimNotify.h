@@ -1,6 +1,7 @@
 #include "Object.h"
-#include "SkeletalMeshComponent.h"
 #include "AnimSequenceBase.h"
+
+class USkeletalMeshComponent;
 
 class UAnimNotify : public UObject
 {
@@ -10,5 +11,5 @@ public:
 	UAnimNotify() = default;
 	virtual ~UAnimNotify() override = default;
 
-	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) {};
+	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation);
 };

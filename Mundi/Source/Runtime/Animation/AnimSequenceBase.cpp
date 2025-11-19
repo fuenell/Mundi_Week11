@@ -44,6 +44,100 @@ void UAnimSequenceBase::ClearNotifies()
 	Notifies.clear();
 }
 
+bool UAnimSequenceBase::AddNotifyTrack()
+{
+	if (NotifyTracks.Num() >= MaxNumNotifyTracks)
+	{
+		return false;
+	}
+
+	const int32 NewTrackIndex = NotifyTracks.Num();
+	const FString BaseName = "Track" + std::to_string(NewTrackIndex);
+	FString CandidateName = BaseName;
+	int32 SuffixIdx = 1;
+
+	auto IsNameInUse = [&](const FName& InName) -> bool
+	{
+		for (const FName& Existing : NotifyTracks)
+		{
+			if (Existing == InName)
+			{
+				return true;
+			}
+		}
+		return false;
+	};
+
+	FName FinalName(CandidateName);
+	while (IsNameInUse(FinalName))
+	{
+		CandidateName = BaseName + "_" + std::to_string(SuffixIdx++);
+		FinalName = FName(CandidateName);
+	}
+
+	NotifyTracks.Add(FinalName);
+	return true;
+}
+
+bool UAnimSequenceBase::DeleteNotifyTrack(int32 TrackIndex)
+{
+	if (!NotifyTracks.IsValidIndex(TrackIndex))
+	{
+		return false;
+	}
+
+	for (const FAnimNotifyEvent& Event : Notifies)
+	{
+		if (static_cast<int32>(Event.TrackIndex) == TrackIndex)
+		{
+			return false; // 노티파이가 존재하는 트랙은 삭제 불가
+		}
+	}
+
+	NotifyTracks.RemoveAt(TrackIndex);
+
+	for (FAnimNotifyEvent& Event : Notifies)
+	{
+		const int32 EventTrackIndex = static_cast<int32>(Event.TrackIndex);
+		if (EventTrackIndex > TrackIndex)
+		{
+			Event.TrackIndex = static_cast<uint8>(EventTrackIndex - 1);
+		}
+	}
+
+	return true;
+}
+
+bool UAnimSequenceBase::RenameNotifyTrack(int32 TrackIndex, const FName& NewName)
+{
+	if (!NotifyTracks.IsValidIndex(TrackIndex))
+	{
+		return false;
+	}
+
+	const FName& CurrentName = NotifyTracks[TrackIndex];
+	if (CurrentName == NewName)
+	{
+		return true;
+	}
+
+	for (int32 Index = 0; Index < NotifyTracks.Num(); ++Index)
+	{
+		if (Index == TrackIndex)
+		{
+			continue;
+		}
+
+		if (NotifyTracks[Index] == NewName)
+		{
+			return false;
+		}
+	}
+
+	NotifyTracks[TrackIndex] = NewName;
+	return true;
+}
+
 bool UAnimSequenceBase::MoveNotify(int32 Index, float NewTime)
 {
 	if (!Notifies.IsValidIndex(Index))

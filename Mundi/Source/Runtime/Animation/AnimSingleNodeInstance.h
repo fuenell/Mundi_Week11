@@ -20,10 +20,12 @@ public:
 	void SetPlaying(bool bIsPlaying);
 	void SetLooping(bool bIsLooping);
 	void SetCurrentTime(float InTime, bool bForceDirty = false);
+	void SetPlayRate(float InPlayRate) { PlayRate = InPlayRate; }
 
 	bool IsPlaying() const { return bIsPlaying; }
 	bool IsLooping() const { return bLooping; }
 	float GetCurrentTime() const { return CurrentTime; }
+	float GetPlayRate() const { return PlayRate; }
 
 	virtual void SetAnimationAsset(UAnimationAsset* NewAsset, bool bIsLooping = true, float InPlayRate = 1.f);
 	UAnimationAsset* GetCurrentAnimationAsset() const { return CurrentAsset; }

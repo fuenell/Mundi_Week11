@@ -43,6 +43,7 @@ private:
     void OnPlayButtonPressed();
     void OnPauseButtonPressed();
     void OnStopButtonPressed();
+    void OnReversePlayButtonPressed();
 
 private:
     // Per-tab state

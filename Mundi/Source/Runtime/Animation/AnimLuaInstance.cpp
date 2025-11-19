@@ -140,19 +140,6 @@ void UAnimLuaInstance::LoadScript(const FString& Path)
 
 void UAnimLuaInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
-	// ==================[테스트용 속도 넣는 코드]==================
-	if (GetOwningComponent())
-	{
-		static FVector PreWorldLocation;
-
-		FVector WorldLocation = GetOwningComponent()->GetWorldLocation();
-
-		float Speed = std::abs((WorldLocation - PreWorldLocation).Size());
-		SetFloat("Speed", Speed);
-		PreWorldLocation = WorldLocation;
-	}
-	// =======================================================
-
 	if (FuncUpdateAnimation.valid())
 	{
 		auto Result = FuncUpdateAnimation(DeltaSeconds);

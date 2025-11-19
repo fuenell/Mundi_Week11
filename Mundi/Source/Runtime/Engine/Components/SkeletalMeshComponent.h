@@ -75,6 +75,7 @@ public:
 	void SetEnableAnimation(bool bInEnableAnimation);
 	bool IsAnimationEnabled() const { return bEnableAnimation; }
 
+	UAnimInstance* GetAnimInstance() const { return AnimScriptInstance; }
 	class UAnimSingleNodeInstance* GetSingleNodeInstance() const;
 
 	void SetAnimationMode(EAnimationMode InAnimationMode, bool bForceInitAnimScriptInstance = true);

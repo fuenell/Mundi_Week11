@@ -115,11 +115,6 @@ FAABB ACharacter::GetBounds() const
 		return MeshComponent->GetWorldAABB();
 	}
 
-	if (CollisionComponent)
-	{
-		return CollisionComponent->GetWorldAABB();
-	}
-
 	return FAABB();
 }
 

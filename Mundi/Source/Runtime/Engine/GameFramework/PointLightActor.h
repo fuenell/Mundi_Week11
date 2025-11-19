@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Actor.h"
 #include "APointLightActor.generated.h"
@@ -11,6 +11,7 @@ class APointLightActor : public AActor
 public:
 
 	GENERATED_REFLECTION_BODY()
+
 
 	APointLightActor();
 protected:

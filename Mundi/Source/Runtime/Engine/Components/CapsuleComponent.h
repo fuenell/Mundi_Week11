@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "ShapeComponent.h"
 #include "UCapsuleComponent.generated.h"
@@ -16,6 +16,12 @@ public:
 
 	// Duplication
 	virtual void DuplicateSubObjects() override;
+
+	void SetCapsuleHalfHeight(float InHalfHeight) { CapsuleHalfHeight = InHalfHeight; }
+	float GetCapsuleHalfHeight() const { return CapsuleHalfHeight; }
+
+	void SetCapsuleRadius(float InRadius) { CapsuleRadius = InRadius; }
+	float GetCapsuleRadius() const { return CapsuleRadius; }
 
 protected:
 	UPROPERTY(EditAnywhere, Category="CapsuleHalfHeight")

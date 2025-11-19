@@ -102,6 +102,7 @@ class Property:
 
         # 포인터 타입 체크 - MacroParser 사용 (자동 감지)
         if '*' in self.type:
+            
             if self._macro_parser:
                 macro_name = self._macro_parser.get_macro_for_type(self.type)
                 if macro_name:

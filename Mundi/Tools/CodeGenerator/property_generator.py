@@ -5,6 +5,7 @@ BEGIN_PROPERTIES / END_PROPERTIES 블록을 생성합니다.
 
 from jinja2 import Template
 from header_parser import ClassInfo, Property
+from typing import Dict, Optional
 
 
 PROPERTY_TEMPLATE = """
@@ -34,19 +35,61 @@ class PropertyGenerator:
 
     def __init__(self):
         self.template = Template(PROPERTY_TEMPLATE)
+        self.class_hierarchy: Dict[str, str] = {}  # class_name -> parent_name 매핑
+
+    def set_class_hierarchy(self, classes):
+        """
+        클래스 계층 구조 설정
+        Args:
+            classes: List[ClassInfo] - 파싱된 모든 클래스 정보
+        """
+        self.class_hierarchy = {cls.name: cls.parent for cls in classes}
+
+    def is_actor_descendant(self, class_name: str) -> bool:
+        """
+        주어진 클래스가 AActor의 자손인지 확인 (조상 클래스를 따라 올라가며 검사)
+        Args:
+            class_name: 확인할 클래스 이름
+        Returns:
+            AActor를 상속받았으면 True, 아니면 False
+        """
+        # AActor 자체는 False (직접 상속이 아니므로)
+        if class_name == 'AActor':
+            return False
+        
+        current = class_name
+        visited = set()  # 순환 참조 방지
+        
+        while current and current not in visited:
+            visited.add(current)
+            
+            # 부모 클래스 찾기
+            parent = self.class_hierarchy.get(current)
+            if not parent:
+                # 부모를 찾을 수 없으면 종료
+                break
+            
+            # 부모가 AActor이면 True
+            if parent == 'AActor':
+                return True
+            
+            # 부모로 이동
+            current = parent
+        
+        return False
 
     def generate(self, class_info: ClassInfo) -> str:
         """ClassInfo로부터 BEGIN_PROPERTIES 블록 생성"""
 
         # mark_type 결정:
         # 1. AActor 자체는 MARK 없음
-        # 2. AActor를 상속받은 클래스는 MARK_AS_SPAWNABLE
+        # 2. AActor를 상속받은 클래스 (직접 또는 간접)는 MARK_AS_SPAWNABLE
         # 3. 나머지는 MARK_AS_COMPONENT
         mark_type = None
         if class_info.name == 'AActor':
             mark_type = None  # AActor는 MARK 없음
-        elif class_info.parent == 'AActor':
-            mark_type = 'SPAWNABLE'  # AActor 직접 상속
+        elif class_info.parent == 'AActor' or self.is_actor_descendant(class_info.name):
+            mark_type = 'SPAWNABLE'  # AActor 직접 또는 간접 상속
         else:
             mark_type = 'COMPONENT'  # 그 외 (컴포넌트 등)
 

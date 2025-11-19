@@ -231,6 +231,9 @@ def main():
 
     print(f"\n Found {len(classes)} reflection class(es)\n")
 
+    # PropertyGenerator에 클래스 계층 구조 설정
+    prop_gen.set_class_hierarchy(classes)
+
     # 각 클래스에 대해 .generated.h와 .generated.cpp 생성
     generated_files = []
     updated_count = 0

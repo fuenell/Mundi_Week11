@@ -21,7 +21,7 @@ end
 
 function Jump()
     IsInAir = true
-    coroutine.yield("wait_time", 1.05)
+    coroutine.yield("wait_time", 1.0)
     IsInAir = false
 end
 
